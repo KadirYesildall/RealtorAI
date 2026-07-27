@@ -65,39 +65,26 @@ specs/[###-feature]/
 -->
 
 ```text
-# [REMOVE IF UNUSED] Option 1: Single project (DEFAULT)
-src/
-├── models/
-├── services/
-├── cli/
-└── lib/
-
-tests/
-├── contract/
-├── integration/
-└── unit/
-
-# [REMOVE IF UNUSED] Option 2: Web application (when "frontend" + "backend" detected)
-backend/
+# RealtorAI mandatory structure (per constitution "Project Structure"):
+# backend and frontend are separate top-level directories in the same repo.
+RealtorAI_BackEnd/
 ├── src/
 │   ├── models/
 │   ├── services/
-│   └── api/
+│   └── api/            # .NET Web API and/or Next.js Route Handlers per feature spec
 └── tests/
+    ├── contract/
+    ├── integration/
+    └── unit/
 
-frontend/
+RealtorAI_FrontEnd/
 ├── src/
+│   ├── app/             # Next.js App Router
 │   ├── components/
-│   ├── pages/
 │   └── services/
 └── tests/
-
-# [REMOVE IF UNUSED] Option 3: Mobile + API (when "iOS/Android" detected)
-api/
-└── [same as backend above]
-
-ios/ or android/
-└── [platform-specific structure: feature modules, UI flows, platform tests]
+    ├── integration/
+    └── unit/
 ```
 
 **Structure Decision**: [Document the selected structure and reference the real

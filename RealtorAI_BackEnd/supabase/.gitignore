@@ -1,0 +1,11 @@
+# Supabase
+.branches
+.temp
+
+# dotenvx
+.env.keys
+.env.local
+.env.*.local
+
+# Secrets referenced by config.toml's env(...) substitution (Google OAuth client secret, etc.)
+.env

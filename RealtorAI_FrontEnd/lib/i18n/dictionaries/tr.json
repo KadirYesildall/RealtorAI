@@ -1,0 +1,68 @@
+{
+  "common": {
+    "loading": "Yükleniyor...",
+    "tryAgain": "Tekrar deneyin",
+    "somethingWentWrong": "Bir şeyler ters gitti. Lütfen tekrar deneyin."
+  },
+  "auth": {
+    "register": {
+      "title": "RealtorAI hesabınızı oluşturun",
+      "subtitle": "Emlak fotoğraflarınızdan ilan metni, Reels senaryosu ve LinkedIn gönderisi oluşturun.",
+      "fullNameLabel": "Ad Soyad",
+      "emailLabel": "E-posta",
+      "passwordLabel": "Şifre",
+      "passwordHint": "En az 8 karakter.",
+      "consentLabel": "Kullanım Koşulları ve Gizlilik Politikası'nı kabul ediyorum",
+      "submit": "Hesap oluştur",
+      "submitting": "Hesap oluşturuluyor...",
+      "haveAccount": "Zaten bir hesabınız var mı?",
+      "signInLink": "Giriş yapın",
+      "continueWithGoogle": "Google ile devam et",
+      "checkEmailTitle": "E-postanızı kontrol edin",
+      "checkEmailBody": "E-posta adresinize bir onay bağlantısı gönderdik. Hesabınızı etkinleştirmek için bağlantıya tıklayın, ardından geri dönüp giriş yapın."
+    },
+    "login": {
+      "title": "RealtorAI'a giriş yapın",
+      "subtitle": "Tekrar hoş geldiniz. Çalışma alanınıza erişmek için bilgilerinizi girin.",
+      "emailLabel": "E-posta",
+      "passwordLabel": "Şifre",
+      "submit": "Giriş yap",
+      "submitting": "Giriş yapılıyor...",
+      "noAccount": "Hesabınız yok mu?",
+      "signUpLink": "Hesap oluşturun",
+      "continueWithGoogle": "Google ile devam et",
+      "resendConfirmation": "Onay e-postasını yeniden gönder",
+      "oauthCancelled": "Giriş iptal edildi.",
+      "oauthFailed": "Google ile giriş yapılırken bir sorun oluştu. Lütfen tekrar deneyin."
+    },
+    "errors": {
+      "accountExists": "Bu e-posta adresiyle zaten bir hesap mevcut.",
+      "invalidCredentials": "E-posta veya şifre hatalı.",
+      "unverifiedEmail": "Giriş yapmadan önce lütfen e-postanızı doğrulayın.",
+      "mustAcceptTerms": "Kullanım Koşulları ve Gizlilik Politikası'nı kabul etmelisiniz.",
+      "signOutFailed": "Çıkış yapılamadı. Lütfen tekrar deneyin.",
+      "googleUnavailable": "Google ile giriş şu anda kullanılamıyor."
+    }
+  },
+  "dashboard": {
+    "welcome": "Tekrar hoş geldiniz, {name}",
+    "usageLabel": "Kullanılan AI üretimi",
+    "sidebar": {
+      "home": "Panel",
+      "newProperty": "Yeni İlan",
+      "settings": "Ayarlar",
+      "billing": "Faturalandırma",
+      "comingSoon": "Yakında",
+      "signOut": "Çıkış yap"
+    },
+    "language": {
+      "label": "Dil",
+      "en": "İngilizce",
+      "tr": "Türkçe"
+    },
+    "error": {
+      "title": "Panelinizi yükleyemedik",
+      "body": "Bizden kaynaklanan bir sorun oluştu. Lütfen tekrar deneyin."
+    }
+  }
+}

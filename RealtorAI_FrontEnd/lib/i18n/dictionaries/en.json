@@ -1,0 +1,68 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "tryAgain": "Try again",
+    "somethingWentWrong": "Something went wrong. Please try again."
+  },
+  "auth": {
+    "register": {
+      "title": "Create your RealtorAI account",
+      "subtitle": "Generate listing copy, Reels scripts, and LinkedIn posts from your property photos.",
+      "fullNameLabel": "Full name",
+      "emailLabel": "Email",
+      "passwordLabel": "Password",
+      "passwordHint": "At least 8 characters.",
+      "consentLabel": "I agree to the Terms of Service and Privacy Policy",
+      "submit": "Create account",
+      "submitting": "Creating account...",
+      "haveAccount": "Already have an account?",
+      "signInLink": "Sign in",
+      "continueWithGoogle": "Continue with Google",
+      "checkEmailTitle": "Check your email",
+      "checkEmailBody": "We sent a confirmation link to your email address. Click it to activate your account, then come back and sign in."
+    },
+    "login": {
+      "title": "Sign in to RealtorAI",
+      "subtitle": "Welcome back. Enter your details to access your workspace.",
+      "emailLabel": "Email",
+      "passwordLabel": "Password",
+      "submit": "Sign in",
+      "submitting": "Signing in...",
+      "noAccount": "Don't have an account?",
+      "signUpLink": "Create one",
+      "continueWithGoogle": "Continue with Google",
+      "resendConfirmation": "Resend confirmation email",
+      "oauthCancelled": "Sign-in was cancelled.",
+      "oauthFailed": "Something went wrong signing in with Google. Please try again."
+    },
+    "errors": {
+      "accountExists": "An account with this email already exists.",
+      "invalidCredentials": "Incorrect email or password.",
+      "unverifiedEmail": "Please verify your email before logging in.",
+      "mustAcceptTerms": "You must accept the Terms of Service and Privacy Policy.",
+      "signOutFailed": "Could not sign out. Please try again.",
+      "googleUnavailable": "Google sign-in is unavailable right now."
+    }
+  },
+  "dashboard": {
+    "welcome": "Welcome back, {name}",
+    "usageLabel": "AI generations used",
+    "sidebar": {
+      "home": "Dashboard",
+      "newProperty": "New Property",
+      "settings": "Settings",
+      "billing": "Billing",
+      "comingSoon": "Coming soon",
+      "signOut": "Sign out"
+    },
+    "language": {
+      "label": "Language",
+      "en": "English",
+      "tr": "Turkish"
+    },
+    "error": {
+      "title": "We couldn't load your dashboard",
+      "body": "Something went wrong on our end. Please try again."
+    }
+  }
+}
