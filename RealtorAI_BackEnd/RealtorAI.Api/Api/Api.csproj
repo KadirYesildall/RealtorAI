@@ -46,4 +46,14 @@
     <ProjectReference Include="..\Pipeline\Pipeline.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!--
+      Prompts are content, not code, but they must travel with the published output: the prompt
+      registry loads them from the content root at startup and the host refuses to serve traffic
+      if a hash no longer matches (Principle VIII.5). A publish that left them behind would make
+      every AI task unavailable.
+    -->
+    <Content Include="..\prompts\**\*" LinkBase="prompts" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

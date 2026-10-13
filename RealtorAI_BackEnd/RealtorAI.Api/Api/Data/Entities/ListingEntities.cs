@@ -1,3 +1,5 @@
+using Api.Concurrency;
+
 namespace Api.Data.Entities;
 
 // T009 — entity types for 0005_listings.sql and 0010_mls_rule_profiles.sql. See
@@ -21,7 +23,7 @@ namespace Api.Data.Entities;
 /// status is the only removal path (FR-065).
 /// </para>
 /// </summary>
-public sealed class Listing
+public sealed class Listing : IVersionedEntity
 {
     public Guid Id { get; set; }
     public Guid AgentId { get; set; }
@@ -41,7 +43,9 @@ public sealed class Listing
     public string? AgentNotes { get; set; }
     public string? TargetMlsId { get; set; }
     public Guid? CoverPhotoId { get; set; }
-    public int RowVersion { get; set; }
+    /// <summary>Starts at 1, matching the database default — see ColumnDefaultsTests.</summary>
+    public int RowVersion { get; set; } = 1;
+
     public DateTimeOffset? DeletedAt { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
@@ -56,7 +60,7 @@ public sealed class Listing
 /// AI-derived value stays visibly unconfirmed until an agent affirms it.
 /// </para>
 /// </summary>
-public sealed class ListingField
+public sealed class ListingField : IVersionedEntity
 {
     public Guid Id { get; set; }
     public Guid ListingId { get; set; }
@@ -70,7 +74,9 @@ public sealed class ListingField
     public Guid? ConfirmedBy { get; set; }
     public DateTimeOffset? ConfirmedAt { get; set; }
     public string? SourceNote { get; set; }
-    public int RowVersion { get; set; }
+
+    /// <summary>Starts at 1, matching the database default.</summary>
+    public int RowVersion { get; set; } = 1;
 }
 
 /// <summary>

@@ -1,3 +1,5 @@
+using Modules.Brokerage;
+
 namespace Api.Data.Entities;
 
 // T009 — entity types for 0003_brokerages.sql and 0004_profile_license.sql.
@@ -63,8 +65,12 @@ public sealed class BrokerageSettings
     public Guid BrokerageId { get; set; }
     public string? TargetMlsId { get; set; }
     public Tone DefaultTone { get; set; }
-    public int AiBudgetTokens { get; set; }
-    public int AiBudgetImages { get; set; }
+    // Defaults mirror brokerage_settings in 0003_brokerages.sql. EF always sends a value on
+    // insert, so a CLR default of 0 would silently override the database default and give a
+    // new brokerage a zero AI budget.
+    public int AiBudgetTokens { get; set; } = 200_000;
+
+    public int AiBudgetImages { get; set; } = 120;
 }
 
 /// <summary>

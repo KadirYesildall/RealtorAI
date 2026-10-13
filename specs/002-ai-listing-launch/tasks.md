@@ -92,38 +92,39 @@ Per [plan.md](./plan.md) "Project Structure" — the repo's two mandated top-lev
 - [X] T032 [P] Integration test: hard `DELETE FROM listings` is blocked by the audit FK in `tests/integration/NoHardDeleteTests.cs`
 - [X] T033 [P] Integration test: EF Core model vs actual SQL schema drift in `tests/integration/SchemaDriftTests.cs`
 - [X] T033a [P] Integration test: no client role holds TRUNCATE/REFERENCES/TRIGGER on any feature table, `anon` holds nothing, and the schema default no longer grants — in `tests/integration/PrivilegeHardeningTests.cs` (research R18)
+- [X] T033b [P] Integration test: every database column default matches the CLR property default in `tests/integration/ColumnDefaultsTests.cs` (found a real bug: EF sends the CLR value on insert, so `row_version` started at 0 against a SQL default of 1)
 
 ### Authentication & authorization (FR-063, FR-064)
 
 - [X] T034 Implement Supabase JWT bearer validation via JWKS in `RealtorAI.Api/Api/Authentication/SupabaseJwtSetup.cs` (validate issuer, audience, lifetime, signature; trust only `sub`)
-- [ ] T035 Implement `IResourceAuthorizer` in `RealtorAI.Api/Api/Authorization/ResourceAuthorizer.cs` (listing owner, or approved broker_admin of the listing's brokerage)
-- [ ] T036 [P] Implement capability predicates `CanApproveMarketing` and `CanSubmitToMls` in `Modules.Brokerage/Capabilities.cs` (both require `approved`)
-- [ ] T037 Implement per-request membership resolution from the database with a short invalidating cache in `Modules.Brokerage/MembershipResolver.cs` — **never read status or role from JWT claims** (research R7)
-- [ ] T038 Implement the endpoint policy registry plus a test that **fails the build if any endpoint lacks an explicit policy** in `RealtorAI.Api/Api/Authorization/PolicyRegistry.cs` and `tests/contract/EveryEndpointHasPolicyTests.cs`
-- [ ] T039 Build the authorization matrix test harness in `tests/contract/AuthorizationMatrix.cs` covering owner / other agent / pending member / approved admin same brokerage / admin other brokerage / platform admin / non-admin
+- [X] T035 Implement `IResourceAuthorizer` in `RealtorAI.Api/Api/Authorization/ResourceAuthorizer.cs` (listing owner, or approved broker_admin of the listing's brokerage)
+- [X] T036 [P] Implement capability predicates `CanApproveMarketing` and `CanSubmitToMls` in `Modules.Brokerage/Capabilities.cs` (both require `approved`)
+- [X] T037 Implement per-request membership resolution from the database with a short invalidating cache in `Modules.Brokerage/MembershipResolver.cs` — **never read status or role from JWT claims** (research R7)
+- [X] T038 Implement the endpoint policy registry plus a test that **fails the build if any endpoint lacks an explicit policy** in `RealtorAI.Api/Api/Authorization/PolicyRegistry.cs` and `tests/contract/EveryEndpointHasPolicyTests.cs`
+- [X] T039 Build the authorization matrix test harness in `tests/contract/AuthorizationMatrix.cs` covering owner / other agent / pending member / approved admin same brokerage / admin other brokerage / platform admin / non-admin
 
 ### Optimistic concurrency (FR-066)
 
-- [ ] T040 Implement `If-Match` row-version handling and the `VersionConflict` 409 problem-details response in `RealtorAI.Api/Api/Concurrency/`
-- [ ] T041 [P] Unit tests for the conditional-update helper in `tests/unit/OptimisticConcurrencyTests.cs`
+- [X] T040 Implement `If-Match` row-version handling and the `VersionConflict` 409 problem-details response in `RealtorAI.Api/Api/Concurrency/`
+- [X] T041 [P] Unit tests for the conditional-update helper in `tests/unit/OptimisticConcurrencyTests.cs`
 
 ### Audit spine (FR-049)
 
-- [ ] T042 Implement the append-only audit writer in `Modules.Audit/AuditWriter.cs` (actor, action, before/after, model/prompt refs, payload hash)
-- [ ] T043 [P] Contract test for the audit writer in `tests/contract/AuditWriterTests.cs`
+- [X] T042 Implement the append-only audit writer in `Modules.Audit/AuditWriter.cs` (actor, action, before/after, model/prompt refs, payload hash)
+- [X] T043 [P] Contract test for the audit writer in `tests/contract/AuditWriterTests.cs`
 
 ### AI platform (Principle VIII)
 
-- [ ] T044 Implement the `AiService` abstraction over `IChatClient` / `IEmbeddingGenerator` in `Libs.Ai/AiService.cs` — **no vendor, model id, or endpoint may appear outside the registry** (VIII.1)
-- [ ] T045 Implement the model registry reader in `Libs.Ai/ModelRegistry.cs` (task → provider → model → endpoint → params → fallback → enabled)
-- [ ] T046 Implement the prompt registry in `Libs.Ai/PromptRegistry.cs` reading versioned files from `RealtorAI.Api/prompts/{task}/v{n}.md` + `v{n}.schema.json`, with a **startup check that fails on hash drift** (VIII.5)
-- [ ] T047 Implement JSON Schema validation with exactly one retry carrying the validation error, then an explicit failure, in `Libs.Ai/StructuredOutputValidator.cs` (FR-015)
-- [ ] T048 [P] Implement resilience (timeouts, backoff, per-provider circuit breaker, automatic fallback) in `Libs.Ai/Resilience.cs` using `Microsoft.Extensions.Http.Resilience`
-- [ ] T049 Implement cost tracking, the **pre-dispatch** per-listing budget check, and request caching by input hash in `Libs.Ai/CostTracker.cs` (FR-055)
+- [X] T044 Implement the `AiService` abstraction over `IChatClient` / `IEmbeddingGenerator` in `Libs.Ai/AiService.cs` — **no vendor, model id, or endpoint may appear outside the registry** (VIII.1)
+- [X] T045 Implement the model registry reader in `Libs.Ai/ModelRegistry.cs` (task → provider → model → endpoint → params → fallback → enabled)
+- [X] T046 Implement the prompt registry in `Libs.Ai/PromptRegistry.cs` reading versioned files from `RealtorAI.Api/prompts/{task}/v{n}.md` + `v{n}.schema.json`, with a **startup check that fails on hash drift** (VIII.5)
+- [X] T047 Implement JSON Schema validation with exactly one retry carrying the validation error, then an explicit failure, in `Libs.Ai/StructuredOutputValidator.cs` (FR-015)
+- [X] T048 [P] Implement resilience (timeouts, backoff, per-provider circuit breaker, automatic fallback) in `Libs.Ai/Resilience.cs` using `Microsoft.Extensions.Http.Resilience`
+- [X] T049 Implement cost tracking, the **pre-dispatch** per-listing budget check, and request caching by input hash in `Libs.Ai/CostTracker.cs` (FR-055)
 - [ ] T050 Implement the registry admin endpoints in `RealtorAI.Api/Api/Endpoints/AiRegistryEndpoints.cs` gated on `profiles.platform_admin`, auditing every change as `registry_changed` (FR-064)
 - [ ] T051 [P] Contract tests for the registry admin endpoints including the authorization matrix in `tests/contract/AiRegistryEndpointTests.cs`
-- [ ] T052 [P] Unit tests for schema-retry and fallback behaviour in `tests/unit/AiServiceTests.cs`
-- [ ] T053 **Prohibition test (VIII.6)**: fail the build if any image/video-generation dependency or endpoint is referenced anywhere in the solution or sidecar, in `tests/prohibitions/NoGenerativeImageryTests.cs`
+- [X] T052 [P] Unit tests for schema-retry and fallback behaviour in `tests/unit/AiServiceTests.cs`
+- [X] T053 **Prohibition test (VIII.6)**: fail the build if any image/video-generation dependency or endpoint is referenced anywhere in the solution or sidecar, in `tests/prohibitions/NoGenerativeImageryTests.cs`
 - [ ] T054 Create the AI evaluation harness skeleton in `RealtorAI.Api/tools/AiEval/` with the task/metric scaffolding from [quickstart.md](./quickstart.md) §6
 
 ### Shared services

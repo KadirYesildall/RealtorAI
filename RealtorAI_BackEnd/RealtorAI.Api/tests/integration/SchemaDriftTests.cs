@@ -1,7 +1,6 @@
 using System.Globalization;
 using Api.Data;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql;
 
 namespace RealtorAI.Tests.Integration;
@@ -24,15 +23,6 @@ namespace RealtorAI.Tests.Integration;
 /// </summary>
 public sealed class SchemaDriftTests
 {
-    private static AppDbContext CreateContext()
-    {
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseNpgsql(SupabaseDatabase.ConnectionString, AppDbContext.ConfigureNpgsql)
-            .ReplaceService<IMigrator, MigrationsAreOwnedBySqlMigrator>()
-            .Options;
-
-        return new AppDbContext(options);
-    }
 
     private sealed record Column(string Table, string Name, string Type, bool IsNullable);
 
@@ -88,7 +78,7 @@ public sealed class SchemaDriftTests
     [Fact]
     public async Task EveryMappedTableExists()
     {
-        await using var context = CreateContext();
+        await using var context = SupabaseDatabase.CreateContext();
         var actual = await ReadActualSchemaAsync();
 
         var missing = context.Model.GetEntityTypes()
@@ -104,7 +94,7 @@ public sealed class SchemaDriftTests
     [Fact]
     public async Task EveryMappedColumnExists()
     {
-        await using var context = CreateContext();
+        await using var context = SupabaseDatabase.CreateContext();
         var actual = await ReadActualSchemaAsync();
 
         var problems = new List<string>();
@@ -141,7 +131,7 @@ public sealed class SchemaDriftTests
     [Fact]
     public async Task NoDatabaseColumnIsMissingFromTheModel()
     {
-        await using var context = CreateContext();
+        await using var context = SupabaseDatabase.CreateContext();
         var actual = await ReadActualSchemaAsync();
 
         var problems = new List<string>();
@@ -175,7 +165,7 @@ public sealed class SchemaDriftTests
     [Fact]
     public async Task ColumnTypesAgree()
     {
-        await using var context = CreateContext();
+        await using var context = SupabaseDatabase.CreateContext();
         var actual = await ReadActualSchemaAsync();
 
         var problems = new List<string>();
@@ -221,7 +211,7 @@ public sealed class SchemaDriftTests
     [Fact]
     public async Task ColumnNullabilityAgrees()
     {
-        await using var context = CreateContext();
+        await using var context = SupabaseDatabase.CreateContext();
         var actual = await ReadActualSchemaAsync();
 
         var problems = new List<string>();
@@ -280,7 +270,7 @@ public sealed class SchemaDriftTests
 
         var problems = new List<string>();
 
-        foreach (var (clrType, pgName) in AppDbContext.PostgresEnums)
+        foreach (var mapping in Api.Data.PostgresEnumMappings.All)
         {
             await using var command = new NpgsqlCommand(
                 """
@@ -293,7 +283,7 @@ public sealed class SchemaDriftTests
                 """,
                 connection);
 
-            command.Parameters.AddWithValue(pgName);
+            command.Parameters.AddWithValue(mapping.PgName);
 
             var databaseLabels = new List<string>();
 
@@ -307,30 +297,75 @@ public sealed class SchemaDriftTests
 
             if (databaseLabels.Count == 0)
             {
-                problems.Add($"public.{pgName} does not exist (mapped from {clrType.Name})");
+                problems.Add($"public.{mapping.PgName} does not exist (mapped from {mapping.ClrType.Name})");
                 continue;
             }
 
-            var clrLabels = clrType.GetFields(
-                    System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static)
-                .Select(field =>
-                    field.GetCustomAttributes(typeof(NpgsqlTypes.PgNameAttribute), inherit: false)
-                        .Cast<NpgsqlTypes.PgNameAttribute>()
-                        .SingleOrDefault()?.PgName
-                    ?? $"<{field.Name} has no [PgName]>")
-                .ToList();
+            // Expected labels come from the same mapping Npgsql is configured with, so this
+            // compares the database against what the application will actually send — not
+            // against a second list that could be wrong in the same way.
+            var expected = mapping.ExpectedLabels();
 
-            var onlyInDatabase = databaseLabels.Except(clrLabels, StringComparer.Ordinal).ToList();
-            var onlyInClr = clrLabels.Except(databaseLabels, StringComparer.Ordinal).ToList();
+            var onlyInDatabase = databaseLabels.Except(expected, StringComparer.Ordinal).ToList();
+            var onlyInClr = expected.Except(databaseLabels, StringComparer.Ordinal).ToList();
 
             if (onlyInDatabase.Count > 0)
             {
-                problems.Add($"{pgName}: in database but not in {clrType.Name}: {string.Join(", ", onlyInDatabase)}");
+                problems.Add(
+                    $"{mapping.PgName}: in database but not mapped from "
+                    + $"{mapping.ClrType.Name}: {string.Join(", ", onlyInDatabase)}");
             }
 
             if (onlyInClr.Count > 0)
             {
-                problems.Add($"{pgName}: in {clrType.Name} but not in database: {string.Join(", ", onlyInClr)}");
+                problems.Add(
+                    $"{mapping.PgName}: mapped from {mapping.ClrType.Name} but absent from the "
+                    + $"database: {string.Join(", ", onlyInClr)}");
+            }
+        }
+
+        Assert.True(problems.Count == 0, string.Join("\n  ", problems));
+    }
+
+    /// <summary>
+    /// Every CLR member of every mapped enum resolves to a label. A member added to a
+    /// domain-owned enum without a corresponding entry in the explicit label table would
+    /// otherwise throw at runtime, on whichever write first carried that value — which for a
+    /// rare audit action could be a long way from the change that caused it.
+    /// </summary>
+    [Fact]
+    public void EveryMappedEnumMemberHasALabel()
+    {
+        var problems = new List<string>();
+
+        foreach (var mapping in Api.Data.PostgresEnumMappings.All)
+        {
+            var clrMembers = Enum.GetNames(mapping.ClrType);
+
+            IReadOnlyList<string> labels;
+
+            try
+            {
+                labels = mapping.ExpectedLabels();
+            }
+            catch (InvalidOperationException exception)
+            {
+                problems.Add($"{mapping.ClrType.Name}: {exception.Message}");
+                continue;
+            }
+
+            if (labels.Count != clrMembers.Length)
+            {
+                problems.Add(
+                    $"{mapping.ClrType.Name} has {clrMembers.Length} members but "
+                    + $"{labels.Count} labels are declared for {mapping.PgName}.");
+            }
+
+            if (labels.Distinct(StringComparer.Ordinal).Count() != labels.Count)
+            {
+                problems.Add(
+                    $"{mapping.PgName} has duplicate labels, so two CLR members would write "
+                    + "the same database value.");
             }
         }
 
@@ -345,7 +380,7 @@ public sealed class SchemaDriftTests
     [Fact]
     public async Task CallingMigrate_ThrowsInsteadOfGeneratingDdl()
     {
-        await using var context = CreateContext();
+        await using var context = SupabaseDatabase.CreateContext();
 
         var exception = Assert.Throws<NotSupportedException>(() => context.Database.Migrate());
 

@@ -1,9 +1,19 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      ComputePayloadHash is internal because callers should go through WriteAsync, which
+      validates first; the hash itself still needs direct tests for determinism and for the
+      length-prefix property that keeps two different events from colliding.
+    -->
+    <InternalsVisibleTo Include="Tests.contract" />
+    <InternalsVisibleTo Include="Tests.unit" />
+  </ItemGroup>
 
 </Project>

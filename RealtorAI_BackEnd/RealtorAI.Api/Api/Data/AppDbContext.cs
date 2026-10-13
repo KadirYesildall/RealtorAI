@@ -94,31 +94,6 @@ public class AppDbContext : DbContext
     public DbSet<AuditEvent> AuditEvents => Set<AuditEvent>();
 
     /// <summary>
-    /// The CLR enum types that mirror PostgreSQL enums, paired with the type name in
-    /// <c>public</c>. Exposed so the options builder and the drift test work from one list
-    /// instead of two that can disagree.
-    /// </summary>
-    internal static IReadOnlyDictionary<Type, string> PostgresEnums { get; } =
-        new Dictionary<Type, string>
-        {
-            [typeof(MembershipStatus)] = "membership_status",
-            [typeof(MembershipRole)] = "membership_role",
-            [typeof(Tone)] = "tone",
-            [typeof(Provenance)] = "provenance",
-            [typeof(ListingStatus)] = "listing_status",
-            [typeof(AlterationType)] = "alteration_type",
-            [typeof(RoomType)] = "room_type",
-            [typeof(ContentKind)] = "content_kind",
-            [typeof(ContentStatus)] = "content_status",
-            [typeof(CheckType)] = "check_type",
-            [typeof(FindingSeverity)] = "finding_severity",
-            [typeof(FindingSource)] = "finding_source",
-            [typeof(FindingStatus)] = "finding_status",
-            [typeof(ModelEvalStatus)] = "model_eval_status",
-            [typeof(AuditAction)] = "audit_action",
-        };
-
-    /// <summary>
     /// Npgsql provider configuration shared by the host and by tests, so a test never runs
     /// against a differently configured model than production does.
     /// </summary>
@@ -127,9 +102,9 @@ public class AppDbContext : DbContext
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        foreach (var (clrType, pgName) in PostgresEnums)
+        foreach (var mapping in PostgresEnumMappings.All)
         {
-            builder.MapEnum(clrType, pgName, "public");
+            builder.MapEnum(mapping.ClrType, mapping.PgName, "public", mapping.Translator());
         }
 
         // pgvector 0.8.2 is installed by 0002_pgvector.sql; this teaches EF the vector type.
