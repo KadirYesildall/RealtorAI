@@ -115,16 +115,16 @@ Per [plan.md](./plan.md) "Project Structure" — the repo's two mandated top-lev
 
 ### AI platform (Principle VIII)
 
-- [ ] T044 Implement the `AiService` abstraction over `IChatClient` / `IEmbeddingGenerator` in `Libs.Ai/AiService.cs` — **no vendor, model id, or endpoint may appear outside the registry** (VIII.1)
-- [ ] T045 Implement the model registry reader in `Libs.Ai/ModelRegistry.cs` (task → provider → model → endpoint → params → fallback → enabled)
-- [ ] T046 Implement the prompt registry in `Libs.Ai/PromptRegistry.cs` reading versioned files from `RealtorAI.Api/prompts/{task}/v{n}.md` + `v{n}.schema.json`, with a **startup check that fails on hash drift** (VIII.5)
-- [ ] T047 Implement JSON Schema validation with exactly one retry carrying the validation error, then an explicit failure, in `Libs.Ai/StructuredOutputValidator.cs` (FR-015)
-- [ ] T048 [P] Implement resilience (timeouts, backoff, per-provider circuit breaker, automatic fallback) in `Libs.Ai/Resilience.cs` using `Microsoft.Extensions.Http.Resilience`
-- [ ] T049 Implement cost tracking, the **pre-dispatch** per-listing budget check, and request caching by input hash in `Libs.Ai/CostTracker.cs` (FR-055)
+- [X] T044 Implement the `AiService` abstraction over `IChatClient` / `IEmbeddingGenerator` in `Libs.Ai/AiService.cs` — **no vendor, model id, or endpoint may appear outside the registry** (VIII.1)
+- [X] T045 Implement the model registry reader in `Libs.Ai/ModelRegistry.cs` (task → provider → model → endpoint → params → fallback → enabled)
+- [X] T046 Implement the prompt registry in `Libs.Ai/PromptRegistry.cs` reading versioned files from `RealtorAI.Api/prompts/{task}/v{n}.md` + `v{n}.schema.json`, with a **startup check that fails on hash drift** (VIII.5)
+- [X] T047 Implement JSON Schema validation with exactly one retry carrying the validation error, then an explicit failure, in `Libs.Ai/StructuredOutputValidator.cs` (FR-015)
+- [X] T048 [P] Implement resilience (timeouts, backoff, per-provider circuit breaker, automatic fallback) in `Libs.Ai/Resilience.cs` using `Microsoft.Extensions.Http.Resilience`
+- [X] T049 Implement cost tracking, the **pre-dispatch** per-listing budget check, and request caching by input hash in `Libs.Ai/CostTracker.cs` (FR-055)
 - [ ] T050 Implement the registry admin endpoints in `RealtorAI.Api/Api/Endpoints/AiRegistryEndpoints.cs` gated on `profiles.platform_admin`, auditing every change as `registry_changed` (FR-064)
 - [ ] T051 [P] Contract tests for the registry admin endpoints including the authorization matrix in `tests/contract/AiRegistryEndpointTests.cs`
-- [ ] T052 [P] Unit tests for schema-retry and fallback behaviour in `tests/unit/AiServiceTests.cs`
-- [ ] T053 **Prohibition test (VIII.6)**: fail the build if any image/video-generation dependency or endpoint is referenced anywhere in the solution or sidecar, in `tests/prohibitions/NoGenerativeImageryTests.cs`
+- [X] T052 [P] Unit tests for schema-retry and fallback behaviour in `tests/unit/AiServiceTests.cs`
+- [X] T053 **Prohibition test (VIII.6)**: fail the build if any image/video-generation dependency or endpoint is referenced anywhere in the solution or sidecar, in `tests/prohibitions/NoGenerativeImageryTests.cs`
 - [ ] T054 Create the AI evaluation harness skeleton in `RealtorAI.Api/tools/AiEval/` with the task/metric scaffolding from [quickstart.md](./quickstart.md) §6
 
 ### Shared services

@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Photo analysis result",
+  "description": "Observations about one listing photograph. Measurement and legal fields are deliberately absent: FR-007 forbids AI from originating them, and a schema that cannot express them cannot be talked into one.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["roomType", "confidence", "featureTags", "contentFlags", "altText"],
+  "properties": {
+    "roomType": {
+      "type": "string",
+      "description": "Must match the public.room_type enum in 0006_media.sql.",
+      "enum": [
+        "kitchen",
+        "living_room",
+        "primary_bedroom",
+        "bedroom",
+        "bathroom",
+        "exterior_front",
+        "backyard",
+        "pool",
+        "garage",
+        "view",
+        "floor_plan",
+        "other"
+      ]
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Confidence in roomType. Surfaced to the agent so they can tell which classifications to check."
+    },
+    "featureTags": {
+      "type": "array",
+      "maxItems": 12,
+      "items": { "type": "string", "minLength": 1, "maxLength": 60 },
+      "description": "Visible features only. Never a measurement, a material claim that cannot be verified from an image, or anything about people."
+    },
+    "contentFlags": {
+      "type": "array",
+      "maxItems": 8,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "faces_visible",
+          "people_visible",
+          "address_visible",
+          "license_plate_visible",
+          "screen_or_reflection",
+          "personal_items"
+        ]
+      },
+      "description": "Things the agent must resolve before publishing. A closed set so a flag cannot be invented in free text and then missed by the review screen."
+    },
+    "altText": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300,
+      "description": "Accessible description of the photograph. Describes the space, never the people in it."
+    },
+    "coverRecommended": {
+      "type": "boolean",
+      "description": "Whether this would make a good cover photo. A recommendation only; the agent chooses (Principle I)."
+    },
+    "recommendationReason": {
+      "type": "string",
+      "maxLength": 300,
+      "description": "Why, in one sentence, so the agent can judge the recommendation instead of trusting it."
+    }
+  }
+}

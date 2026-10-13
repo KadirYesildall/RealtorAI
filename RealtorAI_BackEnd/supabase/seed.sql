@@ -178,3 +178,33 @@ values
 -- harness (room classification >= 90% accepted, SC-002). Until then, photo upload and
 -- analysis are exercised by the contract and integration tests with explicit per-case
 -- fixtures rather than by this seed.
+
+-- ════════════════════════════════════════════════════════════════════════════════════════════
+-- Prompt versions (Principle VIII.5)
+-- ════════════════════════════════════════════════════════════════════════════════════════════
+--
+-- Records the hash of prompts/photo.analysis/v1.md so the startup integrity check has something
+-- to verify. The host REFUSES TO START if the file on disk no longer hashes to this value.
+--
+-- That is deliberate, and it has a maintenance consequence worth stating plainly: **editing
+-- v1.md will stop the API booting** until either this hash is updated or — the intended
+-- response — a v2 is added instead. Principle VIII.5 exists because an audit record citing
+-- "photo.analysis v1" is only meaningful if v1 still means what it meant when the record was
+-- written. Editing a released prompt silently invalidates every past record that cites it, so
+-- it is supposed to be inconvenient.
+--
+-- The hash is over the file with line endings normalised to LF, so it is stable regardless of
+-- how git checked the file out (core.autocrlf is active in this repository).
+--
+-- Verified behaviour: with this hash correct the host starts and /health returns 200; with it
+-- altered by one character the host exits with PromptDriftException naming both hashes.
+
+insert into public.prompt_versions (task_key, version, prompt_hash, output_schema, active)
+values (
+    'photo.analysis',
+    1,
+    'caf3014334251e748b1f8b97f7fca3d1822bb414a099dbce7a0041936498118b',
+    '{}'::jsonb,
+    true
+)
+on conflict do nothing;

@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Api.Ai;
 using Api.Audit;
 using Api.Authentication;
 using Api.Authorization;
@@ -54,8 +55,17 @@ builder.Services.AddScoped<IConcurrencyGuard, ConcurrencyGuard>();
 builder.Services.AddScoped<Modules.Audit.IAuditSink, EfAuditSink>();
 builder.Services.AddScoped<Modules.Audit.IAuditWriter, Modules.Audit.AuditWriter>();
 
+// Principle VIII: every AI call goes through AiService, which resolves the model from the
+// registry. No vendor, model id or endpoint appears anywhere else in the codebase.
+builder.Services.AddAiPlatform(builder.Configuration, builder.Environment);
+
 // ───────────────────────────── Pipeline ─────────────────────────────
 var app = builder.Build();
+
+// VIII.5: refuse to serve traffic if a prompt file no longer matches the hash recorded for
+// its version — every audit record citing that version would otherwise be pointing at text
+// that did not produce it.
+await AiSetup.VerifyPromptIntegrityAsync(app.Services);
 
 app.UseSerilogRequestLogging();
 

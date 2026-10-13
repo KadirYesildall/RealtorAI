@@ -1,3 +1,4 @@
+using Libs.Ai;
 using Modules.Audit;
 
 namespace Api.Data.Entities;

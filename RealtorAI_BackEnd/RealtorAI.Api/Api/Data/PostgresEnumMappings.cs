@@ -118,6 +118,13 @@ internal static class PostgresEnumMappings
             ["BrokerAdmin"] = "broker_admin",
         }),
 
+        new(typeof(Libs.Ai.ModelEvalStatus), "model_eval_status", new Dictionary<string, string>
+        {
+            ["Unverified"] = "unverified",
+            ["Passed"] = "passed",
+            ["Failed"] = "failed",
+        }),
+
         new(typeof(Modules.Audit.AuditAction), "audit_action", new Dictionary<string, string>
         {
             ["AiCall"] = "ai_call",
@@ -152,6 +159,6 @@ internal static class PostgresEnumMappings
         new(typeof(FindingSeverity), "finding_severity", null),
         new(typeof(FindingSource), "finding_source", null),
         new(typeof(FindingStatus), "finding_status", null),
-        new(typeof(ModelEvalStatus), "model_eval_status", null),
+
     ];
 }

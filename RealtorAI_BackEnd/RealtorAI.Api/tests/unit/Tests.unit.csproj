@@ -24,6 +24,7 @@
     <!-- Referenced directly so the domain modules can be unit-tested without the host. -->
     <ProjectReference Include="..\..\Modules.Brokerage\Modules.Brokerage.csproj" />
     <ProjectReference Include="..\..\Modules.Audit\Modules.Audit.csproj" />
+    <ProjectReference Include="..\..\Libs.Ai\Libs.Ai.csproj" />
   </ItemGroup>
 
 </Project>

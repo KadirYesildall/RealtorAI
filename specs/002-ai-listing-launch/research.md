@@ -745,6 +745,100 @@ No `FallbackPolicy` is configured, deliberately. A fallback would make every end
 authenticated, which sounds safer but is weaker: it hides missing declarations behind a default,
 and the coverage test could no longer distinguish a decision from an omission.
 
+## R23. A prohibited image-generation dependency was already in the solution (2026-10-13)
+
+**Constitution VIII.6 violation, found while implementing T053 — the test the principle itself
+mandates.**
+
+`Libs.Ai` referenced `Microsoft.Extensions.AI.OpenAI` 10.10.1, committed in the T001-T034
+increment. That package depends on `OpenAI` 2.14.0, and inspecting its assembly documentation
+confirmed it ships working clients for image generation, **image editing (inpainting)**, image
+variations, and video. VIII.6 names virtual staging, object removal and inpainting, and
+AI-generated video explicitly, and states that *any dependency capable of image or video
+generation is prohibited in the codebase* — with no exception for "nothing calls it". Nothing
+did call it; the capability was one `using` away.
+
+**Removed, and replaced rather than worked around.** `Libs.Ai/OpenAiCompatibleChatClient.cs`
+now speaks the OpenAI-compatible `/chat/completions` protocol directly over `HttpClient`. That
+is a better fit for Principle VIII.1 as well as VIII.6: the base URL, model id and parameters
+all arrive from the registry row, nothing vendor-specific appears anywhere, and the same client
+reaches every provider serving that widely-implemented wire format — the Hugging Face router,
+vLLM, Ollama, llama.cpp. `dotnet nuget why` confirms `OpenAI` is gone from all 15 projects.
+
+**Where the line is drawn, and why.** `Microsoft.Extensions.AI.Abstractions` declares
+`IImageGenerator`, and `Microsoft.Extensions.AI` adds middleware around it. Those packages
+stay: an interface with no implementation cannot generate an image, and removing them would mean
+abandoning the vendor-neutral `IChatClient` abstraction Principle VIII.2 requires. So the test
+bans *capability* (the SDK) and, separately, any reference to those type names in our own source
+— the capability only becomes real when something implements or invokes it.
+
+**The gate is verified, not merely written.** The prohibited package was re-added, the suite went
+red on exactly `NoProjectReferencesAGenerativeImageryPackage(packageId: "Microsoft.Extensions.AI.OpenAI")`,
+and removing it restored green. It also immediately caught a self-inflicted case: the doc comment
+in the replacement client originally spelled out the banned method names while explaining the
+removal, and the scan flagged the comment. The prose was reworded rather than the scan weakened.
+
+The test covers project files, `packages.lock.json` (the transitive route, which is how this
+arrived), our own `.cs`/`.ts`/`.tsx`/`.py` sources, the sidecar's requirement files, and the
+sidecar's exposed routes — which must stay within `/health`, `/quality`, `/embed`: measure and
+embed, never produce. A guard test asserts the file walk actually reaches the codebase, so the
+47 assertions cannot pass vacuously.
+
+## R24. The model fallback chain was dead code (2026-10-13)
+
+**Found by T052's unit tests, which is the only way it would have been found.**
+
+`ModelRegistry.ResolveChainAsync` required each fallback entry to have `Enabled = true` before
+following it. But `0008_ai_platform.sql` creates:
+
+```sql
+create unique index registry_one_enabled_per_task on public.ai_model_registry (task_key) where enabled;
+```
+
+so **at most one row per task can ever be enabled**. No second entry for the same task could
+satisfy the check, which meant the entire `fallback_registry_id` chain was unreachable: provider
+failover silently did nothing. Nothing would have surfaced this in production — the fallback
+would simply never engage, and an outage would look like an outage.
+
+The bug was asking the wrong question. `enabled` answers "is this the current choice for this
+task"; what a fallback must satisfy is Principle VIII.4 — **license recorded and evaluation
+passed**. Those are different properties, and conflating them is what produced the contradiction.
+
+The fix required `eval_status` on the dispatch-time entry, which it did not carry. `ModelEvalStatus`
+therefore moved from `Api/Data/DbEnums.cs` into `Libs.Ai`, following the R20 pattern: the enum is
+declared once in the library that owns the concept, and its PostgreSQL labels are declared in
+`Api.Data.PostgresEnumMappings`. Fallback resolution now stops at an entry with no license, at one
+that failed evaluation, at one serving a different task, and on a cycle (the schema forbids
+self-reference but not a longer loop).
+
+## R25. Prompt-integrity startup gate, verified by breaking it (2026-10-13)
+
+T046 requires a startup check that fails on prompt hash drift (VIII.5). Verified by running it
+rather than by reading it:
+
+| Scenario | Result |
+|---|---|
+| Prompt on disk, no version recorded | Host starts. Unregistered is not drift — a new version exists before anyone records it. |
+| Recorded hash matches the file | Host starts, `/health` returns 200 |
+| Recorded hash altered by one character | Host **refuses to start**, naming both the recorded and the computed hash |
+| Version recorded but the file absent | Host refuses to start — audit records citing it can no longer be reproduced |
+
+The fourth row was not a planned test. It fired on the first real boot because the prompts
+directory resolved to `{ContentRoot}/prompts`, while `plan.md` places `prompts/` as a *sibling*
+of `Api/` (shared with the evaluation harness) and `ContentRootPath` is the host project
+directory under `dotnet run`. The check was correct: from where it looked, the file was genuinely
+missing. Path resolution now probes the published location, then the development sibling, with an
+`Ai:PromptsPath` override, and the csproj links the directory into published output.
+
+Hashing normalises line endings to LF. Without that, the same untouched prompt hashes differently
+depending on how git checked it out — `core.autocrlf` is active here — and startup would fail on
+a developer machine while passing in CI.
+
+The hash is now seeded (`supabase/seed.sql`), so the guarantee holds from a fresh `db reset`. The
+maintenance consequence is stated there plainly: **editing `v1.md` stops the API booting** until
+a v2 is added or the hash is updated. That is the intended cost — editing a released prompt
+silently invalidates every audit record citing it.
+
 ## Open items carried to Slice B (recorded, not resolved)
 
 - **CRMLS API surface**: whether RESO Web API Add/Edit is exposed to vendors or only a proprietary

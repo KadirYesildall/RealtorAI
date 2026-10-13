@@ -133,14 +133,3 @@ public enum FindingStatus
     [PgName("acknowledged")] Acknowledged,
     [PgName("stale")] Stale,
 }
-
-/// <summary>
-/// public.model_eval_status — 0008_ai_platform.sql. Principle VIII.4: a registry row may only
-/// be enabled while this is <c>passed</c> and a license is recorded.
-/// </summary>
-public enum ModelEvalStatus
-{
-    [PgName("unverified")] Unverified,
-    [PgName("passed")] Passed,
-    [PgName("failed")] Failed,
-}
