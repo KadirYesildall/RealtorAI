@@ -6,7 +6,9 @@ test.describe("User Story 4 — Language preference", () => {
     const context = await browser.newContext({ locale: "de-DE" });
     const page = await context.newPage();
     await page.goto("/login");
-    await expect(page.getByRole("heading", { name: "Sign in to RealtorAI" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Sign in to RealtorAI" })
+    ).toBeVisible();
     await context.close();
   });
 
@@ -39,7 +41,7 @@ test.describe("User Story 4 — Language preference", () => {
 
     await page.goto("/login");
     await page.getByLabel("Email").fill(email);
-    await page.getByLabel("Password").fill("password123");
+    await page.getByLabel("Password", { exact: true }).fill("password123");
     await page.getByRole("button", { name: "Sign in" }).click();
     await expect(page).toHaveURL(/\/dashboard/);
 
@@ -55,9 +57,11 @@ test.describe("User Story 4 — Language preference", () => {
     const freshContext = await browser.newContext({ locale: "en-US" });
     const freshPage = await freshContext.newPage();
     await freshPage.goto("/login");
-    await expect(freshPage.getByRole("heading", { name: "Sign in to RealtorAI" })).toBeVisible();
+    await expect(
+      freshPage.getByRole("heading", { name: "Sign in to RealtorAI" })
+    ).toBeVisible();
     await freshPage.getByLabel("Email").fill(email);
-    await freshPage.getByLabel("Password").fill("password123");
+    await freshPage.getByLabel("Password", { exact: true }).fill("password123");
     await freshPage.getByRole("button", { name: "Sign in" }).click();
     await expect(freshPage).toHaveURL(/\/dashboard/);
     await expect(freshPage.getByText("Panel")).toBeVisible();

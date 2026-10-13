@@ -8,9 +8,13 @@ import {
   type ActionError,
 } from "@/app/actions/auth";
 import type { Dictionary } from "@/lib/i18n/getDictionary";
+import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
+import { TextField } from "@/components/ui/TextField";
+import { PasswordField } from "@/components/ui/PasswordField";
+import { GoogleIcon, MailIcon } from "@/components/ui/icons";
 import { ConsentCheckbox } from "@/components/auth/ConsentCheckbox";
+import { OrDivider } from "@/components/auth/OrDivider";
 
 export function LoginForm({ dict }: { dict: Dictionary }) {
   const [state, formAction, pending] = useActionState<ActionError | null, FormData>(
@@ -24,6 +28,7 @@ export function LoginForm({ dict }: { dict: Dictionary }) {
   const [resendPending, startResend] = useTransition();
 
   const t = dict.auth.login;
+  const common = dict.auth.common;
   const showResend = state?.fieldErrors?._resend === "true";
 
   function handleResend() {
@@ -35,68 +40,54 @@ export function LoginForm({ dict }: { dict: Dictionary }) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <form action={formAction} className="space-y-4" noValidate>
-        <div>
-          <label htmlFor="email" className="mb-1 block text-sm font-medium">
-            {t.emailLabel}
-          </label>
-          <Input
-            id="email"
-            name="email"
-            type="email"
-            autoComplete="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            invalid={!!state?.fieldErrors?.email}
-            required
-          />
-          {state?.fieldErrors?.email && (
-            <p className="mt-1 text-sm text-[var(--color-danger)]">
-              {state.fieldErrors.email}
-            </p>
-          )}
-        </div>
+        <TextField
+          id="email"
+          name="email"
+          type="email"
+          label={t.emailLabel}
+          icon={<MailIcon />}
+          autoComplete="email"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+          error={state?.fieldErrors?.email}
+          required
+        />
 
-        <div>
-          <label htmlFor="password" className="mb-1 block text-sm font-medium">
-            {t.passwordLabel}
-          </label>
-          <Input
-            id="password"
-            name="password"
-            type="password"
-            autoComplete="current-password"
-            invalid={!!state?.fieldErrors?.password}
-            required
-          />
-          {state?.fieldErrors?.password && (
-            <p className="mt-1 text-sm text-[var(--color-danger)]">
-              {state.fieldErrors.password}
-            </p>
-          )}
-        </div>
+        <PasswordField
+          id="password"
+          name="password"
+          label={t.passwordLabel}
+          autoComplete="current-password"
+          showLabel={common.showPassword}
+          hideLabel={common.hidePassword}
+          error={state?.fieldErrors?.password}
+          required
+        />
 
         {state?.error && (
-          <div className="text-sm text-[var(--color-danger)]">
+          <Alert>
             <p>{state.error}</p>
             {showResend && (
               <button
                 type="button"
                 onClick={handleResend}
                 disabled={resendPending || resendState === "sent"}
-                className="mt-1 text-[var(--color-accent)] hover:underline disabled:no-underline disabled:opacity-60"
+                className="mt-1 font-medium underline underline-offset-2 hover:no-underline disabled:no-underline disabled:opacity-70"
               >
-                {resendState === "sent" ? t.resendConfirmation + " ✓" : t.resendConfirmation}
+                {resendState === "sent" ? t.resendConfirmationSent : t.resendConfirmation}
               </button>
             )}
-          </div>
+          </Alert>
         )}
 
-        <Button type="submit" className="w-full" disabled={pending}>
+        <Button type="submit" size="lg" className="w-full" loading={pending}>
           {pending ? t.submitting : t.submit}
         </Button>
       </form>
+
+      <OrDivider label={common.or} />
 
       {/*
         Consent (FR-016) only applies to *creating* an account — signing in with an
@@ -107,8 +98,10 @@ export function LoginForm({ dict }: { dict: Dictionary }) {
       */}
       <div className="space-y-3">
         <ConsentCheckbox
+          id="login-acceptedTerms"
           label={
-            dict.auth.register.consentLabel /* shared consent copy across login/register */
+            dict.auth.register
+              .consentLabel /* shared consent copy across login/register */
           }
           checked={accepted}
           onCheckedChange={setAccepted}
@@ -123,9 +116,12 @@ export function LoginForm({ dict }: { dict: Dictionary }) {
           <Button
             type="submit"
             variant="secondary"
+            size="lg"
             className="w-full"
-            disabled={!accepted || googlePending}
+            disabled={!accepted}
+            loading={googlePending}
           >
+            {!googlePending && <GoogleIcon className="h-[18px] w-[18px]" />}
             {t.continueWithGoogle}
           </Button>
         </form>
@@ -133,7 +129,10 @@ export function LoginForm({ dict }: { dict: Dictionary }) {
 
       <p className="text-center text-sm text-[var(--color-text-muted)]">
         {t.noAccount}{" "}
-        <a href="/register" className="text-[var(--color-accent)] hover:underline">
+        <a
+          href="/register"
+          className="font-medium text-[var(--color-accent)] underline-offset-2 hover:underline"
+        >
           {t.signUpLink}
         </a>
       </p>

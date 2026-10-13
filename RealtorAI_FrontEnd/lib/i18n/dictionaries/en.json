@@ -4,7 +4,37 @@
     "tryAgain": "Try again",
     "somethingWentWrong": "Something went wrong. Please try again."
   },
+  "theme": {
+    "label": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
   "auth": {
+    "common": {
+      "or": "or",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password"
+    },
+    "brand": {
+      "tagline": "AI content for real estate professionals",
+      "headline": "Every listing, ready to publish in minutes",
+      "benefits": [
+        {
+          "title": "Listing copy that converts",
+          "body": "Upload your photos and get a polished description written in your own voice."
+        },
+        {
+          "title": "Reels scripts, shot by shot",
+          "body": "Turn a property tour into a short-form script your audience actually finishes."
+        },
+        {
+          "title": "LinkedIn posts that build trust",
+          "body": "Stay visible between deals without staring at a blank page."
+        }
+      ],
+      "footnote": "Built for agents who would rather be showing homes than writing about them."
+    },
     "register": {
       "title": "Create your RealtorAI account",
       "subtitle": "Generate listing copy, Reels scripts, and LinkedIn posts from your property photos.",
@@ -32,6 +62,7 @@
       "signUpLink": "Create one",
       "continueWithGoogle": "Continue with Google",
       "resendConfirmation": "Resend confirmation email",
+      "resendConfirmationSent": "Confirmation email sent",
       "oauthCancelled": "Sign-in was cancelled.",
       "oauthFailed": "Something went wrong signing in with Google. Please try again."
     },
