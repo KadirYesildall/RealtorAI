@@ -1,6 +1,8 @@
 import { getLocale } from "@/lib/i18n/getLocale";
 import { getDictionary } from "@/lib/i18n/getDictionary";
-import { Card } from "@/components/ui/Card";
+import { getThemePreference } from "@/lib/theme/getThemePreference";
+import { Alert } from "@/components/ui/Alert";
+import { AuthShell } from "@/components/auth/AuthShell";
 import { LoginForm } from "@/components/auth/LoginForm";
 
 export default async function LoginPage({
@@ -8,7 +10,11 @@ export default async function LoginPage({
 }: {
   searchParams: Promise<{ error?: string }>;
 }) {
-  const [locale, params] = await Promise.all([getLocale(), searchParams]);
+  const [locale, params, themePreference] = await Promise.all([
+    getLocale(),
+    searchParams,
+    getThemePreference(),
+  ]);
   const dict = await getDictionary(locale);
   const t = dict.auth.login;
 
@@ -20,21 +26,22 @@ export default async function LoginPage({
         : null;
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[var(--color-surface-muted)] px-4 py-12">
-      <div className="w-full max-w-md">
-        <div className="mb-6 text-center">
-          <h1 className="text-2xl font-semibold text-[var(--color-text)]">{t.title}</h1>
-          <p className="mt-2 text-sm text-[var(--color-text-muted)]">{t.subtitle}</p>
-        </div>
-        {oauthMessage && (
-          <p className="mb-4 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface)] p-3 text-center text-sm text-[var(--color-danger)]">
+    <AuthShell
+      dict={dict}
+      themePreference={themePreference}
+      title={t.title}
+      subtitle={t.subtitle}
+      footer={
+        oauthMessage && (
+          // Present on first paint rather than announced after an interaction, so this is
+          // role="status" — see components/ui/Alert.tsx.
+          <Alert role="status" className="mb-4">
             {oauthMessage}
-          </p>
-        )}
-        <Card>
-          <LoginForm dict={dict} />
-        </Card>
-      </div>
-    </main>
+          </Alert>
+        )
+      }
+    >
+      <LoginForm dict={dict} />
+    </AuthShell>
   );
 }

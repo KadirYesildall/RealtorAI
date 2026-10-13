@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Modules.Media\Modules.Media.csproj" />
+    <ProjectReference Include="..\Modules.Content\Modules.Content.csproj" />
+    <ProjectReference Include="..\Modules.Listings\Modules.Listings.csproj" />
+    <ProjectReference Include="..\Libs.Ai\Libs.Ai.csproj" />
+    <ProjectReference Include="..\Libs.Compliance\Libs.Compliance.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Hangfire.AspNetCore" Version="1.8.25" />
+    <PackageReference Include="Hangfire.PostgreSql" Version="1.21.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>

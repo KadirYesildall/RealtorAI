@@ -16,7 +16,7 @@ async function registerAndLogin(page: import("@playwright/test").Page, name: str
 
   await page.goto("/login");
   await page.getByLabel("Email").fill(email);
-  await page.getByLabel("Password").fill("password123");
+  await page.getByLabel("Password", { exact: true }).fill("password123");
   await page.getByRole("button", { name: "Sign in" }).click();
   await expect(page).toHaveURL(/\/dashboard/);
 
@@ -24,7 +24,9 @@ async function registerAndLogin(page: import("@playwright/test").Page, name: str
 }
 
 test.describe("User Story 3 — Protected, personalized dashboard", () => {
-  test("redirects an unauthenticated visitor from /dashboard to /login", async ({ page }) => {
+  test("redirects an unauthenticated visitor from /dashboard to /login", async ({
+    page,
+  }) => {
     await page.goto("/dashboard");
     await expect(page).toHaveURL(/\/login/);
   });

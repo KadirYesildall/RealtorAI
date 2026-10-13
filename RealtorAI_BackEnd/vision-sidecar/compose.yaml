@@ -1,0 +1,37 @@
+# Vision sidecar — local development only.
+#
+# Deliberately NOT a full-stack compose file. The Supabase CLI stack owns Postgres, Auth, and
+# Storage (research.md R9): adding a second Postgres here would split the database in two and
+# break the constitution's local-first rule, which requires schema work to be verified against
+# `supabase start`. The .NET API runs via `dotnet run`. This file covers only the one service
+# that genuinely needs containerising.
+
+services:
+  vision-sidecar:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # Bound to loopback: the sidecar is called by the .NET API only, never by a browser
+    # (contracts/vision-sidecar.md). In deployment it gets no published port at all.
+    ports:
+      - "127.0.0.1:8099:8099"
+    environment:
+      # Hugging Face cache lives on a volume so model weights survive a container rebuild
+      # rather than being re-downloaded.
+      HF_HOME: /models
+      UVICORN_WORKERS: "1"
+    volumes:
+      - sidecar-models:/models
+    healthcheck:
+      # /health returns 200 as soon as /quality is servable; it reports model_loaded
+      # separately, so a disabled or unverified embedding model shows as a capability gap
+      # rather than an unhealthy container.
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8099/health').status==200 else 1)"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped
+
+volumes:
+  sidecar-models:

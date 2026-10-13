@@ -1,6 +1,90 @@
 <!--
 Sync Impact Report
 ===================
+Version change: 2.0.0 → 3.0.0
+Modified principles:
+  - Technology Stack "Core AI Engine" bullet REMOVED as a vendor naming rule. It previously
+    read "OpenAI API (GPT-4o / Vision API) and Claude 3.5 Sonnet API for multi-modal
+    generation" and bound the project to two named vendors. It is replaced by a pointer to the
+    new Principle VIII, which governs model selection by registry rather than by vendor name.
+    This is the MAJOR trigger: a stack constraint is redefined, and prior guidance that
+    "changing the AI vendor is a constitution amendment" no longer holds — vendor/model changes
+    are now routine configuration changes subject to the Principle VIII gates.
+  - Section D renamed: "AI Engine Operations (OpenAI / Claude Multi-Modal)" →
+    "AI Engine Operations (Model-Agnostic Multi-Modal)". Its two existing rules (deterministic
+    JSON outputs, token & timeout management) are unchanged in substance; vendor-specific
+    examples were generalized and a cross-reference to Principle VIII added.
+Added sections:
+  - Core Principles: "VIII. AI Layer: Model-Agnostic by Registry (NON-NEGOTIABLE)" — seven
+    rules covering the AiService abstraction, the model registry, default provider, model
+    enablement gates (license / evaluation harness / data boundary), schema-validated outputs
+    with versioned prompts, the no-generative-imagery prohibition with an enforcing automated
+    test, and AI-output-is-always-a-draft human approval.
+Removed sections: None
+Rationale: requested by the project owner on 2026-10-12. Feature 002 (AI Listing Launch)
+  mandates open-weight Hugging Face models, which the previous vendor-specific rule prohibited
+  without an amendment. Rather than swap one vendor name for another, the rule is replaced with
+  vendor-neutral governance so future model changes are configuration, not constitutional
+  amendments.
+Scope note (narrowing to be aware of): Principle VIII.1 requires all AI calls to go through the
+  AiService inside the .NET Web API. The Technology Stack still permits Next.js Server
+  Actions/Route Handlers as a feature's backend path, but a feature that makes AI calls now
+  MUST stand up or use the .NET Web API for that layer. This is intentional per the owner's
+  wording and matches feature 002's resolved architecture.
+Templates requiring updates:
+  - .specify/templates/plan-template.md — ✅ no change needed (Constitution Check is
+    "[Gates determined based on constitution file]", resolved dynamically at plan time)
+  - .specify/templates/spec-template.md — ✅ no change needed (stack-agnostic; verified to
+    contain no AI vendor, model, or engine references)
+  - .specify/templates/tasks-template.md — ✅ updated: Phase 2 (Foundational) gains two
+    principle-driven foundational task examples (model-registry/AiService wiring and the
+    generative-imagery prohibition test) because VIII.6 mandates an automated enforcement test
+    that is NOT optional, whereas the template's per-story test sections are marked optional
+  - .claude/skills/speckit-*/SKILL.md — ✅ reviewed, no AI vendor references found, no changes
+  - README.md / docs/ — ✅ not present in this repository, nothing to update
+  - specs/002-ai-listing-launch/spec.md — ✅ its "Constitutional Impact" blocker is cleared by
+    this amendment; the spec's AI model mapping and FR-051 registry requirement are now
+    compliant. Its model ids remain subject to the VIII.4 enablement gates at plan time.
+  - specs/001-auth-base-dashboard/spec.md — ✅ no change needed (no AI surface)
+Follow-up TODOs:
+  - TODO(AI_EVAL_HARNESS): Principle VIII.4.b requires an AI evaluation harness with accuracy,
+    JSON-schema-validity, latency, and cost thresholds. The harness does not exist yet; its
+    thresholds are to be defined in feature 002's plan.md and the harness built as a
+    foundational task there. Until it exists, no model may be marked enabled in the registry.
+  - TODO(GENERATIVE_DEPENDENCY_TEST): VIII.6's automated test prohibiting image/video-generation
+    dependencies and endpoints must be implemented in feature 002's foundational phase.
+  - TODO(DARK_MODE_REGRESSION_GATE): carried over from 2.0.0, still unresolved — dark/light
+    parity is verified by review and manual screenshots, not CI.
+  - TODO(GIT_REMOTE_AUTOMATION): carried over from 1.1.0, still unresolved — the automated
+    commit & push workflow is policy-only, not yet wired to an executing hook/script.
+
+--- Previous report (1.3.0 → 2.0.0) ---
+Version change: 1.3.0 → 2.0.0
+Modified principles: None renamed; one rule in Section E REVERSED, which is why this is a
+  MAJOR bump rather than a MINOR one:
+  - "Light mode is the default and required baseline; dark mode support is optional per
+    feature and MUST NOT be assumed available" → replaced by "Dark mode is a project-wide
+    baseline, not a per-feature option", plus a companion rule requiring WCAG AA contrast to
+    be verified in BOTH themes. Prior specs written under the old rule (001) remain valid;
+    001's UI was brought into compliance in the same pass.
+  - "Design system consistency" bullet: corrected the token location from the non-existent
+    `tailwind.config.ts` to `RealtorAI_FrontEnd/app/globals.css` (Tailwind v4 is configured
+    CSS-first), and added the semantic-token rule that makes dark mode automatic.
+Rationale: requested by the project owner on 2026-10-12 as a standing rule for all work
+  before and after that date, which directly contradicted the previous bullet.
+Added sections: None
+Removed sections: None
+Templates requiring updates:
+  - .specify/templates/plan-template.md — ✅ no change needed (Constitution Check gate pulls
+    these rules dynamically)
+  - .specify/templates/spec-template.md — ✅ no change needed (stack-agnostic)
+  - .specify/templates/tasks-template.md — ✅ no change needed
+Follow-up TODOs:
+  - TODO(DARK_MODE_REGRESSION_GATE): dark/light parity is currently verified by review and
+    manual screenshots. Consider a Playwright pass that drives both themes so a future
+    hard-coded colour fails CI rather than review.
+
+--- Previous report (1.2.0 → 1.3.0) ---
 Version change: 1.2.0 → 1.3.0
 Modified principles: None renamed or redefined
 Added sections:
@@ -122,18 +206,64 @@ MUST state its access-control model explicitly in the feature's spec.
 data alongside billing information. A single RLS misconfiguration or client-trusted usage
 check directly threatens both customer trust and revenue integrity.
 
+### VIII. AI Layer: Model-Agnostic by Registry (NON-NEGOTIABLE)
+
+1. No business code may reference a specific AI vendor, model id, or endpoint. All AI calls MUST
+   go through a single backend `AiService` abstraction inside the .NET Web API.
+2. Models are selected per task through a **model registry** (task → provider → model id →
+   endpoint → parameters → fallback → enabled). Changing a model or provider is a configuration
+   change, recorded in the audit log, never a code change.
+3. Default provider: open-weight models from the Hugging Face Hub, served via Hugging Face
+   Inference Providers for development/MVP and via Hugging Face Inference Endpoints or
+   self-hosted TGI/vLLM for production. Other providers (including OpenAI or Anthropic) are
+   permitted only as registry entries that pass the same gates.
+4. A model MAY be enabled in the registry only if:
+   a. its license permits commercial use and is recorded in the registry entry;
+   b. it passes the project's AI evaluation harness for its task (accuracy, JSON-schema
+      validity, latency, and cost thresholds defined in the feature's plan);
+   c. it does not send data outside the approved data-handling boundary — no seller PII, no
+      agent credentials, and downscaled, EXIF-stripped images only.
+5. Every AI output MUST be validated against a versioned JSON Schema before it is stored.
+   Prompts are versioned files in the repository, and their version/hash is logged with every
+   call.
+6. **No generative imagery.** The system MUST never generate or generatively alter images or
+   video — virtual staging, inpainting, object removal, sky replacement, digital renovation,
+   generative upscaling, or AI video. Only non-generative operations (resize, compress, format
+   conversion, crop, rotate, order, select) are allowed on photos. Original uploads are
+   immutable. Any dependency or endpoint capable of image/video generation is prohibited in the
+   codebase, enforced by an automated test.
+7. AI output is always a draft: nothing AI-produced reaches the MLS or any public channel
+   without explicit, logged human approval.
+
+**Rationale**: The AI landscape moves faster than this codebase can be refactored, and the
+previous rule — naming OpenAI and Claude as the engine — made every model change a
+constitutional amendment while still permitting vendor lock-in inside business logic. Routing
+all calls through one abstraction with a gated registry inverts that: swapping a model becomes
+configuration, while the things that actually carry risk (commercial licensing, measured
+quality, the data boundary, schema-valid output, prompt provenance) become hard gates that no
+model can bypass. Rules 6 and 7 are legal controls, not architectural preferences: California
+AB 723 (effective 2026-01-01) makes undisclosed digitally altered listing images a criminal
+offense, MLSs such as CRMLS prohibit most alterations, and the agent and their broker — not the
+software — are legally responsible for every piece of advertising they publish.
+
 ## Technology Stack & Platform Constraints
 
 - **Frontend**: Next.js (App Router), React, TypeScript, Tailwind CSS.
 - **Backend/API**: C# .NET 8/9 Web API, or Next.js Server Actions/Route Handlers where a
   feature's spec explicitly chooses that path — the choice MUST be stated in the feature spec,
-  not left implicit.
+  not left implicit. **Exception**: a feature with an AI surface MUST route those calls through
+  the `AiService` in the .NET Web API per Principle VIII.1, regardless of which path it chooses
+  for the rest of its backend.
 - **Database**: Supabase / PostgreSQL, with Row Level Security enabled on all tables holding
   user, listing, or billing data.
 - **Authentication**: Supabase Auth (or the project's chosen boilerplate auth handler),
   supporting email/password and Google OAuth.
-- **Core AI Engine**: OpenAI API (GPT-4o / Vision API) and Claude 3.5 Sonnet API for multi-modal
-  generation (SEO listing text, short-form video scripts, LinkedIn B2B posts).
+- **Core AI Engine**: no vendor or model is named at the constitution level. Multi-modal
+  generation (photo analysis, SEO listing text, short-form video scripts, LinkedIn B2B posts)
+  is served through the `AiService` abstraction and model registry governed by **Principle
+  VIII**, whose default provider is open-weight models from the Hugging Face Hub. Selecting,
+  swapping, or adding a model or provider is a configuration change subject to Principle
+  VIII.4's gates — it is explicitly NOT a constitution amendment.
 - **Global Payments**: Stripe or Lemon Squeezy (Merchant of Record) for tiered subscription
   billing (Starter vs. Pro) with server-enforced usage tracking.
 - **Internationalization**: Multi-language architecture enabled from day one — English
@@ -145,9 +275,12 @@ check directly threatens both customer trust and revenue integrity.
   say so explicitly in its spec and land changes in both directories under that feature's
   branch.
 
-Any change to this stack (e.g., swapping the payments provider, dropping .NET, changing the
-AI vendor) is a constitution amendment, not a routine implementation decision, and MUST follow
-the amendment procedure below.
+Any change to this stack (e.g., swapping the payments provider, dropping .NET, replacing
+Supabase) is a constitution amendment, not a routine implementation decision, and MUST follow
+the amendment procedure below. **Changing an AI model or provider is the one deliberate
+exception**: under Principle VIII it is a gated configuration change, not an amendment.
+Removing or weakening the `AiService` abstraction, the registry itself, or any Principle VIII
+gate IS an amendment.
 
 ## Modern Coding Principles & Architecture
 
@@ -192,15 +325,21 @@ the amendment procedure below.
   tokens MUST NOT be exposed to the client. They are read only in server-only contexts, using
   environment variables without the `NEXT_PUBLIC_` prefix.
 
-### D. AI Engine Operations (OpenAI / Claude Multi-Modal)
+### D. AI Engine Operations (Model-Agnostic Multi-Modal)
+
+These are the operational mechanics of Principle VIII; that principle governs which models may
+be used at all, while this section governs how calls are made.
 
 - **Deterministic JSON outputs**: Structured generations (the SEO listing text, short-form
-  video script, and LinkedIn B2B post) MUST enforce JSON Mode / Structured Outputs
-  (e.g., `response_format: { type: "json_object" }` or the equivalent structured-output
-  feature) against an explicit, versioned JSON schema — never parsed out of free-form prose.
+  video script, and LinkedIn B2B post) MUST enforce JSON Mode / Structured Outputs against an
+  explicit, versioned JSON schema — never parsed out of free-form prose. The mechanism is
+  whatever the registry's active provider exposes for structured output; the requirement is the
+  schema-validated result, not any one vendor's parameter name.
 - **Token & timeout management**: Property photos MUST be compressed/resized client-side
-  before upload to Supabase Storage or submission to a Vision API, to control bandwidth,
-  token cost, and avoid gateway timeouts on large images.
+  before upload to Supabase Storage or submission to a vision model, to control bandwidth,
+  token cost, and avoid gateway timeouts on large images. Images leaving the approved data
+  boundary MUST additionally be EXIF-stripped per Principle VIII.4.c, and the compressed copy
+  never replaces the immutable original (Principle VIII.6).
 
 ### E. UI/UX Design Standards (Real Estate SaaS)
 
@@ -215,15 +354,27 @@ the amendment procedure below.
   palette (e.g., whites/greys/near-black text) with a single confident accent color is
   preferred over saturated, generic "tech startup" gradients.
 - **Design system consistency**: Spacing, color, radius, and type-scale values MUST come from
-  Tailwind config tokens (`tailwind.config.ts`) shared across the app — not one-off inline
-  hex codes or magic-number spacing repeated per component. New components reuse existing
-  primitives (buttons, cards, inputs) before introducing new ones.
+  the shared design tokens defined in `RealtorAI_FrontEnd/app/globals.css` (Tailwind v4 is
+  configured CSS-first; there is no `tailwind.config.ts`) — not one-off inline hex codes or
+  magic-number spacing repeated per component. Components MUST consume the semantic
+  `--color-*` tokens, never a raw hex and never a `--light-*`/`--dark-*` palette entry
+  directly. New components reuse existing primitives (buttons, cards, inputs, fields)
+  before introducing new ones.
 - **Responsive & accessible by default**: Every screen MUST be usable from mobile through
   desktop widths and MUST meet WCAG AA color contrast; interactive elements MUST be keyboard
   reachable and carry accessible labels — this is a concrete implementation of Principle V's
   "robust, production-ready" bar applied to UI, not a new exception process.
-- **Light mode is the default and required baseline**; dark mode support is optional per
-  feature and MUST NOT be assumed available unless a feature's spec calls for it.
+- **Dark mode is a project-wide baseline, not a per-feature option.** Light and dark are
+  both first-class: every screen, component, and state (including empty, loading, and error
+  states) MUST be correct in both. In practice this is satisfied by consuming the semantic
+  `--color-*` tokens above — a component that uses only those is dark-mode correct for free.
+  A feature is NOT done if it introduces a hard-coded colour that breaks in one theme. The
+  active palette is resolved by `<html data-theme>` plus a `prefers-color-scheme` fallback;
+  the user's choice (light / dark / follow-system) lives in the `theme` cookie, which is a
+  per-device display preference and deliberately NOT stored on `profiles`.
+- **WCAG AA contrast MUST be verified in both themes**, not just light. Accent colours in
+  particular need separate light and dark values — a hue that passes on white usually fails
+  on a near-black surface, and its foreground flips with it.
 
 ## Development Workflow & Quality Gates
 
@@ -287,7 +438,13 @@ docs that reference changed principles.
 
 **Compliance review**: Every `/speckit-plan` run MUST pass the Constitution Check gate. Every
 feature's `tasks.md` MUST reflect the test-first, no-placeholder, i18n, and security
-obligations above. Reviewers MUST reject specs, plans, or PRs that violate a NON-NEGOTIABLE
-principle (I, III, IV) without an explicit, documented exception approved by the project owner.
+obligations above. Any feature with an AI surface MUST additionally show, in its `plan.md`,
+how it satisfies Principle VIII: the registry entry per task with its license and evaluation
+result, the versioned output schema and prompt, the data-boundary analysis, and the automated
+test enforcing the no-generative-imagery prohibition. Reviewers MUST reject specs, plans, or
+PRs that violate a NON-NEGOTIABLE principle (I, III, IV, VIII) without an explicit, documented
+exception approved by the project owner — noting that Principle VIII.6 (no generative imagery)
+and VIII.7 (human approval before publication) are legal controls and are not eligible for
+exception.
 
-**Version**: 1.3.0 | **Ratified**: 2026-07-20 | **Last Amended**: 2026-07-20
+**Version**: 3.0.0 | **Ratified**: 2026-07-20 | **Last Amended**: 2026-10-12

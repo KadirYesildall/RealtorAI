@@ -22,3 +22,35 @@ npm-debug.log*
 # OS
 .DS_Store
 Thumbs.db
+
+# .NET (RealtorAI_BackEnd/RealtorAI.Api)
+bin/
+obj/
+*.user
+*.suo
+*.userprefs
+[Dd]ebug/
+[Rr]elease/
+TestResults/
+*.received.*
+
+# Python (RealtorAI_BackEnd/vision-sidecar)
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+
+# Model weights (never commit — fetched at build/run time)
+*.onnx
+*.safetensors
+*.bin.index.json
+
+# Test artifacts & build caches
+test-results/
+playwright-report/
+*.tsbuildinfo
+
+# Local ops credentials (retention purge job runs with its own identity)
+ops/**/*.local.json

@@ -4,7 +4,37 @@
     "tryAgain": "Tekrar deneyin",
     "somethingWentWrong": "Bir şeyler ters gitti. Lütfen tekrar deneyin."
   },
+  "theme": {
+    "label": "Tema",
+    "light": "Açık",
+    "dark": "Koyu",
+    "system": "Sistem"
+  },
   "auth": {
+    "common": {
+      "or": "veya",
+      "showPassword": "Şifreyi göster",
+      "hidePassword": "Şifreyi gizle"
+    },
+    "brand": {
+      "tagline": "Emlak profesyonelleri için yapay zekâ içerik",
+      "headline": "Her ilan, dakikalar içinde yayına hazır",
+      "benefits": [
+        {
+          "title": "Satışa götüren ilan metinleri",
+          "body": "Fotoğraflarınızı yükleyin, kendi üslubunuzla yazılmış özenli bir açıklama alın."
+        },
+        {
+          "title": "Sahne sahne Reels senaryoları",
+          "body": "Bir ev turunu, izleyicinin sonuna kadar izlediği kısa bir senaryoya dönüştürün."
+        },
+        {
+          "title": "Güven kazandıran LinkedIn gönderileri",
+          "body": "Boş sayfaya bakmadan, iki satış arasında görünür kalın."
+        }
+      ],
+      "footnote": "Metin yazmaktansa ev gezdirmeyi tercih eden danışmanlar için tasarlandı."
+    },
     "register": {
       "title": "RealtorAI hesabınızı oluşturun",
       "subtitle": "Emlak fotoğraflarınızdan ilan metni, Reels senaryosu ve LinkedIn gönderisi oluşturun.",
@@ -32,6 +62,7 @@
       "signUpLink": "Hesap oluşturun",
       "continueWithGoogle": "Google ile devam et",
       "resendConfirmation": "Onay e-postasını yeniden gönder",
+      "resendConfirmationSent": "Onay e-postası gönderildi",
       "oauthCancelled": "Giriş iptal edildi.",
       "oauthFailed": "Google ile giriş yapılırken bir sorun oluştu. Lütfen tekrar deneyin."
     },

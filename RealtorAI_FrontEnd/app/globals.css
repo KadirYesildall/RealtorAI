@@ -2,34 +2,172 @@
 
 /*
  * RealtorAI design tokens (constitution Section E: UI/UX Design Standards).
- * Light-mode-first, real-estate-appropriate: neutral base + one confident accent.
- * Every component MUST consume these tokens rather than one-off hex values.
+ * Neutral base + one confident accent (deep teal), in a light and a dark palette.
+ *
+ * How theming works
+ * -----------------
+ * Components consume ONLY the semantic `--color-*` tokens below — never a raw hex and
+ * never a `--light-*`/`--dark-*` palette entry. That indirection is what makes dark mode
+ * free for every component, past and future: a new screen that sticks to these tokens is
+ * dark-mode correct the moment it is written.
+ *
+ * Which palette is active is decided by three rules, in this order:
+ *   1. `<html data-theme="light">` — user explicitly chose light.
+ *   2. `<html data-theme="dark">`  — user explicitly chose dark.
+ *   3. no `data-theme` (or "system") — follow the OS via prefers-color-scheme.
+ * Rule 3 is pure CSS, so the correct palette paints on the very first frame with no
+ * theme-flash and no blocking inline script, and it still works with JS disabled.
+ * `app/layout.tsx` stamps `data-theme` from the `theme` cookie; ThemeToggle writes it.
  */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /*
+   * Palette — the single source of truth for colour values. Light/dark counterparts are
+   * kept adjacent so a change to one is reviewed next to the other. Not consumed directly.
+   */
+  --light-surface: #ffffff;
+  --dark-surface: #141a19;
 
-  --color-surface: #ffffff;
-  --color-surface-muted: #f7f7f5;
-  --color-border: #e5e5e0;
+  --light-surface-muted: #f5f7f6;
+  --dark-surface-muted: #0d1211;
 
-  --color-text: #171717;
-  --color-text-muted: #5c5c57;
+  --light-surface-elevated: #ffffff;
+  --dark-surface-elevated: #1b2321;
 
-  /* Accent: a confident, trust-oriented deep teal — not a generic tech-startup gradient. */
-  --color-accent: #0f6d5c;
-  --color-accent-hover: #0b5548;
-  --color-accent-foreground: #ffffff;
+  --light-border: #e3e7e5;
+  --dark-border: #28302e;
 
-  --color-danger: #b3261e;
-  --color-danger-foreground: #ffffff;
+  --light-border-strong: #ccd3d0;
+  --dark-border-strong: #3a4541;
+
+  --light-text: #121716;
+  --dark-text: #e8edeb;
+
+  --light-text-muted: #5b6360;
+  --dark-text-muted: #9aa5a1;
+
+  /* Accent: a confident, trust-oriented deep teal — not a generic tech-startup gradient.
+     The dark variant is lightened so it clears WCAG AA against the dark surfaces, which
+     also flips its foreground from white to near-black. */
+  --light-accent: #0f6d5c;
+  --dark-accent: #2fb89b;
+
+  --light-accent-hover: #0b5548;
+  --dark-accent-hover: #4ad0b4;
+
+  --light-accent-foreground: #ffffff;
+  --dark-accent-foreground: #04120f;
+
+  /* Tinted accent wash for icon chips, selected rows and quiet highlights. */
+  --light-accent-soft: #e6f2ef;
+  --dark-accent-soft: #11302a;
+
+  --light-danger: #b3261e;
+  --dark-danger: #ff8279;
+
+  --light-danger-foreground: #ffffff;
+  --dark-danger-foreground: #2a0a07;
+
+  --light-danger-soft: #fdeceb;
+  --dark-danger-soft: #2c1310;
+
+  /* Brand panel: the dark teal column on the auth screens. Deliberately dark in BOTH
+     themes — it is a brand surface, not a content surface — so its own text tokens are
+     theme-independent (see --color-brand-text below). */
+  --light-brand-from: #11705f;
+  --dark-brand-from: #0d4b41;
+
+  --light-brand-to: #062b25;
+  --dark-brand-to: #05100e;
+
+  /* Elevation reads as near-invisible on dark backgrounds, so the dark shadow leans on
+     opacity rather than spread to avoid a muddy grey halo. */
+  --light-shadow-card:
+    0 1px 2px rgba(16, 24, 22, 0.05), 0 10px 30px -16px rgba(16, 24, 22, 0.18);
+  --dark-shadow-card: 0 1px 2px rgba(0, 0, 0, 0.5), 0 10px 30px -16px rgba(0, 0, 0, 0.8);
+
+  /* ── Semantic tokens — default to light ─────────────────────────────────────────── */
+  color-scheme: light;
+
+  --color-surface: var(--light-surface);
+  --color-surface-muted: var(--light-surface-muted);
+  --color-surface-elevated: var(--light-surface-elevated);
+  --color-border: var(--light-border);
+  --color-border-strong: var(--light-border-strong);
+  --color-text: var(--light-text);
+  --color-text-muted: var(--light-text-muted);
+  --color-accent: var(--light-accent);
+  --color-accent-hover: var(--light-accent-hover);
+  --color-accent-foreground: var(--light-accent-foreground);
+  --color-accent-soft: var(--light-accent-soft);
+  --color-danger: var(--light-danger);
+  --color-danger-foreground: var(--light-danger-foreground);
+  --color-danger-soft: var(--light-danger-soft);
+  --color-brand-from: var(--light-brand-from);
+  --color-brand-to: var(--light-brand-to);
+  --shadow-card: var(--light-shadow-card);
+
+  /* Brand-panel text sits on the dark teal column in both themes, so it is not paired. */
+  --color-brand-text: #f1f8f6;
+  --color-brand-text-muted: rgba(241, 248, 246, 0.72);
+
+  --background: var(--color-surface);
+  --foreground: var(--color-text);
 
   --radius-sm: 0.375rem;
   --radius-md: 0.625rem;
   --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
 
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+}
+
+/* Rule 3: follow the OS, unless the user explicitly pinned light. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
+    --color-surface: var(--dark-surface);
+    --color-surface-muted: var(--dark-surface-muted);
+    --color-surface-elevated: var(--dark-surface-elevated);
+    --color-border: var(--dark-border);
+    --color-border-strong: var(--dark-border-strong);
+    --color-text: var(--dark-text);
+    --color-text-muted: var(--dark-text-muted);
+    --color-accent: var(--dark-accent);
+    --color-accent-hover: var(--dark-accent-hover);
+    --color-accent-foreground: var(--dark-accent-foreground);
+    --color-accent-soft: var(--dark-accent-soft);
+    --color-danger: var(--dark-danger);
+    --color-danger-foreground: var(--dark-danger-foreground);
+    --color-danger-soft: var(--dark-danger-soft);
+    --color-brand-from: var(--dark-brand-from);
+    --color-brand-to: var(--dark-brand-to);
+    --shadow-card: var(--dark-shadow-card);
+  }
+}
+
+/* Rule 2: explicit dark. Same aliases as the block above — they differ only in trigger. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --color-surface: var(--dark-surface);
+  --color-surface-muted: var(--dark-surface-muted);
+  --color-surface-elevated: var(--dark-surface-elevated);
+  --color-border: var(--dark-border);
+  --color-border-strong: var(--dark-border-strong);
+  --color-text: var(--dark-text);
+  --color-text-muted: var(--dark-text-muted);
+  --color-accent: var(--dark-accent);
+  --color-accent-hover: var(--dark-accent-hover);
+  --color-accent-foreground: var(--dark-accent-foreground);
+  --color-accent-soft: var(--dark-accent-soft);
+  --color-danger: var(--dark-danger);
+  --color-danger-foreground: var(--dark-danger-foreground);
+  --color-danger-soft: var(--dark-danger-soft);
+  --color-brand-from: var(--dark-brand-from);
+  --color-brand-to: var(--dark-brand-to);
+  --shadow-card: var(--dark-shadow-card);
 }
 
 @theme inline {
@@ -38,18 +176,23 @@
 
   --color-surface: var(--color-surface);
   --color-surface-muted: var(--color-surface-muted);
+  --color-surface-elevated: var(--color-surface-elevated);
   --color-border: var(--color-border);
+  --color-border-strong: var(--color-border-strong);
   --color-text: var(--color-text);
   --color-text-muted: var(--color-text-muted);
   --color-accent: var(--color-accent);
   --color-accent-hover: var(--color-accent-hover);
   --color-accent-foreground: var(--color-accent-foreground);
+  --color-accent-soft: var(--color-accent-soft);
   --color-danger: var(--color-danger);
   --color-danger-foreground: var(--color-danger-foreground);
+  --color-danger-soft: var(--color-danger-soft);
 
   --radius-sm: var(--radius-sm);
   --radius-md: var(--radius-md);
   --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
 
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
@@ -59,4 +202,37 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  /* Keeps 1px borders and small caps crisp on the near-black dark surfaces. */
+  -webkit-font-smoothing: antialiased;
+}
+
+/*
+ * Native widgets (checkbox tick, select arrow, autofill, scrollbars) are painted by the
+ * browser, not by our tokens — `color-scheme` above is what makes them follow the theme,
+ * and `accent-color` is what makes the ones we don't fully restyle use our teal.
+ */
+input,
+select,
+textarea {
+  accent-color: var(--color-accent);
+}
+
+::selection {
+  background: var(--color-accent);
+  color: var(--color-accent-foreground);
+}
+
+/*
+ * Theme switching animates the surfaces so the flip reads as deliberate rather than as a
+ * flicker. Scoped to colour properties only — animating `all` here would drag layout and
+ * transform work into every hover.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  body,
+  [data-theme-surface] {
+    transition:
+      background-color 180ms ease,
+      border-color 180ms ease,
+      color 180ms ease;
+  }
 }

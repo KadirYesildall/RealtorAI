@@ -28,11 +28,13 @@ export function LanguageSwitcher({
   return (
     <label className="flex items-center gap-2 text-sm text-[var(--color-text-muted)]">
       {t.label}
+      {/* `color-scheme` (globals.css) is what makes the native dropdown panel itself
+          render dark — styling the closed <select> alone would leave a white popup. */}
       <select
         value={currentLocale}
         disabled={pending}
         onChange={(event) => handleChange(event.target.value as Locale)}
-        className="rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface)] px-2 py-1 text-sm text-[var(--color-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
+        className="h-8 rounded-[var(--radius-sm)] border border-[var(--color-border-strong)] bg-[var(--color-surface)] px-2 text-sm text-[var(--color-text)] transition-colors hover:border-[var(--color-text-muted)] focus-visible:outline-none focus-visible:border-[var(--color-accent)] focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--color-accent)_28%,transparent)] disabled:opacity-60"
       >
         <option value="en">{t.en}</option>
         <option value="tr">{t.tr}</option>
