@@ -1,0 +1,42 @@
+<Project>
+
+  <!--
+    Feature 002-ai-listing-launch — shared build settings for every project in the solution.
+
+    These encode constitution requirements as build behaviour rather than review checklists:
+      - Principle B (type-safe payloads): nullable reference types are enabled and nullable
+        warnings are errors, so an unchecked null cannot reach production.
+      - Principle IV (production-ready code only): warnings are errors, so dead code,
+        unreachable branches, and unused results fail the build instead of accumulating.
+      - Principle VII (security by default): NU1901-NU1904 — the NuGet vulnerability
+        advisories — are escalated to ERRORS. A known-vulnerable dependency therefore cannot
+        be merged. This was not hypothetical: the webapi template shipped
+        Microsoft.OpenApi 2.0.0, which carries a HIGH advisory (GHSA-v5pm-xwqc-g5wc); it is
+        pinned to 2.12.2 in Api.csproj, and this gate stops the next one silently.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+
+    <!-- Quality gates -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+
+    <!-- Supply-chain gate: vulnerable or deprecated packages fail the build. -->
+    <NuGetAudit>true</NuGetAudit>
+    <NuGetAuditMode>all</NuGetAuditMode>
+    <NuGetAuditLevel>low</NuGetAuditLevel>
+    <WarningsAsErrors>$(WarningsAsErrors);NU1901;NU1902;NU1903;NU1904</WarningsAsErrors>
+
+    <!-- Deterministic restore so a build cannot silently float to a new version. -->
+    <RestoreLockedMode Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</RestoreLockedMode>
+
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+</Project>

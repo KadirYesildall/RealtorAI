@@ -1,0 +1,1171 @@
+openapi: 3.1.0
+info:
+  title: RealtorAI Listing API — Slice A
+  version: 0.1.0
+  description: |
+    ASP.NET Core (.NET 10) Web API for AI Listing Launch, Slice A (Stories 1–5).
+
+    AUTHORIZATION MODEL (FR-063). The API connects to Postgres with a privileged service role
+    that bypasses RLS, so RLS is NOT the enforcement boundary for these operations. Every
+    operation below declares an `x-authorization` rule enforced by `IResourceAuthorizer`
+    independently of the database. RLS remains enabled as defense in depth for direct client
+    access. Authorization state (brokerage membership status and role) is loaded from the
+    database per request and never read from JWT claims, because a token may outlive a
+    membership decision by up to its 3600s expiry.
+
+    AUTHENTICATION. Supabase-issued JWT validated via JWKS at
+    {SUPABASE_URL}/auth/v1/.well-known/jwks.json. Only the `sub` claim is trusted, mapped to
+    profiles.id.
+
+    CONCURRENCY (FR-066). listings, listing_fields and content_drafts carry a row_version.
+    Mutating operations accept If-Match with the version the client last read; a stale version is
+    rejected with 409 and the current server state rather than overwriting. Approval additionally
+    requires the contentHash the agent reviewed, and a mismatch rejects the approval — an agent
+    can never approve content they did not see (SC-008, SC-011).
+
+    DELETION (FR-067). Soft delete only. DELETE /api/listings/{id} sets deleted_at and the
+    archived status; there is no hard-delete path, because removing a listing row would either
+    destroy immutable audit records or be blocked by their foreign key. Originals are purged
+    3 years later by an out-of-band privileged job, never by this API (FR-065).
+
+    SLICE A BOUNDARY. No MLS submission, marketing pack, publishing, lead, or insight
+    operations exist here — those are Slice B/C. Capability predicates CanApproveMarketing and
+    CanSubmitToMls exist and always deny for a non-approved membership (FR-061).
+servers:
+  - url: http://localhost:5080
+    description: Local development (dotnet run)
+
+tags:
+  - name: Brokerage
+  - name: Listings
+  - name: Media
+  - name: Pipeline
+  - name: Content
+  - name: Compliance
+  - name: Audit
+  - name: AI Registry
+
+security:
+  - supabaseJwt: []
+
+paths:
+  # ──────────────────────────────── Brokerage ────────────────────────────────
+  /api/profile/complete:
+    post:
+      tags: [Brokerage]
+      summary: Complete agent profile (license number + state)
+      description: Required before any listing can be created (FR-058).
+      x-authorization: Authenticated; caller may only write their own profile.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CompleteProfileRequest' }
+      responses:
+        '200':
+          description: Profile completed
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Profile' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+
+  /api/brokerages/memberships:
+    post:
+      tags: [Brokerage]
+      summary: Self-declare a brokerage (creates a pending membership)
+      description: |
+        Creates the membership with status `pending` (FR-060). Confers no brokerage-scoped
+        access until approved. If the brokerage has no members yet, the caller becomes its
+        first `broker_admin` and the membership is created `approved` (FR-062).
+      x-authorization: Authenticated with completed profile. One live membership per agent.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/DeclareMembershipRequest' }
+      responses:
+        '201':
+          description: Membership created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Membership' }
+        '409': { description: Agent already has a pending or approved membership }
+        '422': { $ref: '#/components/responses/ValidationError' }
+    get:
+      tags: [Brokerage]
+      summary: Read own membership status
+      x-authorization: Authenticated; returns only the caller's own membership.
+      responses:
+        '200':
+          description: Own membership (or null)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Membership' }
+
+  /api/brokerages/{brokerageId}/memberships:
+    parameters:
+      - $ref: '#/components/parameters/BrokerageId'
+    get:
+      tags: [Brokerage]
+      summary: List memberships, filterable by status
+      x-authorization: >
+        Requires an APPROVED broker_admin membership of {brokerageId}. A pending admin, an
+        agent, or an admin of a different brokerage receives 403.
+      parameters:
+        - name: status
+          in: query
+          schema: { $ref: '#/components/schemas/MembershipStatus' }
+      responses:
+        '200':
+          description: Memberships
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Membership' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /api/brokerages/{brokerageId}/memberships/{membershipId}/decision:
+    parameters:
+      - $ref: '#/components/parameters/BrokerageId'
+      - name: membershipId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    post:
+      tags: [Brokerage]
+      summary: Approve or reject a pending membership
+      description: Audited with actor, timestamp, and outcome (FR-062).
+      x-authorization: Requires an APPROVED broker_admin membership of {brokerageId}.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [decision]
+              properties:
+                decision: { type: string, enum: [approved, rejected] }
+      responses:
+        '200':
+          description: Decision recorded
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Membership' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { description: Membership is not pending }
+
+  /api/brokerages/{brokerageId}/settings:
+    parameters:
+      - $ref: '#/components/parameters/BrokerageId'
+    get:
+      tags: [Brokerage]
+      summary: Read brokerage settings and disclosure configuration
+      x-authorization: Requires an APPROVED membership (any role) of {brokerageId}.
+      responses:
+        '200':
+          description: Settings
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BrokerageSettings' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    put:
+      tags: [Brokerage]
+      summary: Update brokerage name, license info, logo, state, disclaimers, target MLS
+      description: FR-057.
+      x-authorization: Requires an APPROVED broker_admin membership of {brokerageId}.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BrokerageSettings' }
+      responses:
+        '200': { description: Updated }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+
+  # ──────────────────────────────── Listings ────────────────────────────────
+  /api/listings:
+    post:
+      tags: [Listings]
+      summary: Create a listing draft
+      description: |
+        Permitted for an agent whose membership is still `pending` (FR-061) — drafting depends
+        only on their own license and state. Attempts public-record prefill; with no provider
+        configured those fields are left empty and marked required (FR-008).
+      x-authorization: Authenticated with profile_completed_at set. Owner is the caller.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateListingRequest' }
+      responses:
+        '201':
+          description: Draft created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Listing' }
+        '403': { description: Profile not completed }
+        '422': { $ref: '#/components/responses/ValidationError' }
+    get:
+      tags: [Listings]
+      summary: List own listings
+      description: Excludes soft-deleted listings unless includeArchived is set (FR-067).
+      x-authorization: Authenticated; results scoped to the caller's own listings.
+      parameters:
+        - name: includeArchived
+          in: query
+          schema: { type: boolean, default: false }
+      responses:
+        '200':
+          description: Listings
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/Listing' } }
+
+  /api/listings/{listingId}:
+    parameters: [{ $ref: '#/components/parameters/ListingId' }]
+    get:
+      tags: [Listings]
+      summary: Get a listing with fields, photos, drafts, and findings
+      description: Powers the single review screen (FR-027).
+      x-authorization: >
+        Listing owner, OR an APPROVED broker_admin of the listing's brokerage (read-only, and
+        only where the owner's own membership is approved — FR-050).
+      responses:
+        '200':
+          description: Listing detail
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ListingDetail' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [Listings]
+      summary: Autosave basic details
+      description: |
+        Story 1 scenario 6 — persists without an explicit save action. Requires If-Match with the
+        row version last read; a stale version returns 409 with current state (FR-066).
+      x-authorization: Listing owner only.
+      parameters: [{ $ref: '#/components/parameters/IfMatch' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateListingRequest' }
+      responses:
+        '200': { description: Saved }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/VersionConflict' }
+    delete:
+      tags: [Listings]
+      summary: Soft-delete a listing
+      description: |
+        Sets deleted_at and the archived status (FR-067). The listing leaves the agent's working
+        views; its audit trail remains intact and queryable, and its originals are purged 3 years
+        later by an out-of-band privileged job (FR-065). There is no hard-delete path: removing
+        the row would either destroy immutable audit records or be blocked by their foreign key,
+        both contradicting FR-049. Idempotent — deleting an already-archived listing returns 204.
+      x-authorization: Listing owner only. A broker admin may not delete an agent's listing.
+      responses:
+        '204': { description: Soft-deleted and audited as listing_soft_deleted }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /api/listings/{listingId}/fields:
+    parameters: [{ $ref: '#/components/parameters/ListingId' }]
+    put:
+      tags: [Listings]
+      summary: Upsert a listing field with provenance
+      description: |
+        Rejects AI provenance on measurement and legal fields (FR-007) — LivingArea,
+        LotSizeSquareFeet, YearBuilt, TaxAnnualAmount, AssociationFee, HighSchoolDistrict,
+        Zoning accept only agent_entered or public_record. Enumerated fields are validated
+        against the RESO lookup restricted by the MLS rule profile.
+      x-authorization: Listing owner only.
+      parameters: [{ $ref: '#/components/parameters/IfMatch' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpsertFieldRequest' }
+      responses:
+        '200': { description: Field saved }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/VersionConflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+
+  /api/listings/{listingId}/fields/{fieldId}/confirm:
+    parameters:
+      - $ref: '#/components/parameters/ListingId'
+      - name: fieldId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    post:
+      tags: [Listings]
+      summary: Confirm an AI-derived fact
+      description: |
+        Required before any content depending on this field can be approved (FR-006, FR-014).
+        Records confirmed_by and confirmed_at.
+      x-authorization: Listing owner only — confirmation is a human act and cannot be delegated.
+      responses:
+        '200': { description: Confirmed }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  # ───────────────────────────────── Media ─────────────────────────────────
+  /api/listings/{listingId}/photos:
+    parameters: [{ $ref: '#/components/parameters/ListingId' }]
+    post:
+      tags: [Media]
+      summary: Upload photos (resumable, multipart)
+      description: |
+        Accepts JPEG/PNG/HEIC/WebP, 1–100 per listing (FR-003). Stores the original unchanged
+        in the write-once bucket and derives a normalized copy (long edge ~1280px, EXIF/GPS
+        stripped) for processing (FR-002, VIII.4.c). Returns a per-file accept/reject result:
+        invalid files are rejected by name with a reason while valid files still upload
+        (Story 1 scenario 2). Exact duplicates are rejected with a reference to the existing
+        photo.
+      x-authorization: Listing owner only.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                files:
+                  type: array
+                  items: { type: string, format: binary }
+      responses:
+        '207':
+          description: Per-file results
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/PhotoUploadResult' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { description: Would exceed the 100-photo bound; no valid files discarded }
+
+  /api/listings/{listingId}/photos/order:
+    parameters: [{ $ref: '#/components/parameters/ListingId' }]
+    put:
+      tags: [Media]
+      summary: Reorder photos and set the cover
+      description: FR-011. Applied in one transaction (deferrable unique on order_index).
+      x-authorization: Listing owner only.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [orderedPhotoIds]
+              properties:
+                orderedPhotoIds:
+                  type: array
+                  items: { type: string, format: uuid }
+                coverPhotoId: { type: string, format: uuid }
+      responses:
+        '200': { description: Reordered }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /api/listings/{listingId}/photos/{photoId}:
+    parameters:
+      - $ref: '#/components/parameters/ListingId'
+      - $ref: '#/components/parameters/PhotoId'
+    patch:
+      tags: [Media]
+      summary: Override analysis results, edit caption, or declare an alteration
+      description: |
+        Covers FR-011 overrides (room type, feature tags, caption) and the FR-020 altered-photo
+        declaration. Declaring `altered` requires alterationType, disclosureLabel from the rule
+        profile's allowed list, and pairedOriginalId — all three, enforced by a database check.
+        An alterationType outside the profile's allowed list raises a BLOCKING finding.
+        The system never alters pixels.
+      x-authorization: Listing owner only.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PatchPhotoRequest' }
+      responses:
+        '200': { description: Updated }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+    delete:
+      tags: [Media]
+      summary: Remove a photo from the listing
+      description: |
+        Detaches the photo from the listing. The original object is NOT deleted from the
+        write-once bucket (FR-001).
+      x-authorization: Listing owner only.
+      responses:
+        '204': { description: Removed }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  # ──────────────────────────────── Pipeline ────────────────────────────────
+  /api/listings/{listingId}/pipeline:
+    parameters: [{ $ref: '#/components/parameters/ListingId' }]
+    post:
+      tags: [Pipeline]
+      summary: Start the analysis and generation pipeline
+      description: |
+        Enqueues: normalize → technical quality → embeddings and near-duplicates → per-photo
+        VLM analysis → cover and order suggestion → content generation → compliance. Each step
+        is idempotent and resumable; per-photo results stream over SignalR as they complete
+        (FR-053). Returns 409 if the per-listing AI budget is already exhausted (FR-055), and
+        503 with a manual-completion hint if no model is enabled for a required task — the
+        agent is never blocked from finishing by hand (FR-054, SC-010).
+      x-authorization: Listing owner only.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tone: { $ref: '#/components/schemas/Tone' }
+                variantCount: { type: integer, minimum: 2, maximum: 3, default: 3 }
+      responses:
+        '202':
+          description: Pipeline accepted
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PipelineStatus' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { description: AI budget exceeded for this listing }
+        '503': { description: No enabled model for a required task; continue manually }
+    get:
+      tags: [Pipeline]
+      summary: Poll pipeline status (SignalR fallback)
+      x-authorization: Listing owner, or an APPROVED broker_admin of the listing's brokerage.
+      responses:
+        '200':
+          description: Status with per-photo progress
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PipelineStatus' }
+
+  # ──────────────────────────────── Content ────────────────────────────────
+  /api/listings/{listingId}/content:
+    parameters: [{ $ref: '#/components/parameters/ListingId' }]
+    get:
+      tags: [Content]
+      summary: List content drafts and variants
+      description: |
+        Each draft carries supportingFieldIds and an unconfirmedClaims array so the UI can
+        highlight sentences depending on unconfirmed AI facts (FR-014).
+      x-authorization: Listing owner, or an APPROVED broker_admin of the listing's brokerage.
+      responses:
+        '200':
+          description: Drafts
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/ContentDraft' } }
+
+  /api/listings/{listingId}/content/regenerate:
+    parameters: [{ $ref: '#/components/parameters/ListingId' }]
+    post:
+      tags: [Content]
+      summary: Regenerate content for a kind, with a tone
+      description: |
+        Generates within the MLS rule profile's character limit (FR-013). Fails closed with 409
+        if the rule profile's limit is unset (research R2) rather than generating to a guessed
+        limit. Output is schema-validated with one retry on validation failure, then an
+        explicit failure (FR-015).
+      x-authorization: Listing owner only.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [kind]
+              properties:
+                kind: { $ref: '#/components/schemas/ContentKind' }
+                tone: { $ref: '#/components/schemas/Tone' }
+      responses:
+        '202': { description: Generation enqueued }
+        '409': { description: MLS rule profile incomplete, or AI budget exceeded }
+        '503': { description: No enabled model; continue manually }
+
+  /api/listings/{listingId}/content/{draftId}:
+    parameters:
+      - $ref: '#/components/parameters/ListingId'
+      - name: draftId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    patch:
+      tags: [Content]
+      summary: Edit a draft inline, or select a variant
+      description: |
+        Editing an approved draft returns it to `draft`, revokes its approval, and re-runs
+        compliance on that item only (FR-025). Before/after values are audited.
+      x-authorization: Listing owner only.
+      parameters: [{ $ref: '#/components/parameters/IfMatch' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                body: { type: string }
+                selected: { type: boolean }
+      responses:
+        '200': { description: Updated, approval revoked if previously approved }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/VersionConflict' }
+
+  /api/listings/{listingId}/approvals:
+    parameters: [{ $ref: '#/components/parameters/ListingId' }]
+    post:
+      tags: [Content]
+      summary: Approve an output for a channel
+      description: |
+        Records approver, timestamp, and a SHA-256 hash of the exact approved content (FR-026,
+        SC-008). Rejected with 409 and a machine-readable reason list when any blocking finding
+        is open (FR-022), when any supporting field is an unconfirmed AI fact (FR-014), or —
+        for a marketing channel — when the caller's membership is not approved
+        (CanApproveMarketing, FR-061). Slice A supports channel `mls` only.
+      x-authorization: >
+        Listing owner only. Never service role — an approval can only originate from a human
+        action (Principle VIII.7).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ApprovalRequest' }
+      responses:
+        '201':
+          description: Approval recorded
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Approval' }
+        '409':
+          description: Approval blocked
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApprovalBlocked' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  # ─────────────────────────────── Compliance ───────────────────────────────
+  /api/listings/{listingId}/compliance:
+    parameters: [{ $ref: '#/components/parameters/ListingId' }]
+    post:
+      tags: [Compliance]
+      summary: Run compliance checks on the listing or a single item
+      description: |
+        Runs the deterministic Fair Housing lexicon first, then the context-sensitive judge at
+        temperature 0, then risky claims, MLS rule profile, photo integrity, and advertising
+        disclosure. Findings record which layer produced them (FR-017) and are reproducible for
+        identical input (FR-024).
+      x-authorization: Listing owner only.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                targetType: { type: string, enum: [listing, content_draft, photo] }
+                targetId: { type: string, format: uuid }
+      responses:
+        '202': { description: Check enqueued }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    get:
+      tags: [Compliance]
+      summary: List findings
+      x-authorization: Listing owner, or an APPROVED broker_admin of the listing's brokerage.
+      parameters:
+        - name: severity
+          in: query
+          schema: { $ref: '#/components/schemas/FindingSeverity' }
+        - name: status
+          in: query
+          schema: { type: string, enum: [open, resolved, acknowledged, stale] }
+      responses:
+        '200':
+          description: Findings
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/ComplianceFinding' }
+
+  /api/listings/{listingId}/compliance/{findingId}/apply-fix:
+    parameters:
+      - $ref: '#/components/parameters/ListingId'
+      - $ref: '#/components/parameters/FindingId'
+    post:
+      tags: [Compliance]
+      summary: Apply the suggested rewrite to the target span
+      description: One-click rewrite; re-runs compliance on the edited item only.
+      x-authorization: Listing owner only.
+      responses:
+        '200': { description: Applied; item returned to draft and re-checked }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /api/listings/{listingId}/compliance/{findingId}/acknowledge:
+    parameters:
+      - $ref: '#/components/parameters/ListingId'
+      - $ref: '#/components/parameters/FindingId'
+    post:
+      tags: [Compliance]
+      summary: Acknowledge a WARNING finding with a logged reason
+      description: |
+        FR-023. Returns 422 for a BLOCKING finding — blocking findings can never be dismissed
+        or overridden by any mechanism (FR-022), enforced by a database check constraint as
+        well as here.
+      x-authorization: Listing owner only.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason: { type: string, minLength: 10 }
+      responses:
+        '200': { description: Acknowledged and audited }
+        '422': { description: Finding is blocking and cannot be acknowledged }
+
+  # ───────────────────────────────── Audit ─────────────────────────────────
+  /api/listings/{listingId}/audit:
+    parameters: [{ $ref: '#/components/parameters/ListingId' }]
+    get:
+      tags: [Audit]
+      summary: Query the append-only audit trail for a listing
+      description: FR-049, FR-050. Answers "what exactly did I approve and when?" (SC-008).
+      x-authorization: >
+        Listing owner, OR an APPROVED broker_admin of the listing's brokerage where the owner's
+        membership is also approved. Never readable for a pending or rejected owner membership.
+      parameters:
+        - name: action
+          in: query
+          schema: { $ref: '#/components/schemas/AuditAction' }
+        - name: cursor
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: Audit events, newest first
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/AuditEvent' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /api/brokerages/{brokerageId}/audit:
+    parameters: [{ $ref: '#/components/parameters/BrokerageId' }]
+    get:
+      tags: [Audit]
+      summary: Query the brokerage-wide audit trail
+      x-authorization: Requires an APPROVED broker_admin membership of {brokerageId}.
+      responses:
+        '200':
+          description: Audit events
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/AuditEvent' } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  # ─────────────────────────────── AI Registry ───────────────────────────────
+  /api/admin/ai/registry:
+    get:
+      tags: [AI Registry]
+      summary: List model registry entries
+      description: Internal. Entries seed `enabled=false` until gated verification passes.
+      x-authorization: >
+        Requires profiles.platform_admin = true (FR-064). Not reachable by agents or broker
+        admins. The flag itself is writable only by direct database access — no API path sets it.
+      responses:
+        '200':
+          description: Registry
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/RegistryEntry' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    put:
+      tags: [AI Registry]
+      summary: Update a registry entry (model/provider/params/enabled)
+      description: |
+        A model or provider change is a configuration change recorded in the audit log, never a
+        code change (Principle VIII.2). Enabling requires a recorded commercial license AND
+        eval_status=passed (VIII.4) — enforced by a database check, so this endpoint cannot
+        bypass it.
+      x-authorization: >
+        Requires profiles.platform_admin = true (FR-064). Every change is audited as
+        registry_changed with the acting administrator.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegistryEntry' }
+      responses:
+        '200': { description: Updated and audited }
+        '422': { description: Cannot enable without license and passing evaluation }
+
+components:
+  securitySchemes:
+    supabaseJwt:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Supabase-issued JWT validated via JWKS. Only `sub` is trusted. Membership status and
+        role are loaded from the database per request, never from claims.
+
+  parameters:
+    IfMatch:
+      name: If-Match
+      in: header
+      required: true
+      description: Row version the client last read. A stale value yields 409 (FR-066).
+      schema: { type: string }
+    ListingId:
+      name: listingId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    BrokerageId:
+      name: brokerageId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    PhotoId:
+      name: photoId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    FindingId:
+      name: findingId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+
+  responses:
+    Forbidden:
+      description: Caller is not the owner, or lacks an approved brokerage membership
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    NotFound:
+      description: Not found
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    ValidationError:
+      description: Well-formed but semantically invalid (422); malformed requests return 400
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    VersionConflict:
+      description: >
+        Stale row version — the resource changed since the client read it (FR-066). The body
+        carries the current server state so the UI can show what changed instead of losing the
+        edit (SC-012).
+      content:
+        application/problem+json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/Problem'
+              - type: object
+                properties:
+                  currentRowVersion: { type: integer }
+                  current: { description: Current server representation of the resource }
+
+  schemas:
+    Problem:
+      type: object
+      description: RFC 7807. Field-specific detail for validation failures (Principle B).
+      properties:
+        type: { type: string }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items: { type: string }
+
+    Provenance:
+      type: string
+      enum: [agent_entered, public_record, ai_detected_from_photo, ai_suggested]
+    MembershipStatus:
+      type: string
+      enum: [pending, approved, rejected, revoked]
+    MembershipRole:
+      type: string
+      enum: [agent, broker_admin]
+    ListingStatus:
+      type: string
+      enum: [draft, analyzing, ready_for_review, approved, archived]
+    Tone:
+      type: string
+      enum: [professional, warm, luxury, concise]
+    ContentKind:
+      type: string
+      enum: [public_remarks, private_remarks, headline]
+    FindingSeverity:
+      type: string
+      enum: [blocking, warning]
+    RoomType:
+      type: string
+      enum: [kitchen, living_room, primary_bedroom, bedroom, bathroom, exterior_front,
+             backyard, pool, garage, view, floor_plan, other]
+    AuditAction:
+      type: string
+      enum: [ai_call, field_edit, field_confirm, photo_override, photo_reorder, photo_delete,
+             finding_raised, finding_acknowledged, content_generated, content_edited,
+             approval_granted, approval_revoked, membership_requested, membership_decided,
+             registry_changed]
+
+    CompleteProfileRequest:
+      type: object
+      required: [licenseNumber, licenseState]
+      properties:
+        licenseNumber: { type: string, minLength: 1 }
+        licenseState: { type: string, minLength: 2, maxLength: 2 }
+    Profile:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        licenseNumber: { type: string }
+        licenseState: { type: string }
+        profileCompletedAt: { type: string, format: date-time, nullable: true }
+
+    DeclareMembershipRequest:
+      type: object
+      required: [brokerageName]
+      properties:
+        brokerageId: { type: string, format: uuid, nullable: true }
+        brokerageName: { type: string }
+    Membership:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        brokerageId: { type: string, format: uuid }
+        status: { $ref: '#/components/schemas/MembershipStatus' }
+        role: { $ref: '#/components/schemas/MembershipRole' }
+        requestedAt: { type: string, format: date-time }
+        decidedAt: { type: string, format: date-time, nullable: true }
+        capabilities:
+          type: object
+          description: Derived, never stored. Both require status=approved (FR-061).
+          properties:
+            canApproveMarketing: { type: boolean }
+            canSubmitToMls: { type: boolean }
+
+    BrokerageSettings:
+      type: object
+      properties:
+        brokerageId: { type: string, format: uuid }
+        name: { type: string }
+        licenseNumber: { type: string }
+        state: { type: string }
+        logoStorageKey: { type: string, nullable: true }
+        requiredDisclaimers: { type: array, items: { type: string } }
+        targetMlsId: { type: string, example: CRMLS }
+        defaultTone: { $ref: '#/components/schemas/Tone' }
+        aiBudgetTokens: { type: integer }
+        aiBudgetImages: { type: integer }
+
+    CreateListingRequest:
+      type: object
+      required: [addressLine1, city, state, postalCode, propertyType]
+      properties:
+        addressLine1: { type: string }
+        city: { type: string }
+        state: { type: string }
+        postalCode: { type: string }
+        propertyType: { type: string }
+        listPrice: { type: number, nullable: true }
+        bedrooms: { type: integer, nullable: true }
+        bathrooms: { type: number, nullable: true }
+        agentNotes: { type: string, nullable: true }
+    Listing:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        status: { $ref: '#/components/schemas/ListingStatus' }
+        addressLine1: { type: string }
+        city: { type: string }
+        state: { type: string }
+        postalCode: { type: string }
+        propertyType: { type: string }
+        listPrice: { type: number, nullable: true }
+        bedrooms: { type: integer, nullable: true }
+        bathrooms: { type: number, nullable: true }
+        targetMlsId: { type: string, nullable: true }
+        coverPhotoId: { type: string, format: uuid, nullable: true }
+        rowVersion:
+          type: integer
+          description: Send back as If-Match on the next mutation (FR-066).
+        deletedAt: { type: string, format: date-time, nullable: true }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    ListingDetail:
+      allOf:
+        - $ref: '#/components/schemas/Listing'
+        - type: object
+          properties:
+            fields: { type: array, items: { $ref: '#/components/schemas/ListingField' } }
+            photos: { type: array, items: { $ref: '#/components/schemas/Photo' } }
+            contentDrafts: { type: array, items: { $ref: '#/components/schemas/ContentDraft' } }
+            findings: { type: array, items: { $ref: '#/components/schemas/ComplianceFinding' } }
+            approvalBlockers:
+              type: array
+              description: Machine-readable reasons the approve action is disabled.
+              items: { type: string }
+
+    ListingField:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        resoFieldKey: { type: string, example: InteriorFeatures }
+        value: {}
+        provenance: { $ref: '#/components/schemas/Provenance' }
+        confirmed: { type: boolean }
+        confirmedAt: { type: string, format: date-time, nullable: true }
+        sourceNote: { type: string, nullable: true }
+        requiredBeforeApproval: { type: boolean }
+        rowVersion: { type: integer }
+    UpsertFieldRequest:
+      type: object
+      required: [resoFieldKey, value, provenance]
+      properties:
+        resoFieldKey: { type: string }
+        value: {}
+        provenance: { $ref: '#/components/schemas/Provenance' }
+        sourceNote: { type: string, nullable: true }
+
+    PhotoUploadResult:
+      type: object
+      properties:
+        fileName: { type: string }
+        accepted: { type: boolean }
+        photoId: { type: string, format: uuid, nullable: true }
+        rejectionReason:
+          type: string
+          nullable: true
+          description: Human-readable and file-specific (Story 1 scenario 2).
+        duplicateOfPhotoId: { type: string, format: uuid, nullable: true }
+    Photo:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        orderIndex: { type: integer }
+        isCover: { type: boolean }
+        caption: { type: string, nullable: true }
+        width: { type: integer }
+        height: { type: integer }
+        mimeType: { type: string }
+        checksumSha256: { type: string }
+        normalizedUrl:
+          type: string
+          description: Short-lived signed URL for the normalized variant.
+        altered: { type: boolean }
+        alterationType: { type: string, enum: [virtual_staging, other], nullable: true }
+        disclosureLabel: { type: string, nullable: true }
+        pairedOriginalId: { type: string, format: uuid, nullable: true }
+        analysis: { $ref: '#/components/schemas/PhotoAnalysis' }
+    PhotoAnalysis:
+      type: object
+      nullable: true
+      properties:
+        roomType: { $ref: '#/components/schemas/RoomType' }
+        roomTypeConfidence: { type: number }
+        featureTags: { type: array, items: { type: string } }
+        qualityFlags:
+          type: array
+          items:
+            type: string
+            enum: [blurry, too_dark, overexposed, tilted_horizon, below_min_resolution,
+                   near_duplicate]
+        contentFlags:
+          type: array
+          items:
+            type: string
+            enum: [people_visible, personal_documents, house_number, license_plate,
+                   watermark_or_branding, possible_prior_alteration]
+        altText: { type: string }
+        coverRecommended: { type: boolean }
+        orderRecommendation: { type: integer, nullable: true }
+        recommendationReason: { type: string, nullable: true }
+        modelId: { type: string, nullable: true }
+        promptVersion: { type: string, nullable: true }
+        failed: { type: boolean }
+        failureReason: { type: string, nullable: true }
+    PatchPhotoRequest:
+      type: object
+      properties:
+        roomType: { $ref: '#/components/schemas/RoomType' }
+        featureTags: { type: array, items: { type: string } }
+        caption: { type: string }
+        altered: { type: boolean }
+        alterationType: { type: string, enum: [virtual_staging, other] }
+        disclosureLabel: { type: string }
+        pairedOriginalId: { type: string, format: uuid }
+
+    PipelineStatus:
+      type: object
+      properties:
+        listingId: { type: string, format: uuid }
+        listingStatus: { $ref: '#/components/schemas/ListingStatus' }
+        steps:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                enum: [normalize, technical_quality, embeddings, photo_analysis,
+                       cover_and_order, content_generation, compliance]
+              state: { type: string, enum: [queued, running, done, failed, skipped] }
+              failureReason: { type: string, nullable: true }
+        photoProgress:
+          type: array
+          items:
+            type: object
+            properties:
+              photoId: { type: string, format: uuid }
+              state: { type: string, enum: [queued, analyzing, done, failed] }
+              failureReason: { type: string, nullable: true }
+        manualCompletionAvailable:
+          type: boolean
+          description: Always true — SC-010 guarantees a hand-completion path.
+
+    ContentDraft:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        kind: { $ref: '#/components/schemas/ContentKind' }
+        variantIndex: { type: integer }
+        tone: { $ref: '#/components/schemas/Tone' }
+        body: { type: string }
+        version: { type: integer }
+        status: { type: string, enum: [draft, approved, stale] }
+        selected: { type: boolean }
+        supportingFieldIds: { type: array, items: { type: string, format: uuid } }
+        unconfirmedClaims:
+          type: array
+          description: Spans depending on unconfirmed AI facts; block approval (FR-014).
+          items:
+            type: object
+            properties:
+              spanStart: { type: integer }
+              spanEnd: { type: integer }
+              fieldId: { type: string, format: uuid }
+        characterCount: { type: integer }
+        characterLimit: { type: integer, nullable: true }
+        contentHash:
+          type: string
+          description: Submit as reviewedContentHash when approving (FR-066).
+        rowVersion: { type: integer }
+
+    ComplianceFinding:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        targetType: { type: string, enum: [listing, content_draft, photo] }
+        targetId: { type: string, format: uuid }
+        checkType:
+          type: string
+          enum: [fair_housing, risky_claim, mls_rule, photo_integrity,
+                 advertising_disclosure]
+        severity: { $ref: '#/components/schemas/FindingSeverity' }
+        source: { type: string, enum: [lexicon, judge, deterministic] }
+        spanStart: { type: integer, nullable: true }
+        spanEnd: { type: integer, nullable: true }
+        phrase: { type: string, nullable: true }
+        reason:
+          type: string
+          description: English by design — analysis of U.S.-English copy (research R15).
+        suggestedFix: { type: string, nullable: true }
+        status: { type: string, enum: [open, resolved, acknowledged, stale] }
+        canAcknowledge:
+          type: boolean
+          description: False for every blocking finding (FR-022).
+
+    ApprovalRequest:
+      type: object
+      required: [targetType, targetId, channel, reviewedContentHash]
+      properties:
+        targetType: { type: string, enum: [listing, content_draft, photo] }
+        targetId: { type: string, format: uuid }
+        channel: { type: string, enum: [mls], description: Slice A supports mls only. }
+        reviewedContentHash:
+          type: string
+          description: >
+            SHA-256 of the content the agent actually reviewed (FR-066). The server recomputes the
+            current hash and rejects the approval on mismatch, auditing
+            approval_rejected_hash_mismatch. Without this an approval could record content the
+            agent never saw, which would make SC-008 and SC-011 untrue.
+    Approval:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        targetId: { type: string, format: uuid }
+        channel: { type: string }
+        contentHash: { type: string }
+        approvedAt: { type: string, format: date-time }
+        revokedAt: { type: string, format: date-time, nullable: true }
+    ApprovalBlocked:
+      type: object
+      properties:
+        blockers:
+          type: array
+          items:
+            type: object
+            properties:
+              code:
+                type: string
+                enum: [blocking_finding_open, unconfirmed_ai_fact, required_field_missing,
+                       membership_not_approved, rule_profile_incomplete,
+                       content_changed_since_review]
+              detail: { type: string }
+              targetId: { type: string, format: uuid, nullable: true }
+
+    AuditEvent:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        action: { $ref: '#/components/schemas/AuditAction' }
+        actorId: { type: string, format: uuid, nullable: true }
+        targetType: { type: string, nullable: true }
+        targetId: { type: string, format: uuid, nullable: true }
+        beforeValue: {}
+        afterValue: {}
+        modelId: { type: string, nullable: true }
+        promptVersion: { type: string, nullable: true }
+        payloadHash: { type: string, nullable: true }
+        createdAt: { type: string, format: date-time }
+
+    RegistryEntry:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        taskKey:
+          type: string
+          enum: [photo.analysis, photo.embedding, listing.content, compliance.judge]
+        provider: { type: string }
+        modelId: { type: string }
+        endpoint: { type: string, nullable: true }
+        parameters: { type: object, additionalProperties: true }
+        fallbackRegistryId: { type: string, format: uuid, nullable: true }
+        license:
+          type: string
+          nullable: true
+          description: Required to enable (VIII.4.a).
+        evalStatus: { type: string, enum: [unverified, passed, failed] }
+        evalResult: { type: object, additionalProperties: true }
+        enabled:
+          type: boolean
+          description: Requires license + evalStatus=passed; enforced by a DB check.
+        verifiedAt: { type: string, format: date-time, nullable: true }

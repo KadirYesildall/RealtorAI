@@ -1,0 +1,44 @@
+# Version control & agent tooling
+.git/
+.github/
+.claude/
+.specify/
+specs/
+
+# Dependencies and build outputs (restored/built inside the image)
+node_modules/
+.next/
+out/
+dist/
+build/
+bin/
+obj/
+__pycache__/
+.venv/
+venv/
+*.egg-info/
+
+# Secrets — never copy into an image layer
+.env
+.env.*
+!.env.example
+RealtorAI_BackEnd/supabase/.env
+ops/**/*.local.json
+
+# Local Supabase state (CLI-managed, host-side only)
+RealtorAI_BackEnd/supabase/.branches/
+RealtorAI_BackEnd/supabase/.temp/
+
+# Test artifacts & logs
+test-results/
+playwright-report/
+TestResults/
+coverage/
+*.log
+*.tsbuildinfo
+
+# Docker & OS
+Dockerfile*
+.dockerignore
+.DS_Store
+Thumbs.db

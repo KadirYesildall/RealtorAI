@@ -1,0 +1,26 @@
+<Solution>
+  <Folder Name="/tests/" />
+  <Folder Name="/tests/contract/">
+    <Project Path="tests/contract/Tests.contract.csproj" />
+  </Folder>
+  <Folder Name="/tests/integration/">
+    <Project Path="tests/integration/Tests.integration.csproj" />
+  </Folder>
+  <Folder Name="/tests/prohibitions/">
+    <Project Path="tests/prohibitions/Tests.prohibitions.csproj" />
+  </Folder>
+  <Folder Name="/tests/unit/">
+    <Project Path="tests/unit/Tests.unit.csproj" />
+  </Folder>
+  <Project Path="Api/Api.csproj" />
+  <Project Path="Libs.Ai/Libs.Ai.csproj" />
+  <Project Path="Libs.Compliance/Libs.Compliance.csproj" />
+  <Project Path="Libs.Mls/Libs.Mls.csproj" />
+  <Project Path="Libs.Reso/Libs.Reso.csproj" />
+  <Project Path="Modules.Audit/Modules.Audit.csproj" />
+  <Project Path="Modules.Brokerage/Modules.Brokerage.csproj" />
+  <Project Path="Modules.Content/Modules.Content.csproj" />
+  <Project Path="Modules.Listings/Modules.Listings.csproj" />
+  <Project Path="Modules.Media/Modules.Media.csproj" />
+  <Project Path="Pipeline/Pipeline.csproj" />
+</Solution>

@@ -1,0 +1,27 @@
+<Project>
+
+  <!--
+    Test-project overrides. Imports the solution-wide settings first so the quality and
+    supply-chain gates in ../Directory.Build.props still apply here — in particular
+    NU1901-NU1904 remain errors, so a vulnerable package cannot enter via a test dependency.
+
+    Only rules that are actively wrong for test code are relaxed, each with its reason. The
+    analyzers are not switched off wholesale.
+  -->
+
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+
+    <!--
+      CA1707 — "remove underscores from member names". Aimed at public API surface. Test
+      names use the Method_Scenario_ExpectedResult convention, which is what makes a failing
+      test report legible; renaming them to satisfy a naming rule for library authors would
+      make the suite harder to read for no benefit.
+    -->
+    <NoWarn>$(NoWarn);CA1707</NoWarn>
+  </PropertyGroup>
+
+</Project>

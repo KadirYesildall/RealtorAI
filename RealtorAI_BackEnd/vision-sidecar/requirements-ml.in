@@ -1,0 +1,28 @@
+# Vision sidecar — OPTIONAL ML stack for /embed (image embeddings).
+#
+# Deliberately UNPINNED and deliberately not installed yet.
+#
+# The `photo.embedding` registry entry is still `enabled = false` with
+# `eval_status = 'unverified'` (Principle VIII.4), so the model has not been cleared for use:
+# its license has not been recorded and the evaluation harness has not run. Installing a
+# multi-gigabyte ML stack for a model that cannot legally or procedurally be enabled yet would
+# be premature, and pinning versions for it would mean guessing (Principle III).
+#
+# Until this is installed, /embed returns HTTP 503 with the load error, the pipeline treats
+# near-duplicate detection as unavailable, and the listing remains completable by hand
+# (SC-010). That path is verified: a request with torch absent returns
+# "503 ModuleNotFoundError: No module named 'torch'".
+#
+# When the model IS cleared (task T158 enablement runbook):
+#   1. .venv/Scripts/python -m pip install -r requirements-ml.in
+#   2. .venv/Scripts/python -m pip freeze > requirements-ml.txt   # pin what pip resolved
+#   3. Confirm the returned embedding dimension matches photo_embeddings.embedding vector(N);
+#      0006_media.sql currently declares 768 as PROVISIONAL and the API must reject a
+#      mismatch rather than truncate or pad.
+#   4. Rebuild the image with --build-arg WITH_ML=1
+#
+# Note: torch wheel availability for Python 3.13 is the open risk here — this machine runs
+# 3.13.14, while the plan assumed 3.12 (research.md R17).
+
+torch
+transformers

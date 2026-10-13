@@ -70,6 +70,16 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] T008 Configure error handling and logging infrastructure
 - [ ] T009 Setup environment configuration management
 
+**For features with an AI surface, these foundational tasks are REQUIRED by Constitution
+Principle VIII (not optional, and not deferrable to a later story):**
+
+- [ ] T0xx Implement the `AiService` abstraction and model registry (task → provider → model id
+      → endpoint → parameters → fallback → enabled), with versioned output schemas and
+      versioned prompt files logged per call
+- [ ] T0xx Implement the automated test that fails if any image/video-generation dependency or
+      endpoint is present in the codebase (Principle VIII.6 — this test is mandatory even when
+      per-story tests are skipped)
+
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
 ---
