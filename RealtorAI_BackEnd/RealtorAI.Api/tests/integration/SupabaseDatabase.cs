@@ -1,3 +1,6 @@
+using Api.Data;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql;
 
 namespace RealtorAI.Tests.Integration;
@@ -49,6 +52,30 @@ internal static class SupabaseDatabase
     internal static string ConnectionString =>
         Environment.GetEnvironmentVariable("REALTORAI_TEST_POSTGRES")
         ?? "Host=127.0.0.1;Port=54322;Database=postgres;Username=postgres;Password=postgres";
+
+    /// <summary>
+    /// One shared <see cref="DbContextOptions"/> for every test context.
+    ///
+    /// <para>
+    /// Built once on purpose. EF derives an internal service provider from the options
+    /// instance, so constructing fresh options per context builds a fresh provider each time —
+    /// and past twenty of them EF escalates <c>ManyServiceProvidersCreatedWarning</c> to an
+    /// exception. That is not a test quirk to be suppressed: the same pattern in production
+    /// would leak a provider per request, which is exactly what the warning is for. Sharing one
+    /// options instance is the actual fix in both places.
+    /// </para>
+    /// </summary>
+    private static readonly Lazy<DbContextOptions<AppDbContext>> SharedOptions = new(() =>
+        new DbContextOptionsBuilder<AppDbContext>()
+            .UseNpgsql(ConnectionString, AppDbContext.ConfigureNpgsql)
+            .ReplaceService<IMigrator, MigrationsAreOwnedBySqlMigrator>()
+            .Options);
+
+    /// <summary>
+    /// A context configured exactly as the host configures it, so a test never exercises a
+    /// differently-mapped model than production uses.
+    /// </summary>
+    internal static AppDbContext CreateContext() => new(SharedOptions.Value);
 
     /// <summary>
     /// Opens a connection as <c>postgres</c>, which is a superuser and therefore

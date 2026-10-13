@@ -1,3 +1,5 @@
+using Modules.Audit;
+
 namespace Api.Data.Entities;
 
 // T009 — entity types for 0008_ai_platform.sql and 0009_audit.sql. See BrokerageEntities.cs

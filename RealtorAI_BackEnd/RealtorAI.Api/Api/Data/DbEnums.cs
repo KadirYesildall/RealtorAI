@@ -2,7 +2,14 @@ using NpgsqlTypes;
 
 namespace Api.Data;
 
-// T009 — CLR mirrors of the 15 PostgreSQL enum types created by the SQL migrations.
+// T009 — CLR mirrors of the PostgreSQL enum types whose values are purely a persistence
+// concern.
+//
+// Three of the schema's enums are NOT here: membership_status, membership_role and
+// audit_action are domain vocabulary, so they are declared in the modules that own them
+// (Modules.Brokerage, Modules.Audit) and their database labels are listed in
+// PostgresEnumMappings. That keeps one definition of each concept instead of a copy on
+// each side of the module boundary.
 //
 // Every member carries an explicit [PgName]. Npgsql's default snake_case translator would
 // produce the right label for most of these, but not reliably for acronym-leading members
@@ -12,22 +19,6 @@ namespace Api.Data;
 //
 // The labels below were read from the live database (pg_enum) rather than from the migration
 // source, so they reflect what is actually installed.
-
-/// <summary>public.membership_status — 0003_brokerages.sql</summary>
-public enum MembershipStatus
-{
-    [PgName("pending")] Pending,
-    [PgName("approved")] Approved,
-    [PgName("rejected")] Rejected,
-    [PgName("revoked")] Revoked,
-}
-
-/// <summary>public.membership_role — 0003_brokerages.sql</summary>
-public enum MembershipRole
-{
-    [PgName("agent")] Agent,
-    [PgName("broker_admin")] BrokerAdmin,
-}
 
 /// <summary>public.tone — 0003_brokerages.sql</summary>
 public enum Tone
@@ -152,31 +143,4 @@ public enum ModelEvalStatus
     [PgName("unverified")] Unverified,
     [PgName("passed")] Passed,
     [PgName("failed")] Failed,
-}
-
-/// <summary>
-/// public.audit_action — 0009_audit.sql. FR-049: this is the closed set of auditable actions.
-/// Adding a member here without the matching migration will fail at runtime on first write,
-/// which is the intended direction — the database owns the vocabulary.
-/// </summary>
-public enum AuditAction
-{
-    [PgName("ai_call")] AiCall,
-    [PgName("field_edit")] FieldEdit,
-    [PgName("field_confirm")] FieldConfirm,
-    [PgName("photo_override")] PhotoOverride,
-    [PgName("photo_reorder")] PhotoReorder,
-    [PgName("photo_delete")] PhotoDelete,
-    [PgName("finding_raised")] FindingRaised,
-    [PgName("finding_acknowledged")] FindingAcknowledged,
-    [PgName("content_generated")] ContentGenerated,
-    [PgName("content_edited")] ContentEdited,
-    [PgName("approval_granted")] ApprovalGranted,
-    [PgName("approval_revoked")] ApprovalRevoked,
-    [PgName("approval_rejected_hash_mismatch")] ApprovalRejectedHashMismatch,
-    [PgName("membership_requested")] MembershipRequested,
-    [PgName("membership_decided")] MembershipDecided,
-    [PgName("registry_changed")] RegistryChanged,
-    [PgName("listing_soft_deleted")] ListingSoftDeleted,
-    [PgName("originals_purged")] OriginalsPurged,
 }

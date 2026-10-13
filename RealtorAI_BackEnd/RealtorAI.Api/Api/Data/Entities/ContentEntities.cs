@@ -1,3 +1,5 @@
+using Api.Concurrency;
+
 namespace Api.Data.Entities;
 
 // T009 — entity types for 0007_content_compliance.sql. See BrokerageEntities.cs for the
@@ -11,7 +13,7 @@ namespace Api.Data.Entities;
 /// "never invent facts" checkable after the fact rather than merely instructed in a prompt.
 /// </para>
 /// </summary>
-public sealed class ContentDraft
+public sealed class ContentDraft : IVersionedEntity
 {
     public Guid Id { get; set; }
     public Guid ListingId { get; set; }
@@ -27,7 +29,7 @@ public sealed class ContentDraft
     public string SupportingFieldIds { get; set; } = "[]";
 
     /// <summary>Monotonic edit counter, distinct from <c>RowVersion</c>, which guards writes.</summary>
-    public int Version { get; set; }
+    public int Version { get; set; } = 1;
 
     public ContentStatus Status { get; set; }
     public bool Selected { get; set; }
@@ -36,7 +38,7 @@ public sealed class ContentDraft
     public string? PromptHash { get; set; }
 
     /// <summary>Optimistic-concurrency token for <c>If-Match</c> (FR-066); see <see cref="Listing"/>.</summary>
-    public int RowVersion { get; set; }
+    public int RowVersion { get; set; } = 1;
 
     public DateTimeOffset CreatedAt { get; set; }
 }

@@ -1,5 +1,8 @@
 using System.Security.Claims;
+using Api.Audit;
 using Api.Authentication;
+using Api.Authorization;
+using Api.Concurrency;
 using Api.Data;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
@@ -34,7 +37,22 @@ builder.Services.AddAppDbContext(builder.Configuration);
 
 // ───────────────────────────── Authentication ─────────────────────────────
 builder.Services.AddSupabaseJwtAuthentication(builder.Configuration, builder.Environment);
-builder.Services.AddAuthorization();
+// T038: policies are declared in one place, and EveryEndpointHasPolicyTests fails if any
+// endpoint is neither covered by one nor listed as a deliberate exception.
+builder.Services.AddAuthorization(PolicyRegistry.AddEndpointPolicies);
+builder.Services.AddPlatformAdminPolicy();
+
+// FR-063: every endpoint authorizes independently. The API connects with a privileged role
+// that bypasses RLS, so the database policies are defence in depth, not the access control.
+builder.Services.AddResourceAuthorization();
+
+// FR-066: conditional writes guarded by row version.
+builder.Services.AddScoped<IConcurrencyGuard, ConcurrencyGuard>();
+
+// FR-049: append-only audit. The sink only adds rows; the endpoint that owns the transaction
+// commits the audit record together with the change it describes.
+builder.Services.AddScoped<Modules.Audit.IAuditSink, EfAuditSink>();
+builder.Services.AddScoped<Modules.Audit.IAuditWriter, Modules.Audit.AuditWriter>();
 
 // ───────────────────────────── Pipeline ─────────────────────────────
 var app = builder.Build();
@@ -66,7 +84,7 @@ app.MapGet("/whoami", (ClaimsPrincipal user) =>
             ? Results.Unauthorized()
             : Results.Ok(new { agentId });
     })
-    .RequireAuthorization()
+    .RequireAuthorization(PolicyRegistry.Authenticated)
     .WithName("WhoAmI");
 
 app.Run();

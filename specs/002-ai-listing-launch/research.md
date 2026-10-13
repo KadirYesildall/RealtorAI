@@ -662,6 +662,89 @@ than papered over.
 `low` or above), giving the frontend the same posture as the backend's NU1901-NU1904-as-errors
 rule, without the dev-only chain making the gate permanently red.
 
+## R20. Module/persistence boundary: one enum definition, not two (2026-10-13)
+
+Hit while implementing T035-T037. The plan puts the EF model in the host (`Api/Data`) and the
+domain logic in modules, and the host references the modules — so a module cannot reference
+`AppDbContext` without a project cycle. But `MembershipStatus`, `MembershipRole` and the
+18-value `AuditAction` list are needed on **both** sides.
+
+First attempt duplicated the enums per side and translated between them in the adapter. That
+worked and built clean, then immediately produced `CS0104: 'MembershipRole' is an ambiguous
+reference` — which was the warning sign, not the problem. The real problem was that two copies
+of an authorization-relevant enum drift, and the only defence would have been a totality test
+per enum.
+
+**Resolution:** the enum is declared once, in the module that owns the concept
+(`Modules.Brokerage`, `Modules.Audit`), and the *persistence* layer references it. Those modules
+take no database dependency — the PostgreSQL labels live in `Api/Data/PostgresEnumMappings.cs`,
+applied through a dictionary-backed `INpgsqlNameTranslator`, because `[PgName]` would require
+pulling Npgsql into a domain module.
+
+Enums whose values are purely a storage concern (`tone`, `provenance`, `room_type`, the finding
+and content enums) stay in `Api/Data/DbEnums.cs` with `[PgName]`. Both kinds are listed in one
+mapping table, which `SchemaDriftTests` reads — so the test compares the database against the
+labels the application will actually send, rather than against a second list that could be wrong
+in the same way. `EveryMappedEnumMemberHasALabel` additionally fails if a member has no label,
+which would otherwise throw at runtime on whichever write first carried that value.
+
+Net effect: 24 duplicated enum members and their translation code removed, and the drift class
+closed by construction rather than by vigilance.
+
+## R21. EF silently overrides database column defaults (2026-10-13)
+
+**Found by a failing test, and it was a real bug in shipped code, not in the test.**
+
+`OptimisticConcurrencyTests` asserted that a freshly created listing is at `row_version = 1`,
+matching the SQL default in `0005_listings.sql`. It came back `Conflict`: the row was at 0.
+
+Cause: EF Core includes every mapped property in an INSERT rather than omitting those left at
+their CLR default, so `int RowVersion` (CLR default 0) was written as 0 and the database default
+of 1 never applied. Every listing, listing field and content draft created through the context
+therefore started one version behind what the schema declared, and the first conditional update
+against the schema's value would fail with a version conflict against a version that had never
+existed (FR-066).
+
+A quieter instance of the same fault sat on `brokerage_settings`: `ai_budget_tokens` defaults to
+200000 and `ai_budget_images` to 120 in SQL, both 0 in CLR. A brokerage created through the
+context would have had a **zero AI budget**, so the FR-055 pre-dispatch check would have refused
+every AI call — the feature appearing broken for exactly the brokerages nobody had configured by
+hand, with no error pointing at the cause.
+
+Fixed by giving the six affected properties initializers matching their SQL defaults. More
+importantly, `tests/integration/ColumnDefaultsTests.cs` now reads **every** defaulted column
+from the live schema and compares it against a freshly constructed entity, so a future migration
+that adds or changes a default fails unless the entity is updated with it. Unparseable default
+expressions are reported rather than skipped, since silently ignoring a shape the test does not
+understand is how the next instance would slip through.
+
+Related, same session: constructing fresh `DbContextOptions` per context made EF build a new
+internal service provider each time, and past twenty of them EF escalates
+`ManyServiceProvidersCreatedWarning` to an exception. The integration tests now share one options
+instance. That is the correct fix rather than suppressing the warning — the same pattern in
+production would leak a provider per request, which is what the warning exists to catch.
+
+## R22. The endpoint-authorization gate was verified by breaking it (2026-10-13)
+
+T038 required "a test that fails the build if any endpoint lacks an explicit policy". The
+failure mode it guards is specific: adding a route without `RequireAuthorization()` produces a
+working anonymous endpoint, with no compiler error, no runtime error, no failing test, and
+nothing visible in review except a line that is not there.
+
+`EveryEndpointHasPolicyTests` enumerates `EndpointDataSource` — the routing table the server
+will actually serve, not a maintained list — and requires each endpoint to be covered by a
+policy or named in `PolicyRegistry.DeliberatelyAnonymousEndpoints` with a written reason.
+
+**A gate that has never been observed to fail is not a verified gate**, so it was tested against
+a deliberate violation: a temporary unauthenticated `/leaky` endpoint was added, the suite went
+red on exactly that assertion, and removing it restored green. The exemption list is itself
+guarded — a stale entry fails (it would be a standing permission for a future endpoint reusing
+the name), and a reason shorter than 40 characters fails.
+
+No `FallbackPolicy` is configured, deliberately. A fallback would make every endpoint implicitly
+authenticated, which sounds safer but is weaker: it hides missing declarations behind a default,
+and the coverage test could no longer distinguish a decision from an omission.
+
 ## Open items carried to Slice B (recorded, not resolved)
 
 - **CRMLS API surface**: whether RESO Web API Add/Edit is exposed to vendors or only a proprietary

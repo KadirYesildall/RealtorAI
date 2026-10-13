@@ -92,25 +92,26 @@ Per [plan.md](./plan.md) "Project Structure" — the repo's two mandated top-lev
 - [X] T032 [P] Integration test: hard `DELETE FROM listings` is blocked by the audit FK in `tests/integration/NoHardDeleteTests.cs`
 - [X] T033 [P] Integration test: EF Core model vs actual SQL schema drift in `tests/integration/SchemaDriftTests.cs`
 - [X] T033a [P] Integration test: no client role holds TRUNCATE/REFERENCES/TRIGGER on any feature table, `anon` holds nothing, and the schema default no longer grants — in `tests/integration/PrivilegeHardeningTests.cs` (research R18)
+- [X] T033b [P] Integration test: every database column default matches the CLR property default in `tests/integration/ColumnDefaultsTests.cs` (found a real bug: EF sends the CLR value on insert, so `row_version` started at 0 against a SQL default of 1)
 
 ### Authentication & authorization (FR-063, FR-064)
 
 - [X] T034 Implement Supabase JWT bearer validation via JWKS in `RealtorAI.Api/Api/Authentication/SupabaseJwtSetup.cs` (validate issuer, audience, lifetime, signature; trust only `sub`)
-- [ ] T035 Implement `IResourceAuthorizer` in `RealtorAI.Api/Api/Authorization/ResourceAuthorizer.cs` (listing owner, or approved broker_admin of the listing's brokerage)
-- [ ] T036 [P] Implement capability predicates `CanApproveMarketing` and `CanSubmitToMls` in `Modules.Brokerage/Capabilities.cs` (both require `approved`)
-- [ ] T037 Implement per-request membership resolution from the database with a short invalidating cache in `Modules.Brokerage/MembershipResolver.cs` — **never read status or role from JWT claims** (research R7)
-- [ ] T038 Implement the endpoint policy registry plus a test that **fails the build if any endpoint lacks an explicit policy** in `RealtorAI.Api/Api/Authorization/PolicyRegistry.cs` and `tests/contract/EveryEndpointHasPolicyTests.cs`
-- [ ] T039 Build the authorization matrix test harness in `tests/contract/AuthorizationMatrix.cs` covering owner / other agent / pending member / approved admin same brokerage / admin other brokerage / platform admin / non-admin
+- [X] T035 Implement `IResourceAuthorizer` in `RealtorAI.Api/Api/Authorization/ResourceAuthorizer.cs` (listing owner, or approved broker_admin of the listing's brokerage)
+- [X] T036 [P] Implement capability predicates `CanApproveMarketing` and `CanSubmitToMls` in `Modules.Brokerage/Capabilities.cs` (both require `approved`)
+- [X] T037 Implement per-request membership resolution from the database with a short invalidating cache in `Modules.Brokerage/MembershipResolver.cs` — **never read status or role from JWT claims** (research R7)
+- [X] T038 Implement the endpoint policy registry plus a test that **fails the build if any endpoint lacks an explicit policy** in `RealtorAI.Api/Api/Authorization/PolicyRegistry.cs` and `tests/contract/EveryEndpointHasPolicyTests.cs`
+- [X] T039 Build the authorization matrix test harness in `tests/contract/AuthorizationMatrix.cs` covering owner / other agent / pending member / approved admin same brokerage / admin other brokerage / platform admin / non-admin
 
 ### Optimistic concurrency (FR-066)
 
-- [ ] T040 Implement `If-Match` row-version handling and the `VersionConflict` 409 problem-details response in `RealtorAI.Api/Api/Concurrency/`
-- [ ] T041 [P] Unit tests for the conditional-update helper in `tests/unit/OptimisticConcurrencyTests.cs`
+- [X] T040 Implement `If-Match` row-version handling and the `VersionConflict` 409 problem-details response in `RealtorAI.Api/Api/Concurrency/`
+- [X] T041 [P] Unit tests for the conditional-update helper in `tests/unit/OptimisticConcurrencyTests.cs`
 
 ### Audit spine (FR-049)
 
-- [ ] T042 Implement the append-only audit writer in `Modules.Audit/AuditWriter.cs` (actor, action, before/after, model/prompt refs, payload hash)
-- [ ] T043 [P] Contract test for the audit writer in `tests/contract/AuditWriterTests.cs`
+- [X] T042 Implement the append-only audit writer in `Modules.Audit/AuditWriter.cs` (actor, action, before/after, model/prompt refs, payload hash)
+- [X] T043 [P] Contract test for the audit writer in `tests/contract/AuditWriterTests.cs`
 
 ### AI platform (Principle VIII)
 

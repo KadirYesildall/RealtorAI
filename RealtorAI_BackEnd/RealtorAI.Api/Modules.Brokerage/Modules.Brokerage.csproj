@@ -1,7 +1,22 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
     <ProjectReference Include="..\Modules.Audit\Modules.Audit.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      The cache-duration constructor is internal so a deployment cannot widen the membership
+      cache window through configuration, but the expiry behaviour still has to be testable
+      without sleeping for the production duration.
+    -->
+    <InternalsVisibleTo Include="Tests.unit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.12" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.12" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.12" />
   </ItemGroup>
 
   <PropertyGroup>

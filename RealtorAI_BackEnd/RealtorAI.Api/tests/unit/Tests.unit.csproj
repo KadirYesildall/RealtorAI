@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -21,6 +21,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Api\Api.csproj" />
+    <!-- Referenced directly so the domain modules can be unit-tested without the host. -->
+    <ProjectReference Include="..\..\Modules.Brokerage\Modules.Brokerage.csproj" />
+    <ProjectReference Include="..\..\Modules.Audit\Modules.Audit.csproj" />
   </ItemGroup>
 
 </Project>
