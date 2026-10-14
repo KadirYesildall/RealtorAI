@@ -894,6 +894,58 @@ Design decisions recorded with it:
   stamped with another model's verdict.
 - A pass does not enable; a failure of an enabled model disables it in the same change.
 
+## R28. Hangfire on Supabase Postgres — R12's open items, closed by running a job (2026-10-14)
+
+R12 left two things unverified: Hangfire.PostgreSql's compatibility with the stack, and its
+coexistence with Supabase migrations. R17 closed only "it restores on .NET 10".
+
+- **Driver gap, verified.** Hangfire.PostgreSql 1.21.1 targets `netstandard2.0` and is built
+  against **Npgsql 6.0.11**; the host resolves **Npgsql 10.0.3**. A restore proves nothing about a
+  binary dependency four majors apart, so `HangfireStorageTests` enqueues a real job and waits for
+  the host's worker to execute it. It does.
+- **Schema.** `0013_hangfire_schema.sql` creates `hangfire`, revokes it from
+  `public`/`anon`/`authenticated`, and revokes default privileges on objects created in it later.
+  Hangfire installs its own tables inside on first start (`PrepareSchemaIfNecessary`). Tested:
+  its tables exist in `hangfire`, none in `public`, and neither client role holds USAGE on the
+  schema or any privilege on its tables.
+- **DDL ownership.** The constitution's "migrations own all DDL" is kept at the level that
+  matters to this project — where Hangfire lives and who can reach it. Hangfire's internal tables
+  are versioned by the package (`hangfire.schema`) and are not reproduced in a migration, where
+  they would drift from the package version.
+- **No dashboard.** It exposes job arguments (listing ids) under an authorization model separate
+  from the API's token validation. Not mapped.
+- **Still open:** behaviour through the Supabase **pooler** (port 54329, transaction mode).
+  Hangfire uses session-level advisory locks, which transaction-mode pooling does not preserve;
+  the local configuration connects directly on 54322. A production deployment must point
+  `ConnectionStrings:Hangfire` at a direct or session-mode connection, not the transaction pooler.
+
+## R29. CVE-2026-70159 in SignalR — mitigated in code; the runtime still needs patching (2026-10-14)
+
+**Severity: high (CVSS 7.5, denial of service). Found by the NuGet audit gate when adding the
+SignalR client for T056's tests.** GHSA-334f-vvp4-7g6p, published 2026-10-13: a client using
+*stateful reconnect* can block broadcasts indefinitely through `MessageBuffer.ResendAsync`
+backpressure and pin server resources. Affected: `Microsoft.AspNetCore.SignalR.Common` 10.0.0 –
+10.0.12; patched in **10.0.13**.
+
+The package gate caught the **client** package, which was then added at 10.0.13. The more
+important exposure is the **server**: the hub runs on the ASP.NET Core shared framework, which
+NuGet audit does not scan, and this machine has **Microsoft.AspNetCore.App 10.0.10** — affected.
+
+**Mitigation in code.** Stateful reconnect is opt-in on the server. The hub sets
+`AllowStatefulReconnects = false` explicitly, with the CVE cited, and
+`PipelineHubTests.StatefulReconnect_IsDisabledOnTheHub` reads it back from the routing table the
+server serves, so re-enabling it by any route fails the build. The feature was never needed: a
+reconnecting client re-subscribes and re-reads status from the polling endpoint.
+
+**Still required — outside the codebase:** install the **.NET 10.0.13** runtime/SDK on developer
+machines and use a ≥ 10.0.13 base image for deployment. The code mitigation closes the known
+vulnerable path; the patched runtime closes it in depth. Recorded here rather than done
+automatically because it is a machine-level install.
+
+**Lesson recorded:** NuGet audit covers packages, not the shared framework. A framework advisory
+reaches a deployed ASP.NET Core app only through the runtime version, so runtime currency needs
+its own check.
+
 ## Open items carried to Slice B (recorded, not resolved)
 
 - **CRMLS API surface**: whether RESO Web API Add/Edit is exposed to vendors or only a proprietary

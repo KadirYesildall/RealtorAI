@@ -129,8 +129,8 @@ Per [plan.md](./plan.md) "Project Structure" — the repo's two mandated top-lev
 
 ### Shared services
 
-- [ ] T055 Configure Hangfire on Postgres using a **dedicated `hangfire` schema** so it never collides with Supabase migrations, in `Pipeline/HangfireSetup.cs` (research R12)
-- [ ] T056 [P] Implement the SignalR pipeline-progress hub in `RealtorAI.Api/Api/Hubs/PipelineHub.cs`
+- [X] T055 Configure Hangfire on Postgres using a **dedicated `hangfire` schema** so it never collides with Supabase migrations, in `Pipeline/HangfireSetup.cs` (research R12)
+- [X] T056 [P] Implement the SignalR pipeline-progress hub in `RealtorAI.Api/Api/Hubs/PipelineHub.cs`
 - [ ] T057 Implement the Supabase Storage wrapper in `Modules.Media/StorageService.cs` — write-once originals, normalized variants, short-lived signed URLs
 - [ ] T058 Implement image normalization in `Modules.Media/ImageNormalizer.cs` — **non-generative operations only** (resize long edge ~1280px, compress, convert, crop, rotate) plus EXIF/GPS stripping (VIII.4.c, VIII.6)
 - [ ] T059 [P] Unit tests asserting normalization strips EXIF and never mutates the original, in `tests/unit/ImageNormalizerTests.cs`

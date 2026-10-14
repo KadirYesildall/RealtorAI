@@ -1,5 +1,6 @@
 using System.Globalization;
-using AiEval;
+
+namespace AiEval;
 
 // T054 — AI evaluation harness entry point (Principle VIII.4, FR-059, quickstart.md §6).
 //
@@ -16,102 +17,113 @@ using AiEval;
 // Exit codes: 0 passed (or criteria listed), 1 failed, 2 incomplete, 64 usage error,
 //             70 could not record.
 
-const int ExitPassed = 0;
-const int ExitFailed = 1;
-const int ExitIncomplete = 2;
-const int ExitUsage = 64;
-const int ExitRecordFailed = 70;
-
-HarnessOptions options;
-
-try
+/// <summary>
+/// Entry point. An explicit class in the <c>AiEval</c> namespace rather than top-level
+/// statements: those compile to a global <c>Program</c>, which collides with the API host's
+/// <c>Program</c> in any test assembly that references both.
+/// </summary>
+internal static class Program
 {
-    options = HarnessOptions.Parse(args);
-}
-catch (ArgumentException exception)
-{
-    Console.Error.WriteLine(exception.Message);
-    Console.Error.WriteLine(HarnessOptions.Usage);
-    return ExitUsage;
-}
-
-var catalog = new MetricCatalog(options.Budget);
-
-if (options.RegistryId is not { } registryId)
-{
-    var tasks = options.Task == "all" ? catalog.Tasks.ToList() : [options.Task!];
-
-    foreach (var task in tasks)
+    private static async Task<int> Main(string[] args)
     {
-        Report.PrintCriteria(task, catalog.For(task), EvalSuites.Registered.ContainsKey(task));
-    }
+        const int ExitPassed = 0;
+        const int ExitFailed = 1;
+        const int ExitIncomplete = 2;
+        const int ExitUsage = 64;
+        const int ExitRecordFailed = 70;
 
-    return ExitPassed;
-}
+        HarnessOptions options;
 
-var writer = new RegistryResultWriter(options.ConnectionString!);
-var target = await writer.LoadAsync(registryId, CancellationToken.None);
-
-if (target is null)
-{
-    Console.Error.WriteLine($"No registry entry has id {registryId}.");
-    return ExitUsage;
-}
-
-if (options.Task is { } requested && requested != "all" && requested != target.TaskKey)
-{
-    Console.Error.WriteLine(
-        $"Registry entry {registryId} serves '{target.TaskKey}', not '{requested}'.");
-    return ExitUsage;
-}
-
-IReadOnlyDictionary<string, double> measurements = EvalSuites.Registered.TryGetValue(
-    target.TaskKey,
-    out var suite)
-    ? await suite.RunAsync(target, CancellationToken.None)
-    : new Dictionary<string, double>();
-
-var evaluatedAt = DateTimeOffset.UtcNow;
-var (verdict, results) = EvalVerdict.Evaluate(catalog.For(target.TaskKey), measurements);
-
-Report.PrintResult(target, verdict, results, suite is not null);
-
-if (options.Write)
-{
-    if (verdict == Verdict.Incomplete)
-    {
-        Console.WriteLine("Nothing recorded: an incomplete evaluation is neither a pass nor a failure.");
-    }
-    else
-    {
         try
         {
-            await writer.WriteAsync(
-                target,
-                verdict,
-                results,
-                options.ActorId!.Value,
-                evaluatedAt,
-                CancellationToken.None);
-
-            Console.WriteLine(
-                $"Recorded eval_status='{verdict.ToString().ToLowerInvariant()}' on {target.Id} "
-                + "and audited it as registry_changed.");
+            options = HarnessOptions.Parse(args);
         }
-        catch (InvalidOperationException exception)
+        catch (ArgumentException exception)
         {
             Console.Error.WriteLine(exception.Message);
-            return ExitRecordFailed;
+            Console.Error.WriteLine(HarnessOptions.Usage);
+            return ExitUsage;
         }
+
+        var catalog = new MetricCatalog(options.Budget);
+
+        if (options.RegistryId is not { } registryId)
+        {
+            var tasks = options.Task == "all" ? catalog.Tasks.ToList() : [options.Task!];
+
+            foreach (var task in tasks)
+            {
+                Report.PrintCriteria(task, catalog.For(task), EvalSuites.Registered.ContainsKey(task));
+            }
+
+            return ExitPassed;
+        }
+
+        var writer = new RegistryResultWriter(options.ConnectionString!);
+        var target = await writer.LoadAsync(registryId, CancellationToken.None);
+
+        if (target is null)
+        {
+            Console.Error.WriteLine($"No registry entry has id {registryId}.");
+            return ExitUsage;
+        }
+
+        if (options.Task is { } requested && requested != "all" && requested != target.TaskKey)
+        {
+            Console.Error.WriteLine(
+                $"Registry entry {registryId} serves '{target.TaskKey}', not '{requested}'.");
+            return ExitUsage;
+        }
+
+        IReadOnlyDictionary<string, double> measurements = EvalSuites.Registered.TryGetValue(
+            target.TaskKey,
+            out var suite)
+            ? await suite.RunAsync(target, CancellationToken.None)
+            : new Dictionary<string, double>();
+
+        var evaluatedAt = DateTimeOffset.UtcNow;
+        var (verdict, results) = EvalVerdict.Evaluate(catalog.For(target.TaskKey), measurements);
+
+        Report.PrintResult(target, verdict, results, suite is not null);
+
+        if (options.Write)
+        {
+            if (verdict == Verdict.Incomplete)
+            {
+                Console.WriteLine("Nothing recorded: an incomplete evaluation is neither a pass nor a failure.");
+            }
+            else
+            {
+                try
+                {
+                    await writer.WriteAsync(
+                        target,
+                        verdict,
+                        results,
+                        options.ActorId!.Value,
+                        evaluatedAt,
+                        CancellationToken.None);
+
+                    Console.WriteLine(
+                        $"Recorded eval_status='{verdict.ToString().ToLowerInvariant()}' on {target.Id} "
+                        + "and audited it as registry_changed.");
+                }
+                catch (InvalidOperationException exception)
+                {
+                    Console.Error.WriteLine(exception.Message);
+                    return ExitRecordFailed;
+                }
+            }
+        }
+
+        return verdict switch
+        {
+            Verdict.Passed => ExitPassed,
+            Verdict.Failed => ExitFailed,
+            _ => ExitIncomplete,
+        };
     }
 }
-
-return verdict switch
-{
-    Verdict.Passed => ExitPassed,
-    Verdict.Failed => ExitFailed,
-    _ => ExitIncomplete,
-};
 
 /// <summary>Parsed command line.</summary>
 internal sealed record HarnessOptions(

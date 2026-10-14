@@ -28,6 +28,16 @@ info:
     destroy immutable audit records or be blocked by their foreign key. Originals are purged
     3 years later by an out-of-band privileged job, never by this API (FR-065).
 
+    REAL-TIME (FR-053). SignalR hub at /hubs/pipeline (not an OpenAPI operation). Same
+    Supabase JWT; browsers pass it as the `access_token` query parameter, accepted on /hubs
+    paths only. Client invokes SubscribeToListing(listingId) / UnsubscribeFromListing(listingId).
+    Subscribing is LISTING OWNER ONLY — narrower than GET /pipeline, because a subscription is
+    authorized once and would outlive a revoked membership; broker admins poll instead. Server
+    sends StepProgress {listingId, step, state, failureReason} and PhotoProgress {listingId,
+    photoId, state, failureReason}, using the enum spellings of PipelineStatus. Messages carry
+    state only, never listing content. Notifications are best-effort hints; GET /pipeline is the
+    source of truth. Stateful reconnect is disabled (CVE-2026-70159, research R29).
+
     SLICE A BOUNDARY. No MLS submission, marketing pack, publishing, lead, or insight
     operations exist here — those are Slice B/C. Capability predicates CanApproveMarketing and
     CanSubmitToMls exist and always deny for a non-approved membership (FR-061).
