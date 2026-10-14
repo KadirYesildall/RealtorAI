@@ -121,8 +121,8 @@ Per [plan.md](./plan.md) "Project Structure" — the repo's two mandated top-lev
 - [X] T047 Implement JSON Schema validation with exactly one retry carrying the validation error, then an explicit failure, in `Libs.Ai/StructuredOutputValidator.cs` (FR-015)
 - [X] T048 [P] Implement resilience (timeouts, backoff, per-provider circuit breaker, automatic fallback) in `Libs.Ai/Resilience.cs` using `Microsoft.Extensions.Http.Resilience`
 - [X] T049 Implement cost tracking, the **pre-dispatch** per-listing budget check, and request caching by input hash in `Libs.Ai/CostTracker.cs` (FR-055)
-- [ ] T050 Implement the registry admin endpoints in `RealtorAI.Api/Api/Endpoints/AiRegistryEndpoints.cs` gated on `profiles.platform_admin`, auditing every change as `registry_changed` (FR-064)
-- [ ] T051 [P] Contract tests for the registry admin endpoints including the authorization matrix in `tests/contract/AiRegistryEndpointTests.cs`
+- [X] T050 Implement the registry admin endpoints in `RealtorAI.Api/Api/Endpoints/AiRegistryEndpoints.cs` gated on `profiles.platform_admin`, auditing every change as `registry_changed` (FR-064)
+- [X] T051 [P] Contract tests for the registry admin endpoints including the authorization matrix in `tests/contract/AiRegistryEndpointTests.cs`
 - [X] T052 [P] Unit tests for schema-retry and fallback behaviour in `tests/unit/AiServiceTests.cs`
 - [X] T053 **Prohibition test (VIII.6)**: fail the build if any image/video-generation dependency or endpoint is referenced anywhere in the solution or sidecar, in `tests/prohibitions/NoGenerativeImageryTests.cs`
 - [ ] T054 Create the AI evaluation harness skeleton in `RealtorAI.Api/tools/AiEval/` with the task/metric scaffolding from [quickstart.md](./quickstart.md) §6

@@ -839,6 +839,31 @@ maintenance consequence is stated there plainly: **editing `v1.md` stops the API
 a v2 is added or the hash is updated. That is the intended cost — editing a released prompt
 silently invalidates every audit record citing it.
 
+## R26. The host failed every database request after the twentieth (2026-10-14)
+
+**Severity: high — the API would have gone down about twenty requests after every start.**
+Found by T051, the first suite to send many database-backed requests through one host.
+
+`PostgresEnumMapping.Translator()` built a new `ExplicitEnumLabelTranslator` on every call.
+`AddDbContext` rebuilds `DbContextOptions` per scope, meaning per request, and EF keys its
+internal service provider on those options, comparing each enum mapping's translator **by
+reference**. So every request looked like a new configuration. EF built a fresh internal service
+provider each time, and past twenty it raised `ManyServiceProvidersCreatedWarning`, which this
+project's configuration treats as an error. Request 20 onward returned 500.
+
+Nothing caught it earlier because nothing had made more than a few database calls through one
+host: the integration suites build their own contexts, and before T050 the only endpoints were
+`/health` and `/whoami`, neither of which touches the database.
+
+**Fix**: each mapping creates its translator once, eagerly, and returns that instance.
+**Regression**: `tests/contract/SustainedDatabaseRequestsTests.cs` sends 30 requests and asserts
+that the translator instance is stable. Both tests were confirmed failing with the fix reverted
+("Request 20 of 30 returned 500") and passing with it.
+
+**Lesson recorded**: an option object that EF compares should never be allocated per call. Any
+future `MapEnum`, `UseVector`-style plugin, or interceptor added to `ConfigureNpgsql` must be a
+singleton for the same reason.
+
 ## Open items carried to Slice B (recorded, not resolved)
 
 - **CRMLS API surface**: whether RESO Web API Add/Edit is exposed to vendors or only a proprietary

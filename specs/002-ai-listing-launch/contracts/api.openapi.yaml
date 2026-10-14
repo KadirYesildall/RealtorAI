@@ -698,6 +698,17 @@ paths:
         code change (Principle VIII.2). Enabling requires a recorded commercial license AND
         eval_status=passed (VIII.4) — enforced by a database check, so this endpoint cannot
         bypass it.
+
+        Rules this endpoint adds, because a check constraint only sees column values:
+        - evalStatus, evalResult and verifiedAt are written by the evaluation harness. They may
+          be echoed back unchanged; any change is 422.
+        - taskKey is immutable (422).
+        - Changing provider, modelId or endpoint resets the evaluation to `unverified`, clears
+          evalResult/verifiedAt, clears the license unless a new one is recorded in the same
+          request, and leaves the entry disabled. Requesting enabled=true together with such a
+          change is 422.
+        - A fallback must exist, serve the same task, and not be the entry itself (422).
+        - A request that changes nothing returns 200 and records no audit event.
       x-authorization: >
         Requires profiles.platform_admin = true (FR-064). Every change is audited as
         registry_changed with the acting administrator.
@@ -707,8 +718,15 @@ paths:
           application/json:
             schema: { $ref: '#/components/schemas/RegistryEntry' }
       responses:
-        '200': { description: Updated and audited }
-        '422': { description: Cannot enable without license and passing evaluation }
+        '200':
+          description: Updated and audited; returns the stored entry
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RegistryEntry' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { description: No registry entry has that id }
+        '409': { description: Another entry is already enabled for this task }
+        '422': { $ref: '#/components/responses/ValidationError' }
 
 components:
   securitySchemes:

@@ -5,6 +5,7 @@ using Api.Authentication;
 using Api.Authorization;
 using Api.Concurrency;
 using Api.Data;
+using Api.Endpoints;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 using Serilog;
@@ -96,5 +97,8 @@ app.MapGet("/whoami", (ClaimsPrincipal user) =>
     })
     .RequireAuthorization(PolicyRegistry.Authenticated)
     .WithName("WhoAmI");
+
+// ───────────────────────────── Endpoints ─────────────────────────────
+app.MapAiRegistryEndpoints();
 
 app.Run();
