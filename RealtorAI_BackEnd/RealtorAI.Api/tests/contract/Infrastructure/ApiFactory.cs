@@ -34,7 +34,7 @@ namespace RealtorAI.Tests.Contract.Infrastructure;
 /// verified against the running stack in T034 (research R17).
 /// </para>
 /// </summary>
-public sealed class ApiFactory : WebApplicationFactory<Program>
+public class ApiFactory : WebApplicationFactory<Program>
 {
     /// <summary>The issuer the production configuration validates against.</summary>
     internal const string Issuer = "http://127.0.0.1:54321/auth/v1";

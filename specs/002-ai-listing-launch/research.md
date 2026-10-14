@@ -946,6 +946,46 @@ automatically because it is a machine-level install.
 reaches a deployed ASP.NET Core app only through the runtime version, so runtime currency needs
 its own check.
 
+## R30. Write-once originals were only write-once for `authenticated` (2026-10-14)
+
+**Severity: high — FR-001 and FR-065 held only as an application convention.** Found while
+designing T057, before any code used storage.
+
+0011 made `listing-photos-original` write-once with storage RLS: INSERT and SELECT policies, no
+UPDATE or DELETE policy. That binds `authenticated` and nothing else — the service role bypasses
+RLS, and a server-side storage wrapper uses the service key. Verified against the running stack
+with that key before changing anything:
+
+| Request (secret key) | Before 0014 | After 0014 |
+|---|---|---|
+| upload, `x-upsert: false` | 200 | 200 |
+| upload over it, `x-upsert: true` | **200, replaced** | refused (`AccessDenied`) |
+| `POST /object/move` | — | refused |
+| `DELETE /object/...` | **200, deleted** | refused, bytes still served |
+| bulk delete by prefix | — | refused |
+| download / sign | 200 | 200 |
+
+**Fix: `0014_originals_write_once.sql`** — `BEFORE UPDATE` and `BEFORE DELETE` row triggers on
+`storage.objects`, scoped to the originals bucket, that raise for **every** role; plus a
+statement-level `BEFORE TRUNCATE` guard (R18: row triggers do not fire on TRUNCATE, and
+`service_role` holds TRUNCATE on `storage.objects`). The bytes were checked after a refused
+delete rather than assuming Storage removes the row before the file; it does.
+`StorageServiceTests` pins all of this, including SQL-level update/delete/truncate as superuser
+with Supabase's own `protect_delete` guard switched off, so only 0014 can be what refuses.
+
+**Consequences:**
+
+- FR-065's retention purge (T154) is now the only path that could ever delete an original, and
+  it does not exist yet; it must amend this guard for its own credential. Until then nothing can
+  delete an original — the safe direction.
+- Tests that write originals leave them behind in the local stack. `supabase db reset` clears
+  them.
+
+**Also in T057:** the unused `Supabase` 8.3.1 SDK package was removed from `Modules.Media`.
+Storage is called over its REST API, every call of which was exercised against the running stack
+first; the SDK would have added unverified signatures and a large transitive tree (realtime,
+websockets) for five operations.
+
 ## Open items carried to Slice B (recorded, not resolved)
 
 - **CRMLS API surface**: whether RESO Web API Add/Edit is exposed to vendors or only a proprietary

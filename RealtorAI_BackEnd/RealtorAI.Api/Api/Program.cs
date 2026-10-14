@@ -7,6 +7,7 @@ using Api.Concurrency;
 using Api.Data;
 using Api.Endpoints;
 using Api.Hubs;
+using Api.Media;
 using OpenTelemetry.Metrics;
 using Pipeline;
 using OpenTelemetry.Trace;
@@ -61,6 +62,10 @@ builder.Services.AddScoped<Modules.Audit.IAuditWriter, Modules.Audit.AuditWriter
 // Principle VIII: every AI call goes through AiService, which resolves the model from the
 // registry. No vendor, model id or endpoint appears anywhere else in the codebase.
 builder.Services.AddAiPlatform(builder.Configuration, builder.Environment);
+
+// ───────────────────────────── Media ─────────────────────────────
+// Photo storage (write-once originals), non-generative normalization, public-record pre-fill.
+builder.Services.AddMedia(builder.Configuration);
 
 // ───────────────────────────── Pipeline ─────────────────────────────
 // FR-053: durable background analysis. Hangfire stores jobs in the dedicated `hangfire` schema
