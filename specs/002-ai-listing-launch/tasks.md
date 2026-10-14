@@ -125,7 +125,7 @@ Per [plan.md](./plan.md) "Project Structure" — the repo's two mandated top-lev
 - [X] T051 [P] Contract tests for the registry admin endpoints including the authorization matrix in `tests/contract/AiRegistryEndpointTests.cs`
 - [X] T052 [P] Unit tests for schema-retry and fallback behaviour in `tests/unit/AiServiceTests.cs`
 - [X] T053 **Prohibition test (VIII.6)**: fail the build if any image/video-generation dependency or endpoint is referenced anywhere in the solution or sidecar, in `tests/prohibitions/NoGenerativeImageryTests.cs`
-- [ ] T054 Create the AI evaluation harness skeleton in `RealtorAI.Api/tools/AiEval/` with the task/metric scaffolding from [quickstart.md](./quickstart.md) §6
+- [X] T054 Create the AI evaluation harness skeleton in `RealtorAI.Api/tools/AiEval/` with the task/metric scaffolding from [quickstart.md](./quickstart.md) §6
 
 ### Shared services
 

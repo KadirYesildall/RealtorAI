@@ -25,6 +25,7 @@
     <ProjectReference Include="..\..\Modules.Brokerage\Modules.Brokerage.csproj" />
     <ProjectReference Include="..\..\Modules.Audit\Modules.Audit.csproj" />
     <ProjectReference Include="..\..\Libs.Ai\Libs.Ai.csproj" />
+    <ProjectReference Include="..\..\tools\AiEval\AiEval.csproj" />
   </ItemGroup>
 
 </Project>

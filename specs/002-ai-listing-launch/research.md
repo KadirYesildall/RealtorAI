@@ -864,6 +864,36 @@ that the translator instance is stable. Both tests were confirmed failing with t
 future `MapEnum`, `UseVector`-style plugin, or interceptor added to `ConfigureNpgsql` must be a
 singleton for the same reason.
 
+## R27. Evaluation harness: two acceptance criteria the specification has not set (2026-10-14)
+
+T054 builds the harness from quickstart §6. Its rule is that a pass must be earned on every
+specified metric: an unmeasured metric, an unset threshold, or a task with no metrics yields
+**Incomplete**, which is never written to the registry. Building it exposed two gaps that the
+harness deliberately does **not** fill with invented numbers, because a threshold chosen by the
+harness author would turn VIII.4's "passes the evaluation harness" into "passes whatever bar was
+convenient":
+
+1. **JSON-schema validity rate (FR-015)** — quickstart §6 says "report + threshold set here" and
+   none has been set. It is required for `photo.analysis`, `listing.content` and
+   `compliance.judge`, so **no chat model can pass until a product owner records a threshold**
+   (in quickstart §6 and `MetricCatalog`).
+2. **`photo.embedding` has no acceptance metric at all.** The specification defines none for the
+   embedding model, so it cannot pass and near-duplicate detection (Story 2) cannot go live on a
+   registry-enabled embedding model until one is defined — e.g. near-duplicate recall on the
+   seeded living-room pair set.
+
+Both are gates on *enablement*, not on the build, and both surface in `aieval --task all` output.
+
+Design decisions recorded with it:
+
+- The harness is a separate console tool (`tools/AiEval`), not part of the API host, and is the
+  **only** writer of `eval_status`; the admin endpoint refuses to set it (T050).
+- A recorded verdict requires `--actor`, a platform administrator, and is audited as
+  `registry_changed` in the same transaction, through the same `AuditWriter` the API uses.
+- The write matches on the evaluated provider/model/endpoint, so a model swapped mid-run is not
+  stamped with another model's verdict.
+- A pass does not enable; a failure of an enabled model disables it in the same change.
+
 ## Open items carried to Slice B (recorded, not resolved)
 
 - **CRMLS API surface**: whether RESO Web API Add/Edit is exposed to vendors or only a proprietary
