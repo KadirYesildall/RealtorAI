@@ -5,6 +5,8 @@ import { getThemePreference } from "@/lib/theme/getThemePreference";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { LanguageSwitcher } from "@/components/dashboard/LanguageSwitcher";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { PendingMembershipBanner } from "@/components/brokerage/PendingMembershipBanner";
+import { getOwnMembershipForChrome } from "@/lib/api/brokerage";
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
   // Auth guard: redirects to /login if unauthenticated (spec US3 AC1).
@@ -12,6 +14,11 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     getAuthenticatedProfile(),
     getThemePreference(),
   ]);
+
+  // After the auth guard, not alongside it: run in parallel, an anonymous visitor's request
+  // reached the API with no token (a pointless 401) before the guard redirected. Never throws —
+  // the banner is not worth taking the dashboard down when the API is.
+  const membership = await getOwnMembershipForChrome();
 
   const locale = isLocale(profile.preferredLanguage)
     ? profile.preferredLanguage
@@ -26,7 +33,15 @@ export default async function DashboardLayout({ children }: { children: ReactNod
           <LanguageSwitcher dict={dict} currentLocale={locale} />
           <ThemeToggle labels={dict.theme} initial={themePreference} />
         </header>
-        <main className="flex-1 p-6 lg:p-8">{children}</main>
+        <main className="flex-1 p-6 lg:p-8">
+          {membership?.status === "pending" && (
+            <PendingMembershipBanner
+              dict={dict.brokerage.banner}
+              brokerageName={membership.brokerageName ?? ""}
+            />
+          )}
+          {children}
+        </main>
       </div>
     </div>
   );

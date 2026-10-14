@@ -74,13 +74,37 @@ public sealed class BrokerageMembershipTests : IClassFixture<ApiFactory>
         return (admin, membership["brokerageId"]!.GetValue<Guid>());
     }
 
-    /// <summary>A fresh agent with a pending membership at Pacific Crest, which Agent A administers.</summary>
-    private async Task<(Guid Agent, Guid Membership)> CreatePendingAtPacificCrestAsync()
+    private static async Task<JsonObject> JoinAsync(Guid brokerageId) => new()
     {
-        var agent = await TestAgents.CreateAsync("applicant");
-        var membership = await DeclareAsync(agent, JoinPacificCrest());
+        ["brokerageId"] = brokerageId,
+        ["brokerageName"] = (await TestDatabase.ScalarAsync<string>(
+            "select name from public.brokerages where id = $1", brokerageId))!,
+    };
 
-        return (agent, membership["id"]!.GetValue<Guid>());
+    /// <summary>
+    /// A fresh brokerage with its admin, and a fresh agent with a pending request there.
+    ///
+    /// <para>
+    /// Never Pacific Crest: memberships are audited and so can never be deleted, and an earlier
+    /// version of this suite left hundreds of permanent applicants in the seeded brokerage,
+    /// visible on its admin screen and in every query over its members.
+    /// </para>
+    /// </summary>
+    private async Task<(Guid Admin, Guid Brokerage, Guid Agent, Guid Membership)> CreatePendingApplicantAsync()
+    {
+        var (admin, brokerage) = await CreateBrokerageAsync();
+        var agent = await TestAgents.CreateAsync("applicant");
+        var membership = await DeclareAsync(agent, await JoinAsync(brokerage));
+
+        return (admin, brokerage, agent, membership["id"]!.GetValue<Guid>());
+    }
+
+    private async Task<Guid> CreatePendingCallerAsync(Guid brokerage)
+    {
+        var agent = await TestAgents.CreateAsync("pending-caller");
+        await DeclareAsync(agent, await JoinAsync(brokerage));
+
+        return agent;
     }
 
     private static async Task<long> AuditCountAsync(string action, Guid targetId) =>
@@ -120,13 +144,14 @@ public sealed class BrokerageMembershipTests : IClassFixture<ApiFactory>
     [Fact]
     public async Task Declare_JoiningAnExistingBrokerage_Is201Pending_AndAudited()
     {
+        var (_, brokerage) = await CreateBrokerageAsync();
         var agent = await TestAgents.CreateAsync("joiner");
 
-        var membership = await DeclareAsync(agent, JoinPacificCrest());
+        var membership = await DeclareAsync(agent, await JoinAsync(brokerage));
 
         Assert.Equal("pending", membership["status"]!.GetValue<string>());
         Assert.Equal("agent", membership["role"]!.GetValue<string>());
-        Assert.Equal(Seed.PacificCrest, membership["brokerageId"]!.GetValue<Guid>());
+        Assert.Equal(brokerage, membership["brokerageId"]!.GetValue<Guid>());
         Assert.Null(membership["decidedAt"]);
         Assert.False(membership["capabilities"]!["canApproveMarketing"]!.GetValue<bool>());
         Assert.False(membership["capabilities"]!["canSubmitToMls"]!.GetValue<bool>());
@@ -165,7 +190,7 @@ public sealed class BrokerageMembershipTests : IClassFixture<ApiFactory>
     [Fact]
     public async Task Declare_ASecondLiveMembership_Is409()
     {
-        var (agent, _) = await CreatePendingAtPacificCrestAsync();
+        var (_, _, agent, _) = await CreatePendingApplicantAsync();
         using var client = factory.CreateClientFor(agent);
 
         var response = await client.PostAsJsonAsync(Memberships, NewBrokerage("Second Realty"));
@@ -328,7 +353,7 @@ public sealed class BrokerageMembershipTests : IClassFixture<ApiFactory>
     [Fact]
     public async Task Decide_Approve_RecordsTheDecider_AuditsIt_AndTakesEffectImmediately()
     {
-        var (agent, membershipId) = await CreatePendingAtPacificCrestAsync();
+        var (adminId, brokerage, agent, membershipId) = await CreatePendingApplicantAsync();
 
         // Prime the agent's cached membership as pending.
         using (var agentClient = factory.CreateClientFor(agent))
@@ -336,9 +361,9 @@ public sealed class BrokerageMembershipTests : IClassFixture<ApiFactory>
             Assert.Equal("pending", (await agentClient.GetFromJsonAsync<JsonObject>(Memberships))!["status"]!.GetValue<string>());
         }
 
-        using var admin = factory.CreateClientFor(Seed.AgentA);
+        using var admin = factory.CreateClientFor(adminId);
         var response = await admin.PostAsJsonAsync(
-            Decision(Seed.PacificCrest, membershipId),
+            Decision(brokerage, membershipId),
             new JsonObject { ["decision"] = "approved" });
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -347,7 +372,7 @@ public sealed class BrokerageMembershipTests : IClassFixture<ApiFactory>
         Assert.Equal("approved", decided["status"]!.GetValue<string>());
         Assert.NotNull(decided["decidedAt"]);
 
-        Assert.Equal(Seed.AgentA, await TestDatabase.ScalarAsync<Guid>(
+        Assert.Equal(adminId, await TestDatabase.ScalarAsync<Guid>(
             "select decided_by from public.brokerage_memberships where id = $1", membershipId));
 
         // Audit: actor, outcome, and the transition.
@@ -363,8 +388,8 @@ public sealed class BrokerageMembershipTests : IClassFixture<ApiFactory>
         await using var reader = await command.ExecuteReaderAsync();
 
         Assert.True(await reader.ReadAsync(), "The decision was not audited.");
-        Assert.Equal(Seed.AgentA, reader.GetGuid(0));
-        Assert.Equal(Seed.PacificCrest, reader.GetGuid(1));
+        Assert.Equal(adminId, reader.GetGuid(0));
+        Assert.Equal(brokerage, reader.GetGuid(1));
         Assert.Equal("pending", reader.GetString(2));
         Assert.Equal("approved", reader.GetString(3));
         Assert.False(reader.IsDBNull(4));
@@ -377,11 +402,11 @@ public sealed class BrokerageMembershipTests : IClassFixture<ApiFactory>
     [Fact]
     public async Task Decide_Reject_IsAudited_AndGrantsNothing()
     {
-        var (agent, membershipId) = await CreatePendingAtPacificCrestAsync();
+        var (adminId, brokerage, agent, membershipId) = await CreatePendingApplicantAsync();
 
-        using var admin = factory.CreateClientFor(Seed.AgentA);
+        using var admin = factory.CreateClientFor(adminId);
         var response = await admin.PostAsJsonAsync(
-            Decision(Seed.PacificCrest, membershipId),
+            Decision(brokerage, membershipId),
             new JsonObject { ["decision"] = "rejected" });
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -402,11 +427,11 @@ public sealed class BrokerageMembershipTests : IClassFixture<ApiFactory>
     [Fact]
     public async Task Decide_AMembershipThatIsNotPending_Is409()
     {
-        var (_, membershipId) = await CreatePendingAtPacificCrestAsync();
-        using var admin = factory.CreateClientFor(Seed.AgentA);
+        var (adminId, brokerage, _, membershipId) = await CreatePendingApplicantAsync();
+        using var admin = factory.CreateClientFor(adminId);
 
-        await admin.PostAsJsonAsync(Decision(Seed.PacificCrest, membershipId), new JsonObject { ["decision"] = "approved" });
-        var again = await admin.PostAsJsonAsync(Decision(Seed.PacificCrest, membershipId), new JsonObject { ["decision"] = "rejected" });
+        await admin.PostAsJsonAsync(Decision(brokerage, membershipId), new JsonObject { ["decision"] = "approved" });
+        var again = await admin.PostAsJsonAsync(Decision(brokerage, membershipId), new JsonObject { ["decision"] = "rejected" });
 
         Assert.Equal(HttpStatusCode.Conflict, again.StatusCode);
     }
@@ -440,16 +465,26 @@ public sealed class BrokerageMembershipTests : IClassFixture<ApiFactory>
     }
 
     [Theory]
-    [InlineData("bbbbbbbb-0000-4000-8000-000000000002")] // pending member of the same brokerage
-    [InlineData("cccccccc-0000-4000-8000-000000000003")] // approved agent elsewhere
-    [InlineData("dddddddd-0000-4000-8000-000000000004")] // platform admin
-    public async Task Decide_AsAnyoneButAnApprovedAdmin_Is403_AndChangesNothing(string caller)
+    [InlineData("pendingSameBrokerage")]
+    [InlineData("approvedAgentElsewhere")]
+    [InlineData("adminElsewhere")]
+    [InlineData("platformAdmin")]
+    public async Task Decide_AsAnyoneButAnApprovedAdmin_Is403_AndChangesNothing(string relationship)
     {
-        var (_, membershipId) = await CreatePendingAtPacificCrestAsync();
-        using var client = factory.CreateClientFor(Guid.Parse(caller));
+        var (_, brokerage, _, membershipId) = await CreatePendingApplicantAsync();
+
+        var caller = relationship switch
+        {
+            "pendingSameBrokerage" => await CreatePendingCallerAsync(brokerage),
+            "approvedAgentElsewhere" => Seed.AgentC,
+            "adminElsewhere" => Seed.AgentA,
+            _ => Seed.PlatformAdmin,
+        };
+
+        using var client = factory.CreateClientFor(caller);
 
         var response = await client.PostAsJsonAsync(
-            Decision(Seed.PacificCrest, membershipId),
+            Decision(brokerage, membershipId),
             new JsonObject { ["decision"] = "approved" });
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
@@ -464,11 +499,11 @@ public sealed class BrokerageMembershipTests : IClassFixture<ApiFactory>
     [InlineData("maybe")]
     public async Task Decide_WithAnythingButApprovedOrRejected_Is422(string decision)
     {
-        var (_, membershipId) = await CreatePendingAtPacificCrestAsync();
-        using var admin = factory.CreateClientFor(Seed.AgentA);
+        var (adminId, brokerage, _, membershipId) = await CreatePendingApplicantAsync();
+        using var admin = factory.CreateClientFor(adminId);
 
         var response = await admin.PostAsJsonAsync(
-            Decision(Seed.PacificCrest, membershipId),
+            Decision(brokerage, membershipId),
             new JsonObject { ["decision"] = decision });
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);

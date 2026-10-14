@@ -137,7 +137,7 @@ Per [plan.md](./plan.md) "Project Structure" — the repo's two mandated top-lev
 - [X] T060 [P] Define `IPropertyDataProvider` and ship `NullPropertyDataProvider` in `Modules.Listings/PropertyData/` (research R5)
 - [X] T061 [P] Contract tests for every brokerage and membership endpoint — declare (201/409), list pending, approve/reject decision, and settings read/write — including the authorization matrix and the FR-062 audit assertion, in `tests/contract/BrokerageMembershipTests.cs`
 - [X] T062 Implement brokerage and membership endpoints (declare, list pending, approve/reject, settings) in `Modules.Brokerage/Endpoints/` — *built in `Api/Endpoints/BrokerageEndpoints.cs` with the lifecycle rules in `Modules.Brokerage/MembershipRules.cs`, because the EF model lives in the host (research R20, R32)* per [api.openapi.yaml](./contracts/api.openapi.yaml)
-- [ ] T063 Build the brokerage frontend in `RealtorAI_FrontEnd/app/dashboard/brokerage/` (settings, members approve/reject) plus the pending-membership banner component, with EN/TR keys in `lib/i18n/dictionaries/` and both themes
+- [X] T063 Build the brokerage frontend in `RealtorAI_FrontEnd/app/dashboard/brokerage/` (settings, members approve/reject) plus the pending-membership banner component, with EN/TR keys in `lib/i18n/dictionaries/` and both themes
 
 **Checkpoint**: Foundation ready — user story implementation can now begin
 

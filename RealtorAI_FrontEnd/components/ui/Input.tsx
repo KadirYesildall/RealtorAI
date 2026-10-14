@@ -2,7 +2,8 @@ import { type InputHTMLAttributes, forwardRef } from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils/cn";
 
-const inputVariants = cva(
+/** Exported so Textarea and Select share the exact field treatment rather than restyling it. */
+export const inputVariants = cva(
   "block w-full rounded-[var(--radius-md)] border bg-[var(--color-surface)] px-3.5 h-11 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] transition-[border-color,box-shadow] focus-visible:outline-none focus-visible:border-[var(--color-accent)] focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--color-accent)_28%,transparent)] disabled:opacity-50",
   {
     variants: {

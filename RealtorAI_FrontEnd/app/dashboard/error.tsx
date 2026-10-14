@@ -13,10 +13,10 @@ const COPY = {
 
 export default function DashboardError({
   error,
-  unstable_retry,
+  retry,
 }: {
   error: Error & { digest?: string };
-  unstable_retry: () => void;
+  retry: () => void;
 }) {
   const [locale] = useState<"en" | "tr">(() => {
     const match = document.cookie.match(/(?:^|; )NEXT_LOCALE=(en|tr)/);
@@ -33,7 +33,7 @@ export default function DashboardError({
     <div className="flex min-h-[50vh] flex-col items-center justify-center gap-3 text-center">
       <h2 className="text-lg font-semibold text-[var(--color-text)]">{t.title}</h2>
       <p className="text-sm text-[var(--color-text-muted)]">{t.body}</p>
-      <Button onClick={() => unstable_retry()}>{t.retry}</Button>
+      <Button onClick={() => retry()}>{t.retry}</Button>
     </div>
   );
 }

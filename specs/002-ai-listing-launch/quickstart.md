@@ -43,13 +43,19 @@ npx --yes supabase@latest db reset   # destructive: rebuilds from all migrations
 # 4. Vision sidecar (separate terminal)
 docker compose -f RealtorAI_BackEnd/vision-sidecar/compose.yaml up
 
-# 5. API (separate terminal)
-dotnet run --project RealtorAI_BackEnd/RealtorAI.Api/Api
+# 5. API (separate terminal). Photo storage needs the Supabase secret key from
+#    `npx supabase status` (SECRET_KEY) in this variable; the key never goes in a settings file.
+$env:SUPABASE_SECRET_KEY = "<SECRET_KEY from supabase status>"
+dotnet run --project RealtorAI_BackEnd/RealtorAI.Api/Api --launch-profile http   # http://localhost:5185
 
-# 6. Frontend (separate terminal)
+# 6. Frontend (separate terminal). .env.local needs, besides the Supabase values:
+#      API_BASE_URL=http://localhost:5185     (server-only; the browser never calls the API)
 cd RealtorAI_FrontEnd
 npm run dev
 ```
+
+The frontend's API types are generated from `contracts/api.openapi.yaml`; after changing the
+contract, run `npm run api:types` in `RealtorAI_FrontEnd/` and commit `lib/api/schema.d.ts`.
 
 **There is deliberately no Compose-owned Postgres and no MinIO.** The Supabase CLI stack is the
 single source of Postgres, Auth, and Storage; Compose covers only the sidecar. Reasons in
