@@ -986,6 +986,66 @@ Storage is called over its REST API, every call of which was exercised against t
 first; the SDK would have added unverified signatures and a large transitive tree (realtime,
 websockets) for five operations.
 
+## R31. Three persistence defects surfaced by the brokerage endpoints (2026-10-14)
+
+T061/T062 were the first endpoints to create several related rows and audit them in one request.
+Three defects, all latent since earlier tasks, came out of it.
+
+### 1. Every API-written timestamp defaulting to `now()` was stored as `-infinity` (high)
+
+R21 fixed EF overriding database defaults for literals, and `ColumnDefaultsTests` deliberately
+excluded `now()` defaults ("the application has nothing to agree with"). But the same mechanism
+applies: with no default declared in the model, EF sends `default(DateTimeOffset)`, which Npgsql
+writes as **`-infinity`**. Checked against the database: **31 of 43 audit rows had
+`created_at = -infinity`** — every one the API wrote via `EfAuditSink` (T042 onward, first
+exercised by T050). An audit trail that cannot say when anything happened defeats FR-049.
+
+Fix: `AppDbContext.ConfigureDatabaseClockDefaults` declares `HasDefaultValueSql` on all 14
+`now()`-defaulted columns. `ColumnDefaultsTests` gains two tests — every `now()` column in the
+live schema must have a model default (failed listing all 14 before the fix), and an audit row
+inserted through EF gets the database clock. The `-infinity` rows already in the local database
+are immutable by design; `supabase db reset` clears them. No deployed environment existed.
+
+### 2. FR-066's 409 on a genuine write race was a 500 (high)
+
+`ConcurrencyGuard` caught `PostgresException` with SQLSTATE 40001, but that exception never
+arrives bare: EF wraps it in `DbUpdateException` and Npgsql's default execution strategy wraps
+that in `InvalidOperationException`. So two writers truly racing on one row got a 500, not the
+version conflict FR-066 and SC-012 require. `TwoConcurrentWritersAtTheSameVersion_OnlyOneSucceeds`
+existed for exactly this and passed only because its writers rarely overlapped; once the suite
+grew heavier they did, every run. Fix: the guard walks the exception chain
+(`IsSerializationFailure`), with unit tests over the real wrapping shapes — and confirming a
+deadlock or constraint violation is *not* reported as a conflict.
+
+### 3. EF cannot order inserts that reference each other (medium, open)
+
+The EF model deliberately has no navigations (see `BrokerageEntities.cs`) — and so no foreign-key
+metadata either, which means EF does not know an audit row citing a new brokerage must be
+inserted after it. One `SaveChanges` batch ordered them wrongly and failed on the FK. T062 saves
+the parent rows first, then the audit rows, inside one explicit transaction, so atomicity is
+unchanged. **Open:** every later endpoint that creates a parent and its dependents in one
+request (listing + fields + photos + audit, T075/T077) meets the same trap. The general fix is
+to declare FK relationships **without navigations** (`HasOne<T>().WithMany().HasForeignKey(...)`,
+`DeleteBehavior.NoAction` to mirror the SQL), plus a schema-drift test comparing them to the live
+constraints. Recommended before US1's endpoints.
+
+## R32. Brokerage endpoints: contract additions and one gap (2026-10-14)
+
+- **Creating a brokerage needs its license number and state** (`brokerages` columns are NOT NULL
+  and FR-021/FR-057 put them in disclosures), which `DeclareMembershipRequest` lacked.
+  Added `brokerageLicenseNumber` and `brokerageState`, required only when creating.
+- **Joining needs the brokerage id.** No endpoint lists brokerages (RLS lets only approved members
+  read one), so the id is shared by its admin; the declared name must match it.
+- **`Membership` gains the agent's name and license**, which an admin needs to decide a request.
+- **First registrant** = no *live* members. A brokerage whose memberships have all ended can be
+  claimed again rather than stranded with nobody able to approve anyone.
+- **Gap: logo upload.** FR-057 lists the logo as configurable, but Slice A's contract has no upload
+  endpoint. `logoStorageKey` is read-only in `PUT /settings`; accepting a free-form key would let
+  a brokerage point its logo at any stored object. Needs a `brokerage-assets` upload endpoint.
+- **Membership resolver bug fixed:** a rejected agent re-declaring the same brokerage leaves two
+  rows there, and `GetMembershipAsync`'s `SingleOrDefault` threw — every request by that agent
+  would have been a 500. It now returns the live row, else a historical one.
+
 ## Open items carried to Slice B (recorded, not resolved)
 
 - **CRMLS API surface**: whether RESO Web API Add/Edit is exposed to vendors or only a proprietary

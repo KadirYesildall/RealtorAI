@@ -120,6 +120,113 @@ public sealed class ColumnDefaultsTests
     }
 
     /// <summary>
+    /// The timestamp half of the same bug class, which the test above deliberately skipped
+    /// (research R31).
+    ///
+    /// <para>
+    /// A <c>now()</c> default cannot be matched by a CLR default — there is no CLR value that
+    /// means "the database's clock". So unless EF is told the column has a database default, it
+    /// sends <c>default(DateTimeOffset)</c>, Npgsql writes that as <c>-infinity</c>, and the
+    /// database default never applies. That happened: every audit row the API wrote before this
+    /// test existed has <c>created_at = -infinity</c>, an audit trail that cannot say when
+    /// anything happened.
+    /// </para>
+    /// </summary>
+    [Fact]
+    public async Task EveryNowDefaultedColumn_IsMappedAsADatabaseDefault()
+    {
+        await using var context = SupabaseDatabase.CreateContext();
+        await using var connection = await SupabaseDatabase.OpenSuperuserAsync();
+
+        await using var command = new NpgsqlCommand(
+            """
+            select table_name, column_name
+            from information_schema.columns
+            where table_schema = 'public' and column_default ~ 'now\(\)'
+            order by table_name, column_name
+            """,
+            connection);
+
+        var columns = new List<(string Table, string Column)>();
+
+        await using (var reader = await command.ExecuteReaderAsync())
+        {
+            while (await reader.ReadAsync())
+            {
+                columns.Add((reader.GetString(0), reader.GetString(1)));
+            }
+        }
+
+        Assert.NotEmpty(columns);
+
+        var entityTypesByTable = context.Model.GetEntityTypes()
+            .Where(entityType => entityType.GetTableName() is not null)
+            .ToDictionary(entityType => entityType.GetTableName()!, StringComparer.Ordinal);
+
+        var problems = new List<string>();
+
+        foreach (var (table, column) in columns)
+        {
+            if (!entityTypesByTable.TryGetValue(table, out var entityType))
+            {
+                problems.Add($"{table} has a now()-defaulted column but no mapped entity.");
+                continue;
+            }
+
+            var property = entityType.GetProperties()
+                .SingleOrDefault(candidate => candidate.GetColumnName() == column);
+
+            if (property is null)
+            {
+                problems.Add($"{table}.{column} is not mapped to any property.");
+                continue;
+            }
+
+            if (property.GetDefaultValueSql() is null)
+            {
+                problems.Add(
+                    $"{table}.{column} ({entityType.ClrType.Name}.{property.Name}) defaults to now() "
+                    + "in the database but has no default in the model, so EF writes -infinity on insert.");
+            }
+        }
+
+        Assert.True(problems.Count == 0, "Timestamp defaults EF will override:\n  " + string.Join("\n  ", problems));
+    }
+
+    /// <summary>
+    /// The behaviour, not just the configuration: an audit row added through EF the way
+    /// <c>EfAuditSink</c> adds one gets the database's clock.
+    /// </summary>
+    [Fact]
+    public async Task AnAuditRowInsertedThroughEf_IsStampedWithTheDatabaseClock()
+    {
+        await using var context = SupabaseDatabase.CreateContext();
+        await using var transaction = await context.Database.BeginTransactionAsync();
+
+        // A system event with no actor, so the insert takes no foreign-key lock on a seeded
+        // profile that suites running in parallel are also locking.
+        var row = new Api.Data.Entities.AuditEvent
+        {
+            Id = Guid.CreateVersion7(),
+            Action = Modules.Audit.AuditAction.OriginalsPurged,
+            PayloadHash = new string('0', 64),
+        };
+
+        context.AuditEvents.Add(row);
+        await context.SaveChangesAsync();
+
+        var stored = await context.AuditEvents
+            .AsNoTracking()
+            .Where(candidate => candidate.Id == row.Id)
+            .Select(candidate => candidate.CreatedAt)
+            .SingleAsync();
+
+        Assert.InRange(stored, DateTimeOffset.UtcNow.AddMinutes(-5), DateTimeOffset.UtcNow.AddMinutes(5));
+
+        await transaction.RollbackAsync();
+    }
+
+    /// <summary>
     /// Normalises a PostgreSQL default expression into a comparable string.
     /// </summary>
     private static bool TryDescribeSqlDefault(string sqlDefault, out string described)

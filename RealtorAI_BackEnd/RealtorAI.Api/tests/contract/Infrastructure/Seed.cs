@@ -26,6 +26,64 @@ internal static class Seed
 }
 
 /// <summary>
+/// Agents created by a test, for flows that would otherwise change a seeded persona — approving
+/// Agent B, for instance, would silently break every test that relies on B being pending.
+///
+/// <para>
+/// <b>They persist.</b> Anything an endpoint audits is referenced by an append-only audit row,
+/// and the database refuses to delete what audit rows reference, so test-created agents and
+/// brokerages that went through an audited endpoint stay in the local stack. Their emails end in
+/// <c>@contract.test</c>; <c>supabase db reset</c> clears them.
+/// </para>
+/// </summary>
+internal static class TestAgents
+{
+    /// <summary>
+    /// Creates an agent. With <paramref name="completeProfile"/>, also records a license so the
+    /// agent can declare a brokerage (FR-058).
+    /// </summary>
+    internal static async Task<Guid> CreateAsync(string label, bool completeProfile = true)
+    {
+        var id = Guid.CreateVersion7();
+
+        // Token columns as empty strings: GoTrue cannot scan NULL into them (see seed.sql).
+        await TestDatabase.ExecuteAsync(
+            """
+            insert into auth.users
+                (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at,
+                 created_at, updated_at, confirmation_token, recovery_token, email_change,
+                 email_change_token_new)
+            values ($1, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
+                    $2, 'x', timezone('utc', now()), timezone('utc', now()), timezone('utc', now()),
+                    '', '', '', '')
+            """,
+            id,
+            $"{label}-{id:N}@contract.test");
+
+        // feature 001's trigger has already created the profile row.
+        await TestDatabase.ExecuteAsync(
+            "update public.profiles set full_name = $2 where id = $1",
+            id,
+            label);
+
+        if (completeProfile)
+        {
+            await TestDatabase.ExecuteAsync(
+                """
+                update public.profiles
+                set license_number = $2, license_state = 'CA',
+                    profile_completed_at = timezone('utc', now())
+                where id = $1
+                """,
+                id,
+                "CA-" + id.ToString("N")[..8]);
+        }
+
+        return id;
+    }
+}
+
+/// <summary>
 /// Direct access to the database the API under test is using, for arranging state and for
 /// asserting on what a request actually persisted — a response saying "updated" is a claim; the
 /// row is the evidence.

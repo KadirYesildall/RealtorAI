@@ -103,7 +103,17 @@ public sealed class MembershipResolver : IMembershipResolver
     {
         var memberships = await GetMembershipsAsync(agentId, cancellationToken);
 
-        return memberships.SingleOrDefault(membership => membership.BrokerageId == brokerageId);
+        var atBrokerage = memberships
+            .Where(membership => membership.BrokerageId == brokerageId)
+            .ToList();
+
+        // An agent may hold history at a brokerage — rejected, or revoked — alongside a new live
+        // request there, so more than one row per brokerage is normal. The live one (pending or
+        // approved) is the membership; the partial unique index allows at most one per agent.
+        // With only history, any historical row answers equally: none of them grants anything.
+        return atBrokerage.SingleOrDefault(membership =>
+                membership.Status is MembershipStatus.Pending or MembershipStatus.Approved)
+            ?? atBrokerage.FirstOrDefault();
     }
 
     public async Task<IReadOnlyList<Membership>> GetMembershipsAsync(

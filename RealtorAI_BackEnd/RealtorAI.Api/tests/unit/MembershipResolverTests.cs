@@ -87,6 +87,45 @@ public sealed class MembershipResolverTests
         Assert.Null(await resolver.GetMembershipAsync(AgentId, OtherBrokerageId, default));
     }
 
+    /// <summary>
+    /// An agent rejected by a brokerage may declare it again (T062), which leaves two rows for
+    /// one brokerage: the rejected history and the new pending one. The lookup must return the
+    /// live row — the first version used SingleOrDefault and threw, which would have turned every
+    /// request by such an agent into a 500.
+    /// </summary>
+    [Fact]
+    public async Task GetMembership_WithHistoryAtTheSameBrokerage_ReturnsTheLiveRow()
+    {
+        var (resolver, store) = Build();
+
+        store.Set(
+            AgentId,
+            new Membership(AgentId, BrokerageId, MembershipStatus.Rejected, MembershipRole.Agent),
+            new Membership(AgentId, BrokerageId, MembershipStatus.Pending, MembershipRole.Agent));
+
+        var membership = await resolver.GetMembershipAsync(AgentId, BrokerageId, default);
+
+        Assert.NotNull(membership);
+        Assert.Equal(MembershipStatus.Pending, membership.Status);
+    }
+
+    /// <summary>With only history at a brokerage, the lookup still answers — and grants nothing.</summary>
+    [Fact]
+    public async Task GetMembership_WithOnlyHistoryAtTheBrokerage_ReturnsANonApprovedRow()
+    {
+        var (resolver, store) = Build();
+
+        store.Set(
+            AgentId,
+            new Membership(AgentId, BrokerageId, MembershipStatus.Rejected, MembershipRole.Agent),
+            new Membership(AgentId, BrokerageId, MembershipStatus.Revoked, MembershipRole.BrokerAdmin));
+
+        var membership = await resolver.GetMembershipAsync(AgentId, BrokerageId, default);
+
+        Assert.NotNull(membership);
+        Assert.False(membership.IsApproved);
+    }
+
     [Fact]
     public async Task GetMembership_ReturnsNullWhenTheAgentHasDeclaredNoBrokerage()
     {

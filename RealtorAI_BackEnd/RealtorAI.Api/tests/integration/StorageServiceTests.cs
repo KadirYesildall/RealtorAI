@@ -22,6 +22,7 @@ namespace RealtorAI.Tests.Integration;
 /// stack. <c>supabase db reset</c> clears them.
 /// </para>
 /// </summary>
+[Collection(TableLockingTests.Name)]
 public sealed class StorageServiceTests : IDisposable
 {
     private const string StorageApi = "http://127.0.0.1:54321/storage/v1";

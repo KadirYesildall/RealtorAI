@@ -131,7 +131,7 @@ internal sealed class ConcurrencyGuard : IConcurrencyGuard
             await context.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
         }
-        catch (PostgresException exception) when (exception.SqlState == SerializationFailure)
+        catch (Exception exception) when (IsSerializationFailure(exception))
         {
             await transaction.RollbackAsync(cancellationToken);
 
@@ -156,6 +156,32 @@ internal sealed class ConcurrencyGuard : IConcurrencyGuard
     /// also fails or the row has since gone, the conflict is still reported — the caller needs
     /// to know their write was rejected far more than they need the exact current number.
     /// </summary>
+    /// <summary>
+    /// Whether <paramref name="exception"/> is, somewhere in its chain, a serialization failure.
+    ///
+    /// <para>
+    /// The PostgreSQL error never arrives bare. EF wraps it in a <c>DbUpdateException</c>, and
+    /// Npgsql's default execution strategy wraps that again in an
+    /// <c>InvalidOperationException</c> ("likely due to a transient failure"). The first version
+    /// of this guard caught <c>PostgresException</c> directly, so the case it exists for — two
+    /// writers genuinely racing — escaped as a 500 instead of the 409 FR-066 promises.
+    /// <c>TwoConcurrentWritersAtTheSameVersion_OnlyOneSucceeds</c> had been passing only because
+    /// its two writers rarely overlapped; under a heavier parallel suite they did (research R31).
+    /// </para>
+    /// </summary>
+    internal static bool IsSerializationFailure(Exception exception)
+    {
+        for (var current = exception; current is not null; current = current.InnerException)
+        {
+            if (current is PostgresException { SqlState: SerializationFailure })
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private async Task<int?> ReadCurrentVersionAsync<TEntity>(
         Guid id,
         CancellationToken cancellationToken)

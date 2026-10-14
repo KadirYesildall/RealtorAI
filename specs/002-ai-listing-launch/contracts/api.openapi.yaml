@@ -85,8 +85,15 @@ paths:
       summary: Self-declare a brokerage (creates a pending membership)
       description: |
         Creates the membership with status `pending` (FR-060). Confers no brokerage-scoped
-        access until approved. If the brokerage has no members yet, the caller becomes its
-        first `broker_admin` and the membership is created `approved` (FR-062).
+        access until approved. If the brokerage has no live (pending or approved) members — or
+        is being created by this request — the caller becomes its first `broker_admin` and the
+        membership is created `approved` (FR-062), audited as both membership_requested and
+        membership_decided.
+
+        Joining an existing brokerage: send brokerageId (shared by its admin) and its name; the
+        name must match the id, so a mistyped id cannot attach the agent to the wrong
+        brokerage. Creating a new one: omit brokerageId and send brokerageLicenseNumber and
+        brokerageState, which the brokerage record requires (FR-021, FR-057).
       x-authorization: Authenticated with completed profile. One live membership per agent.
       requestBody:
         required: true
@@ -99,11 +106,15 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Membership' }
+        '403': { description: Profile not completed (FR-058) }
         '409': { description: Agent already has a pending or approved membership }
         '422': { $ref: '#/components/responses/ValidationError' }
     get:
       tags: [Brokerage]
       summary: Read own membership status
+      description: |
+        The live membership if there is one, otherwise the most recent ended one (so a rejected
+        agent sees the rejection), otherwise the JSON literal `null`.
       x-authorization: Authenticated; returns only the caller's own membership.
       responses:
         '200':
@@ -134,6 +145,7 @@ paths:
                 type: array
                 items: { $ref: '#/components/schemas/Membership' }
         '403': { $ref: '#/components/responses/Forbidden' }
+        '422': { description: Unknown status filter }
 
   /api/brokerages/{brokerageId}/memberships/{membershipId}/decision:
     parameters:
@@ -163,7 +175,9 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Membership' }
         '403': { $ref: '#/components/responses/Forbidden' }
-        '409': { description: Membership is not pending }
+        '404': { description: No membership with that id in this brokerage }
+        '409': { description: Membership is not pending (a request is decided once) }
+        '422': { description: Decision is not `approved` or `rejected` }
 
   /api/brokerages/{brokerageId}/settings:
     parameters:
@@ -182,7 +196,10 @@ paths:
     put:
       tags: [Brokerage]
       summary: Update brokerage name, license info, logo, state, disclaimers, target MLS
-      description: FR-057.
+      description: |
+        FR-057. logoStorageKey is read-only here: Slice A has no logo upload endpoint, and
+        accepting an arbitrary key would let a brokerage point its logo at any stored object
+        (research R32). targetMlsId must name a rule profile that exists, or be null.
       x-authorization: Requires an APPROVED broker_admin membership of {brokerageId}.
       requestBody:
         required: true
@@ -190,7 +207,11 @@ paths:
           application/json:
             schema: { $ref: '#/components/schemas/BrokerageSettings' }
       responses:
-        '200': { description: Updated }
+        '200':
+          description: Updated; returns the stored settings
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BrokerageSettings' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '422': { $ref: '#/components/responses/ValidationError' }
 
@@ -874,11 +895,28 @@ components:
       properties:
         brokerageId: { type: string, format: uuid, nullable: true }
         brokerageName: { type: string }
+        brokerageLicenseNumber:
+          type: string
+          nullable: true
+          description: Required when brokerageId is null (creating a brokerage).
+        brokerageState:
+          type: string
+          nullable: true
+          pattern: '^[A-Z]{2}$'
+          description: Required when brokerageId is null (creating a brokerage).
     Membership:
       type: object
       properties:
         id: { type: string, format: uuid }
+        agentId: { type: string, format: uuid }
+        agentName:
+          type: string
+          nullable: true
+          description: Shown to the deciding broker admin, with the license, so they know who is asking.
+        agentLicenseNumber: { type: string, nullable: true }
+        agentLicenseState: { type: string, nullable: true }
         brokerageId: { type: string, format: uuid }
+        brokerageName: { type: string }
         status: { $ref: '#/components/schemas/MembershipStatus' }
         role: { $ref: '#/components/schemas/MembershipRole' }
         requestedAt: { type: string, format: date-time }

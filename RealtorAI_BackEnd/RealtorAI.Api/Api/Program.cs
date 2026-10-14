@@ -122,6 +122,7 @@ app.MapGet("/whoami", (ClaimsPrincipal user) =>
 
 // ───────────────────────────── Endpoints ─────────────────────────────
 app.MapAiRegistryEndpoints();
+app.MapBrokerageEndpoints();
 app.MapPipelineHub();
 
 app.Run();

@@ -160,6 +160,7 @@ public class AppDbContext : DbContext
         // ───────────────── Column types the convention cannot infer ─────────────────
         ConfigureJsonbColumns(modelBuilder);
         ConfigureFixedWidthAndPrecision(modelBuilder);
+        ConfigureDatabaseClockDefaults(modelBuilder);
 
         modelBuilder.Entity<PhotoEmbedding>()
             .Property(e => e.Embedding)
@@ -214,6 +215,46 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<PromptVersion>().Property(e => e.OutputSchema).HasColumnType("jsonb");
         modelBuilder.Entity<AuditEvent>().Property(e => e.BeforeValue).HasColumnType("jsonb");
         modelBuilder.Entity<AuditEvent>().Property(e => e.AfterValue).HasColumnType("jsonb");
+    }
+
+    /// <summary>
+    /// The SQL expression every timestamp default in the migrations uses.
+    /// </summary>
+    private const string DatabaseClock = "timezone('utc'::text, now())";
+
+    /// <summary>
+    /// Timestamps the database stamps on insert (research R31).
+    ///
+    /// <para>
+    /// Declaring the default is what stops EF sending the property's CLR value. Without it EF
+    /// writes <c>default(DateTimeOffset)</c>, which Npgsql stores as <c>-infinity</c>, and the
+    /// database's <c>now()</c> never applies — which is how every audit row the API wrote
+    /// before this existed ended up unable to say when it happened. With it, EF omits the
+    /// column while the property holds its default and reads the stamped value back.
+    /// </para>
+    /// <para>
+    /// One clock for every record is the point (see <c>EfAuditSink</c>): application servers
+    /// disagree about the time, and a trail ordered by a mix of their clocks can show effects
+    /// before causes. <c>ColumnDefaultsTests</c> fails if a migration adds a <c>now()</c>
+    /// default that is not listed here.
+    /// </para>
+    /// </summary>
+    private static void ConfigureDatabaseClockDefaults(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Brokerage>().Property(e => e.CreatedAt).HasDefaultValueSql(DatabaseClock);
+        modelBuilder.Entity<BrokerageMembership>().Property(e => e.RequestedAt).HasDefaultValueSql(DatabaseClock);
+        modelBuilder.Entity<Profile>().Property(e => e.UpdatedAt).HasDefaultValueSql(DatabaseClock);
+        modelBuilder.Entity<Profile>().Property(e => e.AcceptedTermsAt).HasDefaultValueSql(DatabaseClock);
+        modelBuilder.Entity<Listing>().Property(e => e.CreatedAt).HasDefaultValueSql(DatabaseClock);
+        modelBuilder.Entity<Listing>().Property(e => e.UpdatedAt).HasDefaultValueSql(DatabaseClock);
+        modelBuilder.Entity<Photo>().Property(e => e.UploadedAt).HasDefaultValueSql(DatabaseClock);
+        modelBuilder.Entity<PhotoAnalysis>().Property(e => e.CreatedAt).HasDefaultValueSql(DatabaseClock);
+        modelBuilder.Entity<ContentDraft>().Property(e => e.CreatedAt).HasDefaultValueSql(DatabaseClock);
+        modelBuilder.Entity<ComplianceFinding>().Property(e => e.CreatedAt).HasDefaultValueSql(DatabaseClock);
+        modelBuilder.Entity<Approval>().Property(e => e.ApprovedAt).HasDefaultValueSql(DatabaseClock);
+        modelBuilder.Entity<PromptVersion>().Property(e => e.CreatedAt).HasDefaultValueSql(DatabaseClock);
+        modelBuilder.Entity<AiUsage>().Property(e => e.CreatedAt).HasDefaultValueSql(DatabaseClock);
+        modelBuilder.Entity<AuditEvent>().Property(e => e.CreatedAt).HasDefaultValueSql(DatabaseClock);
     }
 
     private static void ConfigureFixedWidthAndPrecision(ModelBuilder modelBuilder)
