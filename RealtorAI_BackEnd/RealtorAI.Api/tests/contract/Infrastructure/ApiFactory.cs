@@ -48,6 +48,22 @@ public class ApiFactory : WebApplicationFactory<Program>
         // Development supplies the verified local connection string and authority.
         builder.UseEnvironment("Development");
 
+        // One background worker per test host. The suites run many hosts at once against one
+        // local Postgres, and each worker holds a connection; at the development default of four,
+        // parallel suites exhausted the server's connection slots (53300).
+        builder.UseSetting("Pipeline:WorkerCount", "1");
+
+        // Bounded pools for the same reason: two test processes, each with many hosts, plus the
+        // Supabase services themselves, share the local server's 100 connection slots. Idle
+        // pooled connections count against that limit; at Npgsql's default of 100 per pool the
+        // suites exceeded it intermittently.
+        builder.UseSetting(
+            "ConnectionStrings:Postgres",
+            "Host=127.0.0.1;Port=54322;Database=postgres;Username=postgres;Password=postgres;Maximum Pool Size=15");
+        builder.UseSetting(
+            "ConnectionStrings:Hangfire",
+            "Host=127.0.0.1;Port=54322;Database=postgres;Username=postgres;Password=postgres;SearchPath=hangfire;Maximum Pool Size=10");
+
         builder.ConfigureTestServices(services =>
         {
             services.PostConfigure<JwtBearerOptions>(

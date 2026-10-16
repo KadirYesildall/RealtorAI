@@ -93,6 +93,12 @@ public class AppDbContext : DbContext
 
     public DbSet<AuditEvent> AuditEvents => Set<AuditEvent>();
 
+    public DbSet<PipelineRun> PipelineRuns => Set<PipelineRun>();
+
+    public DbSet<PipelineStepState> PipelineStepStates => Set<PipelineStepState>();
+
+    public DbSet<PipelinePhotoState> PipelinePhotoStates => Set<PipelinePhotoState>();
+
     /// <summary>
     /// Npgsql provider configuration shared by the host and by tests, so a test never runs
     /// against a differently configured model than production does.
@@ -147,11 +153,16 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<PromptVersion>().ToTable("prompt_versions");
         modelBuilder.Entity<AiUsage>().ToTable("ai_usage");
         modelBuilder.Entity<AuditEvent>().ToTable("audit_events");
+        modelBuilder.Entity<PipelineRun>().ToTable("pipeline_runs");
+        modelBuilder.Entity<PipelineStepState>().ToTable("pipeline_step_states");
+        modelBuilder.Entity<PipelinePhotoState>().ToTable("pipeline_photo_states");
 
         // ───────────────── Non-default primary keys ─────────────────
         modelBuilder.Entity<BrokerageSettings>().HasKey(e => e.BrokerageId);
         modelBuilder.Entity<PhotoEmbedding>().HasKey(e => e.PhotoId);
         modelBuilder.Entity<MlsRuleProfile>().HasKey(e => e.Id);
+        modelBuilder.Entity<PipelineStepState>().HasKey(e => new { e.RunId, e.Step });
+        modelBuilder.Entity<PipelinePhotoState>().HasKey(e => new { e.RunId, e.PhotoId });
 
         // mls_rule_profiles.id is a human-readable text key ("crmls"), supplied by the
         // migration that records a verified rulebook. EF must not try to generate it.
@@ -215,6 +226,7 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<PromptVersion>().Property(e => e.OutputSchema).HasColumnType("jsonb");
         modelBuilder.Entity<AuditEvent>().Property(e => e.BeforeValue).HasColumnType("jsonb");
         modelBuilder.Entity<AuditEvent>().Property(e => e.AfterValue).HasColumnType("jsonb");
+        modelBuilder.Entity<Photo>().Property(e => e.FeatureTagsOverride).HasColumnType("jsonb");
     }
 
     /// <summary>
@@ -255,6 +267,9 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<PromptVersion>().Property(e => e.CreatedAt).HasDefaultValueSql(DatabaseClock);
         modelBuilder.Entity<AiUsage>().Property(e => e.CreatedAt).HasDefaultValueSql(DatabaseClock);
         modelBuilder.Entity<AuditEvent>().Property(e => e.CreatedAt).HasDefaultValueSql(DatabaseClock);
+        modelBuilder.Entity<PipelineRun>().Property(e => e.StartedAt).HasDefaultValueSql(DatabaseClock);
+        modelBuilder.Entity<PipelineStepState>().Property(e => e.UpdatedAt).HasDefaultValueSql(DatabaseClock);
+        modelBuilder.Entity<PipelinePhotoState>().Property(e => e.UpdatedAt).HasDefaultValueSql(DatabaseClock);
     }
 
     private static void ConfigureFixedWidthAndPrecision(ModelBuilder modelBuilder)

@@ -205,6 +205,19 @@ values (
     1,
     'caf3014334251e748b1f8b97f7fca3d1822bb414a099dbce7a0041936498118b',
     '{}'::jsonb,
+    false
+)
+on conflict do nothing;
+
+-- v2 supersedes v1 (research R34): v1's content flags did not match the API contract's
+-- PhotoAnalysis enum or FR-009's list, and v1 cannot be edited without invalidating its hash.
+-- v1 stays recorded and on disk, because a record citing it must remain reproducible.
+insert into public.prompt_versions (task_key, version, prompt_hash, output_schema, active)
+values (
+    'photo.analysis',
+    2,
+    '20d6b1c8db4cce6a4c10f1eb548c0b3ab21af995f335903f36d20f020eed6dd9',
+    '{}'::jsonb,
     true
 )
 on conflict do nothing;

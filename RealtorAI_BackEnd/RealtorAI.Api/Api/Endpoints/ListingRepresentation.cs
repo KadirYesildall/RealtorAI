@@ -93,11 +93,19 @@ internal sealed record ListingFieldDto(
     bool RequiredBeforeApproval,
     int RowVersion);
 
-/// <summary>The contract's <c>Photo</c>.</summary>
+/// <summary>
+/// The contract's <c>Photo</c>. <c>RoomType</c> and <c>FeatureTags</c> are the values that
+/// count — the agent's where they overrode the model (FR-011), the model's otherwise — and the
+/// <c>…Overridden</c> flags say which. The model's own output stays in <c>Analysis</c>.
+/// </summary>
 internal sealed record PhotoDto(
     Guid Id,
     int OrderIndex,
     bool IsCover,
+    string? RoomType,
+    bool RoomTypeOverridden,
+    IReadOnlyList<string> FeatureTags,
+    bool FeatureTagsOverridden,
     string? Caption,
     int? Width,
     int? Height,
@@ -272,10 +280,18 @@ internal static class ListingRepresentation
             photos.Select(photo => ToDto(photo, urls.GetValueOrDefault(photo.Id), analyses.GetValueOrDefault(photo.Id))).ToList());
     }
 
-    private static PhotoDto ToDto(Photo photo, string? normalizedUrl, PhotoAnalysis? analysis) => new(
+    internal static PhotoDto ToDto(Photo photo, string? normalizedUrl, PhotoAnalysis? analysis) => new(
         photo.Id,
         photo.OrderIndex,
         photo.IsCover,
+        photo.RoomTypeOverride is { } overridden
+            ? PostgresLabel(overridden)
+            : analysis is { Failed: false, RoomType: { } analysed } ? PostgresLabel(analysed) : null,
+        photo.RoomTypeOverride is not null,
+        photo.FeatureTagsOverride is { } tags
+            ? Strings(tags)
+            : analysis is { Failed: false, ModelId: not null } ? Strings(analysis.FeatureTags) : [],
+        photo.FeatureTagsOverride is not null,
         photo.Caption,
         photo.Width,
         photo.Height,
@@ -309,8 +325,18 @@ internal static class ListingRepresentation
         analysis.Failed,
         analysis.FailureReason);
 
+    /// <summary>One photo, as the detail shows it, with a fresh signed URL to its normalized copy.</summary>
+    internal static async Task<PhotoDto> LoadPhotoAsync(AppDbContext context, IPhotoStorage storage, Guid photoId, CancellationToken cancellationToken)
+    {
+        var photo = await context.Photos.AsNoTracking().SingleAsync(candidate => candidate.Id == photoId, cancellationToken);
+        var analysis = await context.PhotoAnalyses.AsNoTracking().SingleOrDefaultAsync(row => row.PhotoId == photoId, cancellationToken);
+        var url = photo.NormalizedStorageKey is null ? null : (await storage.SignNormalizedAsync(photo.NormalizedStorageKey, cancellationToken)).ToString();
+
+        return ToDto(photo, url, analysis);
+    }
+
     /// <summary>A <c>[PgName]</c> enum's database label, which is also its contract spelling.</summary>
-    private static string PostgresLabel<TEnum>(TEnum value)
+    internal static string PostgresLabel<TEnum>(TEnum value)
         where TEnum : struct, Enum =>
         typeof(TEnum).GetField(value.ToString())!
             .GetCustomAttributes(typeof(NpgsqlTypes.PgNameAttribute), inherit: false)
@@ -318,7 +344,7 @@ internal static class ListingRepresentation
             .Single()
             .PgName;
 
-    private static List<string> Strings(string json) => JsonSerializer.Deserialize<List<string>>(json) ?? [];
+    internal static List<string> Strings(string json) => JsonSerializer.Deserialize<List<string>>(json) ?? [];
 
     private static JsonElement ParseJson(string json)
     {

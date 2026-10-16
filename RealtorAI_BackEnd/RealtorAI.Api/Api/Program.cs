@@ -8,6 +8,7 @@ using Api.Data;
 using Api.Endpoints;
 using Api.Hubs;
 using Api.Media;
+using Api.Pipeline;
 using OpenTelemetry.Metrics;
 using Pipeline;
 using OpenTelemetry.Trace;
@@ -78,7 +79,11 @@ builder.Services.AddPipelineJobs(new PipelineOptions(
     builder.Configuration.GetValue<int?>("Pipeline:WorkerCount")
         ?? throw new InvalidOperationException(
             "Pipeline:WorkerCount is not configured. Size it against the database connection "
-            + "pool: each worker holds a connection while a job runs.")));
+            + "pool: each worker holds a connection while a job runs."),
+    builder.Configuration["Pipeline:Queue"] ?? HangfireSetup.PipelineQueue));
+
+// The analysis pipeline's steps, their persistence and the vision sidecar (US2).
+builder.Services.AddAnalysisPipeline(builder.Configuration);
 
 // Per-photo progress pushed to the listing owner as each step completes (FR-053).
 builder.Services.AddPipelineHub();
@@ -127,6 +132,8 @@ app.MapBrokerageEndpoints();
 app.MapListingEndpoints();
 app.MapListingFieldEndpoints();
 app.MapPhotoEndpoints();
+app.MapPhotoEditEndpoints();
+app.MapPipelineEndpoints();
 app.MapPipelineHub();
 
 app.Run();

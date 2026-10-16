@@ -1,4 +1,5 @@
 using Hangfire;
+using Hangfire.AspNetCore;
 using Hangfire.PostgreSql;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -14,7 +15,12 @@ namespace Pipeline;
 /// is sized against the connection pool, not against CPU count — Hangfire's own default of five
 /// workers per core would exhaust a Supabase pool on an ordinary developer machine.
 /// </param>
-public sealed record PipelineOptions(string ConnectionString, int WorkerCount);
+/// <param name="Queue">
+/// The queue pipeline runs are placed on and this process serves. <c>pipeline</c> in every real
+/// deployment; a test host names a queue of its own, so its jobs cannot be taken by another
+/// process's workers running a different configuration.
+/// </param>
+public sealed record PipelineOptions(string ConnectionString, int WorkerCount, string Queue = HangfireSetup.PipelineQueue);
 
 /// <summary>
 /// T055 — Hangfire on Postgres, in the dedicated <c>hangfire</c> schema (research R12).
@@ -56,6 +62,9 @@ public static class HangfireSetup
         ArgumentNullException.ThrowIfNull(options);
         ArgumentException.ThrowIfNullOrWhiteSpace(options.ConnectionString);
         ArgumentOutOfRangeException.ThrowIfLessThan(options.WorkerCount, 1);
+        ArgumentException.ThrowIfNullOrWhiteSpace(options.Queue);
+
+        services.AddSingleton(options);
 
         services.AddHangfire(configuration => configuration
             // Pins the storage format, so a package upgrade cannot change how already-queued
@@ -74,10 +83,17 @@ public static class HangfireSetup
                     PrepareSchemaIfNecessary = true,
                 }));
 
-        services.AddHangfireServer(server =>
+        services.AddHangfireServer((provider, server) =>
         {
             server.WorkerCount = options.WorkerCount;
-            server.Queues = [PipelineQueue, "default"];
+            server.Queues = [options.Queue, "default"];
+
+            // Jobs are activated from THIS host's container. Without it, Hangfire falls back to
+            // its process-wide static activator, which the last host to start overwrites — so
+            // with two hosts in one process (the test suites run many) a job could run inside
+            // another host's container, with another registry and another configuration.
+            // Found by the pipeline tests (research R34).
+            server.Activator = new AspNetCoreJobActivator(provider.GetRequiredService<IServiceScopeFactory>());
         });
 
         return services;

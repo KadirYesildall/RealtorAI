@@ -176,14 +176,47 @@ public sealed class OpenAiCompatibleChatClient : IChatClient
         // Nothing owned.
     }
 
-    private static WireMessage ToWireMessage(ChatMessage message) => new()
+    /// <summary>
+    /// A message with only text is sent as a string. A message carrying an image is sent as the
+    /// protocol's array of parts — <c>text</c> and <c>image_url</c> — with the image inlined as a
+    /// <c>data:</c> URL. Inline rather than a signed link: a provider outside this network could
+    /// not fetch from local storage anyway, and an inlined copy is the normalized one the caller
+    /// chose to send (VIII.4.c), never a URL that could be followed to anything else.
+    /// </summary>
+    private static WireMessage ToWireMessage(ChatMessage message)
     {
-        Role = message.Role == ChatRole.System ? "system"
+        var role = message.Role == ChatRole.System ? "system"
             : message.Role == ChatRole.Assistant ? "assistant"
             : message.Role == ChatRole.Tool ? "tool"
-            : "user",
-        Content = message.Text,
-    };
+            : "user";
+
+        var images = message.Contents.OfType<DataContent>().ToList();
+
+        if (images.Count == 0)
+        {
+            return new WireMessage { Role = role, Content = message.Text };
+        }
+
+        var parts = new List<object>();
+
+        if (!string.IsNullOrEmpty(message.Text))
+        {
+            parts.Add(new TextPart { Text = message.Text });
+        }
+
+        foreach (var image in images)
+        {
+            parts.Add(new ImagePart
+            {
+                ImageUrl = new ImageUrl
+                {
+                    Url = $"data:{image.MediaType};base64,{Convert.ToBase64String(image.Data.Span)}",
+                },
+            });
+        }
+
+        return new WireMessage { Role = role, Content = parts };
+    }
 
     private static ChatFinishReason? MapFinishReason(string? reason) => reason switch
     {
@@ -231,11 +264,46 @@ public sealed class OpenAiCompatibleChatClient : IChatClient
         public string Type { get; init; } = "json_object";
     }
 
+    /// <summary>
+    /// An outgoing message. <c>Content</c> is a string, or a list of parts for a message with an
+    /// image; serialized by its runtime type.
+    /// </summary>
     private sealed class WireMessage
     {
         [JsonPropertyName("role")]
         public string Role { get; init; } = "user";
 
+        [JsonPropertyName("content")]
+        public object? Content { get; init; }
+    }
+
+    private sealed class TextPart
+    {
+        [JsonPropertyName("type")]
+        public string Type { get; init; } = "text";
+
+        [JsonPropertyName("text")]
+        public string Text { get; init; } = string.Empty;
+    }
+
+    private sealed class ImagePart
+    {
+        [JsonPropertyName("type")]
+        public string Type { get; init; } = "image_url";
+
+        [JsonPropertyName("image_url")]
+        public ImageUrl ImageUrl { get; init; } = new();
+    }
+
+    private sealed class ImageUrl
+    {
+        [JsonPropertyName("url")]
+        public string Url { get; init; } = string.Empty;
+    }
+
+    /// <summary>An incoming message: the response's content is always text.</summary>
+    private sealed class ResponseMessage
+    {
         [JsonPropertyName("content")]
         public string? Content { get; init; }
     }
@@ -258,7 +326,7 @@ public sealed class OpenAiCompatibleChatClient : IChatClient
     private sealed class Choice
     {
         [JsonPropertyName("message")]
-        public WireMessage? Message { get; init; }
+        public ResponseMessage? Message { get; init; }
 
         [JsonPropertyName("finish_reason")]
         public string? FinishReason { get; init; }

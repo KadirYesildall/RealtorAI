@@ -41,6 +41,9 @@ public sealed class RlsEnabledTests
         "prompt_versions",
         "ai_usage",
         "audit_events",
+        "pipeline_runs",
+        "pipeline_step_states",
+        "pipeline_photo_states",
     };
 
     [Theory]
@@ -72,27 +75,43 @@ public sealed class RlsEnabledTests
     }
 
     /// <summary>
-    /// <c>photo_embeddings</c> is the one table that deliberately has no policy.
+    /// Tables that deliberately have no policy: service-role only, each for a stated reason.
     ///
     /// <para>
-    /// Embeddings are an internal artefact used for near-duplicate detection; no client has any
-    /// reason to read them, and a raw vector is a fingerprint of the image it came from. RLS
-    /// enabled with no policy and no grant means the authenticated role cannot touch the table
-    /// at all — denying everything is the intent here, not an omission.
+    /// <c>photo_embeddings</c>:
+    /// embeddings are an internal artefact used for near-duplicate detection; no client has any
+    /// reason to read them, and a raw vector is a fingerprint of the image it came from.
     /// </para>
     /// <para>
-    /// It is listed as an exception rather than excluded from the suite, and
+    /// <c>pipeline_runs</c>, <c>pipeline_step_states</c>, <c>pipeline_photo_states</c> (0015): run
+    /// state is written by the API and read through <c>GET /pipeline</c>, which authorizes every
+    /// read (FR-063); no client reads it directly.
+    /// </para>
+    /// <para>
+    /// RLS enabled with no policy and no grant means the authenticated role cannot touch these
+    /// tables at all — denying everything is the intent here, not an omission.
+    /// </para>
+    /// <para>
+    /// Each is listed as an exception rather than excluded from the suite, and
     /// <see cref="PolicylessTable_GrantsNothingToAuthenticated"/> verifies the stronger property
     /// that makes the exception safe. An exception with no accompanying check would be a hole.
     /// </para>
     /// </summary>
-    private const string DeliberatelyPolicylessTable = "photo_embeddings";
+    private static readonly string[] PolicylessTables =
+    [
+        "photo_embeddings",
+        "pipeline_runs",
+        "pipeline_step_states",
+        "pipeline_photo_states",
+    ];
+
+    public static TheoryData<string> DeliberatelyPolicylessTables { get; } = new(PolicylessTables);
 
     [Theory]
     [MemberData(nameof(SecuredTables))]
     public async Task Table_HasAtLeastOnePolicy(string tableName)
     {
-        if (tableName == DeliberatelyPolicylessTable)
+        if (PolicylessTables.Contains(tableName))
         {
             return;
         }
@@ -110,7 +129,7 @@ public sealed class RlsEnabledTests
             $"public.{tableName} has RLS enabled but no policies, so it denies all access to "
             + "the authenticated role. That fails closed, which is safe but almost certainly "
             + "not what the migration intended. If it IS intended, add it to "
-            + $"{nameof(DeliberatelyPolicylessTable)} with the reason.");
+            + $"{nameof(DeliberatelyPolicylessTables)} with the reason.");
     }
 
     /// <summary>
@@ -120,8 +139,9 @@ public sealed class RlsEnabledTests
     /// still having no policy — and RLS with a grant but no policy still denies, so the only
     /// thing standing between the two is a detail no test was watching.
     /// </summary>
-    [Fact]
-    public async Task PolicylessTable_GrantsNothingToAuthenticated()
+    [Theory]
+    [MemberData(nameof(DeliberatelyPolicylessTables))]
+    public async Task PolicylessTable_GrantsNothingToAuthenticated(string tableName)
     {
         await using var connection = await SupabaseDatabase.OpenSuperuserAsync();
 
@@ -135,11 +155,11 @@ public sealed class RlsEnabledTests
               and table_name = $1
               and grantee in ('authenticated', 'anon')
             """,
-            DeliberatelyPolicylessTable);
+            tableName);
 
         Assert.True(
             grantCount == 0,
-            $"public.{DeliberatelyPolicylessTable} is meant to be service-role only, but the "
+            $"public.{tableName} is meant to be service-role only, but the "
             + $"authenticated or anon role holds {grantCount} privilege(s) on it.");
     }
 

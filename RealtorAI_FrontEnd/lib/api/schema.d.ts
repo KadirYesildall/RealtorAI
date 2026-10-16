@@ -756,8 +756,12 @@ export interface paths {
             requestBody: {
                 content: {
                     "application/json": {
+                        /** @description Every photo of the listing exactly once; anything else is 422. */
                         orderedPhotoIds: string[];
-                        /** Format: uuid */
+                        /**
+                         * Format: uuid
+                         * @description Absent keeps the current cover.
+                         */
                         coverPhotoId?: string;
                     };
                 };
@@ -768,9 +772,16 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": {
+                            orderedPhotoIds?: string[];
+                            /** Format: uuid */
+                            coverPhotoId?: string | null;
+                        };
+                    };
                 };
                 403: components["responses"]["Forbidden"];
+                422: components["responses"]["ValidationError"];
             };
         };
         post?: never;
@@ -818,6 +829,14 @@ export interface paths {
                     content?: never;
                 };
                 403: components["responses"]["Forbidden"];
+                404: components["responses"]["NotFound"];
+                /** @description The photo is the paired original of an altered photo (FR-020) */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
             };
         };
         options?: never;
@@ -828,7 +847,11 @@ export interface paths {
          *     declaration. Declaring `altered` requires alterationType, disclosureLabel from the rule
          *     profile's allowed list, and pairedOriginalId — all three, enforced by a database check.
          *     An alterationType outside the profile's allowed list raises a BLOCKING finding.
-         *     The system never alters pixels.
+         *     The system never alters pixels. An MLS whose rule profile has no approved labels (CRMLS
+         *     until T161) accepts no declaration: 422.
+         *
+         *     Absent means unchanged; roomType: null or featureTags: null clears the agent's override
+         *     and returns to the model's value. The model's output in `analysis` is never modified.
          */
         patch: {
             parameters: {
@@ -851,7 +874,9 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": components["schemas"]["Photo"];
+                    };
                 };
                 403: components["responses"]["Forbidden"];
                 422: components["responses"]["ValidationError"];
@@ -930,19 +955,30 @@ export interface paths {
                     };
                 };
                 403: components["responses"]["Forbidden"];
-                /** @description AI budget exceeded for this listing */
+                /** @description AI budget exceeded for this listing. Problem details carry manualCompletionAvailable true. */
                 409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["Problem"];
+                    };
+                };
+                /** @description The listing has no photos */
+                422: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content?: never;
                 };
-                /** @description No enabled model for a required task; continue manually */
+                /** @description No enabled model for photo analysis; continue manually. Problem details carry manualCompletionAvailable true. */
                 503: {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/problem+json": components["schemas"]["Problem"];
+                    };
                 };
             };
         };
@@ -1734,6 +1770,12 @@ export interface components {
             id?: string;
             orderIndex?: number;
             isCover?: boolean;
+            /** @description The value that counts — the agent's override when set, the model's otherwise (FR-011). */
+            roomType?: components["schemas"]["RoomType"] | null;
+            roomTypeOverridden?: boolean;
+            /** @description The agent's tags when overridden, the model's otherwise. */
+            featureTags?: string[];
+            featureTagsOverridden?: boolean;
             caption?: string | null;
             width?: number;
             height?: number;
@@ -1755,9 +1797,14 @@ export interface components {
             featureTags?: string[];
             qualityFlags?: ("blurry" | "too_dark" | "overexposed" | "tilted_horizon" | "below_min_resolution" | "near_duplicate")[];
             contentFlags?: ("people_visible" | "personal_documents" | "house_number" | "license_plate" | "watermark_or_branding" | "possible_prior_alteration")[];
-            altText?: string;
+            altText?: string | null;
             coverRecommended?: boolean;
             orderRecommendation?: number | null;
+            /**
+             * @description A reason code from the cover-and-order step — rule:cover:exterior_front,
+             *     rule:cover:model_recommended, rule:cover:first_clean, rule:order:{roomType} — which
+             *     the client states in the agent's language.
+             */
             recommendationReason?: string | null;
             modelId?: string | null;
             promptVersion?: string | null;

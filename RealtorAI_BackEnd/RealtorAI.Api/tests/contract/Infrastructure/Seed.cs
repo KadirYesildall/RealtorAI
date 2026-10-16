@@ -92,7 +92,7 @@ internal static class TestDatabase
 {
     internal static string ConnectionString { get; } =
         Environment.GetEnvironmentVariable("REALTORAI_TEST_POSTGRES")
-        ?? "Host=127.0.0.1;Port=54322;Database=postgres;Username=postgres;Password=postgres";
+        ?? "Host=127.0.0.1;Port=54322;Database=postgres;Username=postgres;Password=postgres;Maximum Pool Size=10";
 
     internal static async Task<NpgsqlConnection> OpenAsync()
     {

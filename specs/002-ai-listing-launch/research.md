@@ -1098,6 +1098,47 @@ a later story does not have to rediscover them.
   taken by a worker in a process where the probe type does not exist. The probe now uses a queue
   only its own host serves.
 
+## R34. US2 photo analysis: decisions made while building it (2026-10-16)
+
+- **Pipeline state is persisted (0015).** data-model.md had no home for step and per-photo
+  progress, yet the contract makes `GET /pipeline` the record and SignalR a hint. Three tables:
+  `pipeline_runs`, `pipeline_step_states`, `pipeline_photo_states`; API-only (RLS, no policy, no
+  privilege). One unfinished run per listing makes `POST /pipeline` idempotent.
+- **Overrides live on the photo.** data-model.md said an override is "recorded in audit, not
+  overwritten" — true of the model's output, but the value the agent chose needs a column to be
+  read back. `photos.room_type_override` and `feature_tags_override` win when set; the model's
+  output stays in `photo_analyses`; the audit records both.
+- **`photo.analysis` v2.** v1's content flags (`faces_visible`, `address_visible`, …) did not
+  match the contract's `PhotoAnalysis.contentFlags` or FR-009's list, and v1 cannot be edited
+  without invalidating its recorded hash. v2 aligns them; v1 stays on disk and recorded. v2's
+  hash is recorded in seed.sql (active) and in the local database.
+- **Images reach the model inline, normalized.** `AiRequest` gained `Images`; the OpenAI-compatible
+  client sends them as `image_url` parts with a `data:` URL. A signed storage URL would be
+  unreachable from a remote provider anyway, and inlining sends exactly the normalized copy
+  (VIII.4.c). The response cache key includes each image's hash.
+- **Resolution is judged on the original's dimensions.** The sidecar measures the normalized copy
+  (≤1280px), so `below_min_resolution` is computed by the API from `photos.width/height` against
+  the rule profile's minimums — unset for unverified CRMLS, so no flag until T160.
+- **Cover and order are deterministic.** A walk-through order from the effective room types,
+  exterior front first, cover the best clean exterior; reasons are codes (`rule:…`) the UI
+  localizes. Suggestions only; nothing is reordered (FR-011).
+- **Run status changes do not advance `listings.row_version`.** The version guards the agent's
+  edits; advancing it for a background status change would turn the agent's next autosave into a
+  false conflict.
+- **Embedding audit.** `ai_call` requires a prompt version and hash (VIII.5); embeddings have no
+  prompt, so they are recorded in `ai_usage` and not as `ai_call` events.
+- **Near-duplicate threshold 0.97 is provisional** until the embedding model is evaluated (T156).
+- **Two defects in Hangfire's host integration, found by the pipeline suites.** (1) Without an
+  explicit `BackgroundJobServerOptions.Activator`, jobs are activated through Hangfire's static
+  activator, which the last host in a process overwrites — a job could run in another host's
+  container. Each server now activates from its own. (2) Test hosts exhausted the local server's
+  100 connection slots (53300); tests now run one worker and bounded pools.
+- **Photo deletion was in no task.** Story 2 scenario 7 requires it and the contract defines it;
+  built with T086. Deleting the paired original of an altered photo is refused (409).
+- **Streaming in the browser e2e.** No model can be enabled on the local stack until T159, so
+  the Story 2 e2e walks the manual path; per-photo streaming is verified over a real hub
+  connection in `PipelineStatusTests`.
+
 ## Open items carried to Slice B (recorded, not resolved)
 
 - **CRMLS API surface**: whether RESO Web API Add/Edit is exposed to vendors or only a proprietary

@@ -51,7 +51,7 @@ internal static class SupabaseDatabase
     /// </summary>
     internal static string ConnectionString =>
         Environment.GetEnvironmentVariable("REALTORAI_TEST_POSTGRES")
-        ?? "Host=127.0.0.1;Port=54322;Database=postgres;Username=postgres;Password=postgres";
+        ?? "Host=127.0.0.1;Port=54322;Database=postgres;Username=postgres;Password=postgres;Maximum Pool Size=10";
 
     /// <summary>
     /// One shared <see cref="DbContextOptions"/> for every test context.

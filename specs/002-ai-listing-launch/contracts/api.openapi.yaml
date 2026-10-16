@@ -429,11 +429,24 @@ paths:
               properties:
                 orderedPhotoIds:
                   type: array
+                  description: Every photo of the listing exactly once; anything else is 422.
                   items: { type: string, format: uuid }
-                coverPhotoId: { type: string, format: uuid }
+                coverPhotoId:
+                  type: string
+                  format: uuid
+                  description: Absent keeps the current cover.
       responses:
-        '200': { description: Reordered }
+        '200':
+          description: Reordered
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  orderedPhotoIds: { type: array, items: { type: string, format: uuid } }
+                  coverPhotoId: { type: string, format: uuid, nullable: true }
         '403': { $ref: '#/components/responses/Forbidden' }
+        '422': { $ref: '#/components/responses/ValidationError' }
 
   /api/listings/{listingId}/photos/{photoId}:
     parameters:
@@ -447,7 +460,11 @@ paths:
         declaration. Declaring `altered` requires alterationType, disclosureLabel from the rule
         profile's allowed list, and pairedOriginalId — all three, enforced by a database check.
         An alterationType outside the profile's allowed list raises a BLOCKING finding.
-        The system never alters pixels.
+        The system never alters pixels. An MLS whose rule profile has no approved labels (CRMLS
+        until T161) accepts no declaration: 422.
+
+        Absent means unchanged; roomType: null or featureTags: null clears the agent's override
+        and returns to the model's value. The model's output in `analysis` is never modified.
       x-authorization: Listing owner only.
       requestBody:
         required: true
@@ -455,7 +472,11 @@ paths:
           application/json:
             schema: { $ref: '#/components/schemas/PatchPhotoRequest' }
       responses:
-        '200': { description: Updated }
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Photo' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '422': { $ref: '#/components/responses/ValidationError' }
     delete:
@@ -466,8 +487,10 @@ paths:
         write-once bucket (FR-001).
       x-authorization: Listing owner only.
       responses:
-        '204': { description: Removed }
+        '204': { description: Removed, audited as photo_delete }
         '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { description: The photo is the paired original of an altered photo (FR-020) }
 
   # ──────────────────────────────── Pipeline ────────────────────────────────
   /api/listings/{listingId}/pipeline:
@@ -498,8 +521,17 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/PipelineStatus' }
         '403': { $ref: '#/components/responses/Forbidden' }
-        '409': { description: AI budget exceeded for this listing }
-        '503': { description: No enabled model for a required task; continue manually }
+        '409':
+          description: AI budget exceeded for this listing. Problem details carry manualCompletionAvailable true.
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+        '422': { description: The listing has no photos }
+        '503':
+          description: No enabled model for photo analysis; continue manually. Problem details carry manualCompletionAvailable true.
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
     get:
       tags: [Pipeline]
       summary: Poll pipeline status (SignalR fallback)
@@ -1098,6 +1130,16 @@ components:
         id: { type: string, format: uuid }
         orderIndex: { type: integer }
         isCover: { type: boolean }
+        roomType:
+          allOf: [{ $ref: '#/components/schemas/RoomType' }]
+          nullable: true
+          description: The value that counts — the agent's override when set, the model's otherwise (FR-011).
+        roomTypeOverridden: { type: boolean }
+        featureTags:
+          type: array
+          items: { type: string }
+          description: The agent's tags when overridden, the model's otherwise.
+        featureTagsOverridden: { type: boolean }
         caption: { type: string, nullable: true }
         width: { type: integer }
         height: { type: integer }
@@ -1130,10 +1172,16 @@ components:
             type: string
             enum: [people_visible, personal_documents, house_number, license_plate,
                    watermark_or_branding, possible_prior_alteration]
-        altText: { type: string }
+        altText: { type: string, nullable: true }
         coverRecommended: { type: boolean }
         orderRecommendation: { type: integer, nullable: true }
-        recommendationReason: { type: string, nullable: true }
+        recommendationReason:
+          type: string
+          nullable: true
+          description: |
+            A reason code from the cover-and-order step — rule:cover:exterior_front,
+            rule:cover:model_recommended, rule:cover:first_clean, rule:order:{roomType} — which
+            the client states in the agent's language.
         modelId: { type: string, nullable: true }
         promptVersion: { type: string, nullable: true }
         failed: { type: boolean }

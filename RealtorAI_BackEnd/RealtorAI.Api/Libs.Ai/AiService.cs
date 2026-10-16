@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
@@ -158,6 +159,14 @@ public sealed partial class AiService : IAiService
         ArgumentNullException.ThrowIfNull(request);
         AiTaskKey.EnsureKnown(request.TaskKey);
 
+        if (request.Images is { } images && images.Count != request.ImageCount)
+        {
+            throw new ArgumentException(
+                $"The request sends {images.Count} images but declares {request.ImageCount}. The "
+                + "budget is charged for the declared count, so the two must agree.",
+                nameof(request));
+        }
+
         var prompt = prompts.GetActive(request.TaskKey);
         var chain = await registry.ResolveChainAsync(request.TaskKey, cancellationToken);
         var primary = chain[0];
@@ -166,7 +175,7 @@ public sealed partial class AiService : IAiService
             request.TaskKey,
             primary.ModelId,
             prompt.PromptHash,
-            request.Input);
+            CacheableInput(request));
 
         if (costTracker.TryGetCachedResponse(inputHash) is { } cached)
         {
@@ -257,7 +266,7 @@ public sealed partial class AiService : IAiService
                 prompt.OutputSchema,
                 async (retryFeedback, token) =>
                 {
-                    var messages = BuildMessages(prompt, request.Input, retryFeedback);
+                    var messages = BuildMessages(prompt, request.Input, request.Images, retryFeedback);
 
                     var response = await breaker.ExecuteAsync(
                         async innerToken => await client.GetResponseAsync(
@@ -308,19 +317,40 @@ public sealed partial class AiService : IAiService
             cancellationToken);
 
     /// <summary>
+    /// What the response cache is keyed on: the input text and, for a vision task, the hash of
+    /// each image — two photos with the same text input are different questions.
+    /// </summary>
+    private static string CacheableInput(AiRequest request) =>
+        request.Images is not { Count: > 0 } images
+            ? request.Input
+            : string.Join(
+                '\n',
+                images.Select(image => image.MediaType + ":" + Convert.ToHexStringLower(SHA256.HashData(image.Content.Span)))
+                    .Prepend(request.Input));
+
+    /// <summary>
     /// The prompt becomes the system message and the input the user message, so the
     /// instructions and the data are never concatenated into one string. That separation is
-    /// what keeps agent-supplied notes from being read as instructions.
+    /// what keeps agent-supplied notes from being read as instructions. Images travel in the
+    /// same user message as the text that describes them.
     /// </summary>
     private static List<ChatMessage> BuildMessages(
         PromptDefinition prompt,
         string input,
+        IReadOnlyList<AiImage>? images,
         string? retryFeedback)
     {
+        var user = new ChatMessage(ChatRole.User, input);
+
+        foreach (var image in images ?? [])
+        {
+            user.Contents.Add(new DataContent(image.Content, image.MediaType));
+        }
+
         var messages = new List<ChatMessage>
         {
             new(ChatRole.System, prompt.Text),
-            new(ChatRole.User, input),
+            user,
         };
 
         if (retryFeedback is not null)

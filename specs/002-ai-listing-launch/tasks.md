@@ -199,12 +199,12 @@ Per [plan.md](./plan.md) "Project Structure" — the repo's two mandated top-lev
 
 ### Implementation for User Story 2
 
-- [ ] T093 [US2] Implement sidecar `/quality` deterministic metrics (Laplacian variance, histogram, tilt, dimensions) in `RealtorAI_BackEnd/vision-sidecar/app/quality.py`
-- [ ] T094 [US2] Implement sidecar `/embed` SigLIP2 embeddings in `RealtorAI_BackEnd/vision-sidecar/app/embed.py`, **asserting the returned dimension matches the `photo_embeddings` column width** (contracts/vision-sidecar.md)
-- [ ] T095 [US2] Implement idempotent, resumable pipeline steps (normalize → quality → embeddings) in `Pipeline/Steps/`
-- [ ] T096 [US2] Implement the per-photo VLM analysis step plus prompt `prompts/photo.analysis/v1.md` and `v1.schema.json`
-- [ ] T097 [US2] Implement the cover-and-order suggestion step with a stated reason per suggestion in `Pipeline/Steps/CoverAndOrderStep.cs` (FR-010)
-- [ ] T098 [US2] Implement pgvector near-duplicate detection with a configurable threshold in `Modules.Media/NearDuplicateDetector.cs` (flag only, never auto-delete)
+- [X] T093 [US2] Implement sidecar `/quality` deterministic metrics (Laplacian variance, histogram, tilt, dimensions) in `RealtorAI_BackEnd/vision-sidecar/app/quality.py` — *built in T010; the API applies its own thresholds in `Pipeline/QualityRules.cs`, and judges resolution on the original (research R34)*
+- [X] T094 [US2] Implement sidecar `/embed` SigLIP2 embeddings in `RealtorAI_BackEnd/vision-sidecar/app/embed.py`, **asserting the returned dimension matches the `photo_embeddings` column width** (contracts/vision-sidecar.md)
+- [X] T095 [US2] Implement idempotent, resumable pipeline steps (normalize → quality → embeddings) in `Pipeline/Steps/` — *run state persisted by 0015_pipeline_runs.sql; endpoints in `Api/Endpoints/PipelineEndpoints.cs` (research R34)*
+- [X] T096 [US2] Implement the per-photo VLM analysis step plus prompt `prompts/photo.analysis/v1.md` and `v1.schema.json` — *v1 existed with flags that did not match the contract; superseded by v2 (research R34)*
+- [X] T097 [US2] Implement the cover-and-order suggestion step with a stated reason per suggestion in `Pipeline/Steps/CoverAndOrderStep.cs` (FR-010)
+- [X] T098 [US2] Implement pgvector near-duplicate detection with a configurable threshold in `Modules.Media/NearDuplicateDetector.cs` (flag only, never auto-delete)
 - [ ] T099 [P] [US2] Build the photo grid with room labels, quality/content flags, dnd-kit reorder, and cover selection in `RealtorAI_FrontEnd/components/listing/PhotoGrid.tsx`
 - [ ] T100 [P] [US2] Build the altered-photo declaration flow (type, disclosure label, paired original) in `RealtorAI_FrontEnd/components/listing/AlteredPhotoDialog.tsx` (FR-020)
 - [ ] T101 [P] [US2] Build the live pipeline view consuming SignalR in `RealtorAI_FrontEnd/components/listing/PipelineProgress.tsx`, with per-photo queued/analyzing/done/failed states styled in **both themes** plus EN/TR keys

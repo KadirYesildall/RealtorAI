@@ -42,7 +42,7 @@ public sealed class AuthorizationMatrix
         var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseNpgsql(
                 Environment.GetEnvironmentVariable("REALTORAI_TEST_POSTGRES")
-                ?? "Host=127.0.0.1;Port=54322;Database=postgres;Username=postgres;Password=postgres",
+                ?? "Host=127.0.0.1;Port=54322;Database=postgres;Username=postgres;Password=postgres;Maximum Pool Size=10",
                 AppDbContext.ConfigureNpgsql)
             .Options;
 

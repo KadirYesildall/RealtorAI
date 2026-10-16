@@ -227,6 +227,11 @@ rights on this bucket. Each purge is audited as `originals_purged`. Detaching a 
 path is this retention job. The 3-year value is configurable and is confirmed as part of the
 AB 723 legal review.
 
+**Agent overrides (FR-011, added in 0015)**: `room_type_override` (`room_type`) and
+`feature_tags_override` (`jsonb` array) hold the agent's values; when set they win over
+`photo_analyses`, which keeps the model's output untouched. Each change is audited as
+`photo_override` with before and after.
+
 ### `photo_analyses`
 
 | Column | Type | Notes |
@@ -523,3 +528,32 @@ mls_rule_profiles ──referenced by──> listings.target_mls_id
 | FR-067 soft delete only | `listings.deleted_at` + `archived` status; no hard-delete path, so audit FKs stay intact |
 | VIII.4 model enablement gates | `ai_model_registry` check: `enabled` ⇒ license + `eval_status = 'passed'` |
 | VIII.5 prompt provenance | `prompt_versions.prompt_hash` + startup drift check |
+
+
+---
+
+## Pipeline (0015)
+
+Persisted run state: `GET /api/listings/{id}/pipeline` reads it, and SignalR notifications are
+only hints to re-read it (FR-053).
+
+### `pipeline_runs`
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | `uuid` PK | |
+| `listing_id` | `uuid` → `listings.id` (NO ACTION) | A listing is never hard-deleted (FR-067). |
+| `started_by` | `uuid` → `profiles.id` | Every AI call of the run is audited as theirs. |
+| `tone`, `variant_count` | `tone`, `int` (2–3) | Carried for content generation (US3). |
+| `started_at`, `finished_at` | `timestamptz` | |
+
+**Constraint**: at most one unfinished run per listing (partial unique index) — starting again
+returns that run.
+
+### `pipeline_step_states` / `pipeline_photo_states`
+
+Per-run state of each step (`normalize`, `technical_quality`, `embeddings`, `photo_analysis`,
+`cover_and_order`, and later `content_generation`, `compliance`) and each photo, in the
+contract's spellings, with a failure reason required when failed (or skipped, for a step).
+
+**RLS**: enabled with no policy and no privilege — API only, like `photo_embeddings`.

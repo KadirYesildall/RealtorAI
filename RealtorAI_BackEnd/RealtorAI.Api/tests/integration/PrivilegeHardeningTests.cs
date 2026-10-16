@@ -45,6 +45,9 @@ public sealed class PrivilegeHardeningTests
         "prompt_versions",
         "ai_usage",
         "audit_events",
+        "pipeline_runs",
+        "pipeline_step_states",
+        "pipeline_photo_states",
     };
 
     /// <summary>

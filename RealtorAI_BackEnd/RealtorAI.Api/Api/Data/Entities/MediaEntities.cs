@@ -48,6 +48,16 @@ public sealed class Photo
     public string? DisclosureLabel { get; set; }
     public Guid? PairedOriginalId { get; set; }
     public DateTimeOffset UploadedAt { get; set; }
+
+    /// <summary>
+    /// FR-011: the agent's room type, winning over the analysis when set. The model's own value
+    /// stays in <see cref="PhotoAnalysis.RoomType"/>, so the override and what it replaced are both
+    /// on record.
+    /// </summary>
+    public RoomType? RoomTypeOverride { get; set; }
+
+    /// <summary>jsonb array. FR-011: the agent's feature tags, replacing the model's when set.</summary>
+    public string? FeatureTagsOverride { get; set; }
 }
 
 /// <summary>
