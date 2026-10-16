@@ -151,15 +151,15 @@ Per [plan.md](./plan.md) "Project Structure" — the repo's two mandated top-lev
 
 ### Tests for User Story 1 (write first, confirm failing)
 
-- [ ] T064 [P] [US1] Contract test `POST /api/profile/complete` in `tests/contract/ProfileCompleteTests.cs`
-- [ ] T065 [P] [US1] Contract test `POST /api/listings` including the pending-membership allowance in `tests/contract/CreateListingTests.cs`
-- [ ] T066 [P] [US1] Contract test `PATCH /api/listings/{id}` autosave plus stale-`If-Match` 409 in `tests/contract/ListingAutosaveTests.cs`
-- [ ] T067 [P] [US1] Contract test `DELETE /api/listings/{id}` soft delete and idempotency in `tests/contract/ListingSoftDeleteTests.cs`
-- [ ] T068 [P] [US1] Contract test `POST /api/listings/{id}/photos` per-file 207 accept/reject in `tests/contract/PhotoUploadTests.cs`
-- [ ] T069 [P] [US1] Contract test `PUT /api/listings/{id}/fields` rejecting AI provenance on measurement fields in `tests/contract/FieldUpsertTests.cs`
-- [ ] T070 [P] [US1] Integration test: uploaded originals remain byte-identical by checksum in `tests/integration/OriginalImmutabilityTests.cs`
-- [ ] T071 [P] [US1] Integration test: an agent with a `pending` membership can create a listing and run AI work (FR-061) in `tests/integration/PendingMembershipScopeTests.cs`
-- [ ] T072 [P] [US1] E2E test: wizard entry, autosave, navigate away, resume in `RealtorAI_FrontEnd/tests/integration/listing-wizard.spec.ts`
+- [X] T064 [P] [US1] Contract test `POST /api/profile/complete` in `tests/contract/ProfileCompleteTests.cs`
+- [X] T065 [P] [US1] Contract test `POST /api/listings` including the pending-membership allowance in `tests/contract/CreateListingTests.cs`
+- [X] T066 [P] [US1] Contract test `PATCH /api/listings/{id}` autosave plus stale-`If-Match` 409 in `tests/contract/ListingAutosaveTests.cs`
+- [X] T067 [P] [US1] Contract test `DELETE /api/listings/{id}` soft delete and idempotency in `tests/contract/ListingSoftDeleteTests.cs`
+- [X] T068 [P] [US1] Contract test `POST /api/listings/{id}/photos` per-file 207 accept/reject in `tests/contract/PhotoUploadTests.cs`
+- [X] T069 [P] [US1] Contract test `PUT /api/listings/{id}/fields` rejecting AI provenance on measurement fields in `tests/contract/FieldUpsertTests.cs`
+- [X] T070 [P] [US1] Integration test: uploaded originals remain byte-identical by checksum in `tests/integration/OriginalImmutabilityTests.cs`
+- [X] T071 [P] [US1] Integration test: an agent with a `pending` membership can create a listing and run AI work (FR-061) in `tests/integration/PendingMembershipScopeTests.cs`
+- [X] T072 [P] [US1] E2E test: wizard entry, autosave, navigate away, resume in `RealtorAI_FrontEnd/tests/integration/listing-wizard.spec.ts`
 
 ### Implementation for User Story 1
 
