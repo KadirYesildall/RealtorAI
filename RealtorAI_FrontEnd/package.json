@@ -11,7 +11,8 @@
     "test": "vitest run",
     "test:e2e": "playwright test",
     "audit:prod": "npm audit --omit=dev --audit-level=low",
-    "verify": "npm run audit:prod && npm run lint && tsc --noEmit && npm run test"
+    "verify": "npm run audit:prod && npm run lint && tsc --noEmit && npm run test",
+    "api:types": "openapi-typescript ../specs/002-ai-listing-launch/contracts/api.openapi.yaml -o lib/api/schema.d.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -42,6 +43,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.3.8",
     "eslint-config-prettier": "^10.1.8",
+    "openapi-typescript": "^7.13.0",
     "prettier": "^3.9.5",
     "tailwindcss": "^4",
     "typescript": "^5",

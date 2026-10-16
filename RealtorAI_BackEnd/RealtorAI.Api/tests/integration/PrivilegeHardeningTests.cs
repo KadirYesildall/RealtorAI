@@ -23,6 +23,7 @@ namespace RealtorAI.Tests.Integration;
 /// weaker check and a destructive one.
 /// </para>
 /// </summary>
+[Collection(TableLockingTests.Name)]
 public sealed class PrivilegeHardeningTests
 {
     /// <summary>Tables this feature owns. <c>profiles</c> predates it and is granted by 0001/0004.</summary>

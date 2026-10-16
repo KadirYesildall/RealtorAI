@@ -43,13 +43,19 @@ npx --yes supabase@latest db reset   # destructive: rebuilds from all migrations
 # 4. Vision sidecar (separate terminal)
 docker compose -f RealtorAI_BackEnd/vision-sidecar/compose.yaml up
 
-# 5. API (separate terminal)
-dotnet run --project RealtorAI_BackEnd/RealtorAI.Api/Api
+# 5. API (separate terminal). Photo storage needs the Supabase secret key from
+#    `npx supabase status` (SECRET_KEY) in this variable; the key never goes in a settings file.
+$env:SUPABASE_SECRET_KEY = "<SECRET_KEY from supabase status>"
+dotnet run --project RealtorAI_BackEnd/RealtorAI.Api/Api --launch-profile http   # http://localhost:5185
 
-# 6. Frontend (separate terminal)
+# 6. Frontend (separate terminal). .env.local needs, besides the Supabase values:
+#      API_BASE_URL=http://localhost:5185     (server-only; the browser never calls the API)
 cd RealtorAI_FrontEnd
 npm run dev
 ```
+
+The frontend's API types are generated from `contracts/api.openapi.yaml`; after changing the
+contract, run `npm run api:types` in `RealtorAI_FrontEnd/` and commit `lib/api/schema.d.ts`.
 
 **There is deliberately no Compose-owned Postgres and no MinIO.** The Supabase CLI stack is the
 single source of Postgres, Auth, and Storage; Compose covers only the sidecar. Reasons in
@@ -365,21 +371,34 @@ an EF-vs-SQL drift test fails if the model and schema diverge.
 Required before any registry entry may be enabled (Principle VIII.4, FR-059):
 
 ```powershell
+# List every task's acceptance criteria and whether a suite exists to measure them
 dotnet run --project RealtorAI_BackEnd/RealtorAI.Api/tools/AiEval -- --task all
+
+# Evaluate one registry entry's model; --write records a pass or measured failure
+$env:REALTORAI_EVAL_POSTGRES = "Host=127.0.0.1;Port=54322;Database=postgres;Username=postgres;Password=postgres"
+dotnet run --project RealtorAI_BackEnd/RealtorAI.Api/tools/AiEval -- `
+    --registry-id <uuid> --write --actor <platform-admin-profile-uuid>
 ```
 
-| Metric | Threshold | Source |
-|---|---|---|
-| Room classification accepted unchanged | ≥ 90% | SC-002 |
-| Fair Housing recall | ≥ 95% | SC-003 |
-| Fair Housing false positives | ≤ 10% | SC-003 |
-| JSON-schema validity rate | report + threshold set here | FR-015 |
-| 30-photo analysis latency | < 2 min p90 | SC-005 |
-| Cost per listing | within budget | SC-006 |
+Exit codes: `0` passed, `1` failed, `2` incomplete (nothing recorded), `64` usage, `70` not recorded.
 
-The harness writes results to `ai_model_registry.eval_result` and sets `eval_status`. Because
-`enabled = true` requires `license` **and** `eval_status = 'passed'` via a check constraint, a
-failing harness run cannot be bypassed from the API or the UI.
+| Metric | Threshold | Source | Tasks |
+|---|---|---|---|
+| Room classification accepted unchanged | ≥ 90% | SC-002 | photo.analysis |
+| Fair Housing recall | ≥ 95% | SC-003 | compliance.judge |
+| Fair Housing false positives | ≤ 10% | SC-003 | compliance.judge |
+| JSON-schema validity rate | **not yet set** — see research R27 | FR-015 | all three chat tasks |
+| 30-photo analysis latency | < 2 min p90 | SC-005 | photo.analysis |
+| Cost per listing | ≤ budget (200 000 tokens / 120 images default) | SC-006 | photo.analysis, listing.content |
+| *(none specified)* | — | — | photo.embedding — **cannot pass**, R27 |
+
+The harness is the only writer of `ai_model_registry.eval_status` and `eval_result` (the admin API
+refuses to set them). A verdict is recorded only when every metric was measured against a set
+threshold; anything less is **Incomplete** and writes nothing. Each recorded verdict is attributed
+to the `--actor` platform administrator and audited as `registry_changed`. A pass does not enable
+the model — that remains a separate admin action — and a failure of an enabled model disables it.
+Because `enabled = true` requires `license` **and** `eval_status = 'passed'` via a check
+constraint, a failing harness run cannot be bypassed from the API or the UI.
 
 ---
 

@@ -121,23 +121,23 @@ Per [plan.md](./plan.md) "Project Structure" — the repo's two mandated top-lev
 - [X] T047 Implement JSON Schema validation with exactly one retry carrying the validation error, then an explicit failure, in `Libs.Ai/StructuredOutputValidator.cs` (FR-015)
 - [X] T048 [P] Implement resilience (timeouts, backoff, per-provider circuit breaker, automatic fallback) in `Libs.Ai/Resilience.cs` using `Microsoft.Extensions.Http.Resilience`
 - [X] T049 Implement cost tracking, the **pre-dispatch** per-listing budget check, and request caching by input hash in `Libs.Ai/CostTracker.cs` (FR-055)
-- [ ] T050 Implement the registry admin endpoints in `RealtorAI.Api/Api/Endpoints/AiRegistryEndpoints.cs` gated on `profiles.platform_admin`, auditing every change as `registry_changed` (FR-064)
-- [ ] T051 [P] Contract tests for the registry admin endpoints including the authorization matrix in `tests/contract/AiRegistryEndpointTests.cs`
+- [X] T050 Implement the registry admin endpoints in `RealtorAI.Api/Api/Endpoints/AiRegistryEndpoints.cs` gated on `profiles.platform_admin`, auditing every change as `registry_changed` (FR-064)
+- [X] T051 [P] Contract tests for the registry admin endpoints including the authorization matrix in `tests/contract/AiRegistryEndpointTests.cs`
 - [X] T052 [P] Unit tests for schema-retry and fallback behaviour in `tests/unit/AiServiceTests.cs`
 - [X] T053 **Prohibition test (VIII.6)**: fail the build if any image/video-generation dependency or endpoint is referenced anywhere in the solution or sidecar, in `tests/prohibitions/NoGenerativeImageryTests.cs`
-- [ ] T054 Create the AI evaluation harness skeleton in `RealtorAI.Api/tools/AiEval/` with the task/metric scaffolding from [quickstart.md](./quickstart.md) §6
+- [X] T054 Create the AI evaluation harness skeleton in `RealtorAI.Api/tools/AiEval/` with the task/metric scaffolding from [quickstart.md](./quickstart.md) §6
 
 ### Shared services
 
-- [ ] T055 Configure Hangfire on Postgres using a **dedicated `hangfire` schema** so it never collides with Supabase migrations, in `Pipeline/HangfireSetup.cs` (research R12)
-- [ ] T056 [P] Implement the SignalR pipeline-progress hub in `RealtorAI.Api/Api/Hubs/PipelineHub.cs`
-- [ ] T057 Implement the Supabase Storage wrapper in `Modules.Media/StorageService.cs` — write-once originals, normalized variants, short-lived signed URLs
-- [ ] T058 Implement image normalization in `Modules.Media/ImageNormalizer.cs` — **non-generative operations only** (resize long edge ~1280px, compress, convert, crop, rotate) plus EXIF/GPS stripping (VIII.4.c, VIII.6)
-- [ ] T059 [P] Unit tests asserting normalization strips EXIF and never mutates the original, in `tests/unit/ImageNormalizerTests.cs`
-- [ ] T060 [P] Define `IPropertyDataProvider` and ship `NullPropertyDataProvider` in `Modules.Listings/PropertyData/` (research R5)
-- [ ] T061 [P] Contract tests for every brokerage and membership endpoint — declare (201/409), list pending, approve/reject decision, and settings read/write — including the authorization matrix and the FR-062 audit assertion, in `tests/contract/BrokerageMembershipTests.cs`
-- [ ] T062 Implement brokerage and membership endpoints (declare, list pending, approve/reject, settings) in `Modules.Brokerage/Endpoints/` per [api.openapi.yaml](./contracts/api.openapi.yaml)
-- [ ] T063 Build the brokerage frontend in `RealtorAI_FrontEnd/app/dashboard/brokerage/` (settings, members approve/reject) plus the pending-membership banner component, with EN/TR keys in `lib/i18n/dictionaries/` and both themes
+- [X] T055 Configure Hangfire on Postgres using a **dedicated `hangfire` schema** so it never collides with Supabase migrations, in `Pipeline/HangfireSetup.cs` (research R12)
+- [X] T056 [P] Implement the SignalR pipeline-progress hub in `RealtorAI.Api/Api/Hubs/PipelineHub.cs`
+- [X] T057 Implement the Supabase Storage wrapper in `Modules.Media/StorageService.cs` — write-once originals, normalized variants, short-lived signed URLs
+- [X] T058 Implement image normalization in `Modules.Media/ImageNormalizer.cs` — **non-generative operations only** (resize long edge ~1280px, compress, convert, crop, rotate) plus EXIF/GPS stripping (VIII.4.c, VIII.6)
+- [X] T059 [P] Unit tests asserting normalization strips EXIF and never mutates the original, in `tests/unit/ImageNormalizerTests.cs`
+- [X] T060 [P] Define `IPropertyDataProvider` and ship `NullPropertyDataProvider` in `Modules.Listings/PropertyData/` (research R5)
+- [X] T061 [P] Contract tests for every brokerage and membership endpoint — declare (201/409), list pending, approve/reject decision, and settings read/write — including the authorization matrix and the FR-062 audit assertion, in `tests/contract/BrokerageMembershipTests.cs`
+- [X] T062 Implement brokerage and membership endpoints (declare, list pending, approve/reject, settings) in `Modules.Brokerage/Endpoints/` — *built in `Api/Endpoints/BrokerageEndpoints.cs` with the lifecycle rules in `Modules.Brokerage/MembershipRules.cs`, because the EF model lives in the host (research R20, R32)* per [api.openapi.yaml](./contracts/api.openapi.yaml)
+- [X] T063 Build the brokerage frontend in `RealtorAI_FrontEnd/app/dashboard/brokerage/` (settings, members approve/reject) plus the pending-membership banner component, with EN/TR keys in `lib/i18n/dictionaries/` and both themes
 
 **Checkpoint**: Foundation ready — user story implementation can now begin
 

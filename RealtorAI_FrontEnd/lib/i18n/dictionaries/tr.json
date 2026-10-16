@@ -81,6 +81,7 @@
     "sidebar": {
       "home": "Panel",
       "newProperty": "Yeni İlan",
+      "brokerage": "Brokerlik",
       "settings": "Ayarlar",
       "billing": "Faturalandırma",
       "comingSoon": "Yakında",
@@ -94,6 +95,101 @@
     "error": {
       "title": "Panelinizi yükleyemedik",
       "body": "Bizden kaynaklanan bir sorun oluştu. Lütfen tekrar deneyin."
+    }
+  },
+  "brokerage": {
+    "title": "Brokerlik",
+    "subtitle": "Brokerliğinizin kimliği, yasal bildirimleri ve üyeleri.",
+    "status": {
+      "pending": "Onay bekliyor",
+      "approved": "Onaylandı",
+      "rejected": "Reddedildi",
+      "revoked": "İptal edildi"
+    },
+    "role": {
+      "agent": "Danışman",
+      "broker_admin": "Broker yöneticisi"
+    },
+    "membershipLabel": "Üyeliğiniz",
+    "none": {
+      "title": "Henüz bir brokerlik beyan etmediniz",
+      "body": "Brokerliğinizi profilinizi tamamlarken beyan edeceksiniz. O zamana kadar ilanlarınızı kendi başınıza taslak olarak hazırlayabilirsiniz."
+    },
+    "pending": {
+      "title": "{brokerage} onayınızı bekliyor",
+      "body": "Üyeliğinizin {brokerage} bünyesindeki bir broker yöneticisi tarafından onaylanması gerekiyor. O zamana kadar brokerliğe ait hiçbir bilgi sizinle paylaşılmaz ve ilanlarınız yalnızca size özel kalır."
+    },
+    "ended": {
+      "rejectedTitle": "{brokerage} üyelik talebinizi reddetti",
+      "revokedTitle": "{brokerage} üyeliğiniz sona erdi",
+      "body": "Bu brokerliğe artık erişiminiz yok. İlanlarınızı yine kendi başınıza hazırlayabilir, profilinizden yeniden bir brokerlik beyan edebilirsiniz."
+    },
+    "banner": {
+      "title": "{brokerage} üyeliğiniz onay bekliyor",
+      "body": "Şimdiden ilan taslağı oluşturabilir, fotoğraf analizi çalıştırabilir, içerik üretip kontrol edebilirsiniz. Pazarlama onayı ve MLS'e gönderim, bir broker yöneticisi sizi onayladığında açılır; çünkü ikisi de brokerliğin adını ve lisansını taşır.",
+      "link": "Durumu görüntüle"
+    },
+    "settings": {
+      "title": "Brokerlik ayarları",
+      "readOnlyNote": "Bu ayarları yalnızca bir broker yöneticisi değiştirebilir.",
+      "name": "Brokerlik adı",
+      "licenseNumber": "Lisans numarası",
+      "state": "Eyalet",
+      "stateHint": "İki harfli kod, örneğin CA.",
+      "requiredDisclaimers": "Zorunlu yasal bildirimler",
+      "requiredDisclaimersHint": "Her satıra bir tane. Brokerliğin adının geçtiği pazarlama materyallerinde görünür.",
+      "targetMlsId": "Hedef MLS",
+      "targetMlsIdHint": "Örneğin CRMLS. Bir MLS'e gönderim yapmıyorsanız boş bırakın.",
+      "defaultTone": "Varsayılan üslup",
+      "tones": {
+        "professional": "Profesyonel",
+        "warm": "Samimi",
+        "luxury": "Lüks",
+        "concise": "Kısa ve öz"
+      },
+      "aiBudgetTokens": "İlan başına yapay zekâ bütçesi (token)",
+      "aiBudgetImages": "İlan başına yapay zekâ bütçesi (görsel)",
+      "budgetHint": "Bir ilanın yapay zekâ işlemleri bu sınırda durur; danışman ilanı elle tamamlayabilir.",
+      "none": "Yok",
+      "save": "Ayarları kaydet",
+      "saved": "Ayarlar kaydedildi."
+    },
+    "members": {
+      "title": "Üyeler",
+      "pendingTitle": "Kararınızı bekleyenler",
+      "pendingEmpty": "Onay bekleyen kimse yok.",
+      "othersTitle": "Tüm üyeler",
+      "othersEmpty": "Henüz başka üye yok.",
+      "license": "Lisans {number} ({state})",
+      "noLicense": "Kayıtlı lisans yok",
+      "requested": "Talep tarihi: {date}",
+      "unnamed": "İsimsiz danışman",
+      "approve": "Onayla",
+      "reject": "Reddet",
+      "approveLabel": "{name} adlı danışmanı onayla",
+      "rejectLabel": "{name} adlı danışmanı reddet",
+      "decidedApproved": "Onaylandı.",
+      "decidedRejected": "Reddedildi."
+    },
+    "errors": {
+      "validation": "Bazı alanların düzeltilmesi gerekiyor.",
+      "unauthenticated": "Oturumunuz sona erdi. Devam etmek için yeniden giriş yapın.",
+      "forbidden": "Bu brokerlik için bu işlemi yapma yetkiniz yok.",
+      "notFound": "Bu brokerliği veya talebi bulamadık.",
+      "alreadyDecided": "Bu talep hakkında zaten karar verilmiş. Güncel durumu görmek için sayfayı yenileyin.",
+      "unexpected": "Bir sorun oluştu. Lütfen tekrar deneyin.",
+      "loadFailed": "Brokerliğinizi şu anda yükleyemedik. Lütfen tekrar deneyin.",
+      "nameRequired": "Brokerlik adını girin.",
+      "nameTooLong": "Ad çok uzun.",
+      "licenseRequired": "Lisans numarasını girin.",
+      "licenseTooLong": "Lisans numarası çok uzun.",
+      "stateFormat": "İki harfli eyalet kodu kullanın, örneğin CA.",
+      "disclaimerTooLong": "Her yasal bildirim 1.000 karakterden kısa olmalıdır.",
+      "tooManyDisclaimers": "En fazla 20 yasal bildirim kullanın.",
+      "toneInvalid": "Bir üslup seçin.",
+      "budgetInteger": "Tam sayı girin.",
+      "budgetPositive": "Sıfırdan büyük bir sayı girin.",
+      "serverRejected": "Bu değer kabul edilmedi. Kontrol edip tekrar deneyin."
     }
   }
 }

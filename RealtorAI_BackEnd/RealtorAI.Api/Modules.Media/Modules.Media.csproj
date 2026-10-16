@@ -7,7 +7,6 @@
 
   <ItemGroup>
     <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="15.0.0" />
-    <PackageReference Include="Supabase" Version="8.3.1" />
   </ItemGroup>
 
   <PropertyGroup>

@@ -29,6 +29,9 @@ internal static class SupabaseJwtSetup
     /// </summary>
     private const string DefaultAudience = "authenticated";
 
+    /// <summary>The only paths that accept a token from the query string.</summary>
+    private const string HubPathPrefix = "/hubs";
+
     internal static IServiceCollection AddSupabaseJwtAuthentication(
         this IServiceCollection services,
         IConfiguration configuration,
@@ -69,6 +72,26 @@ internal static class SupabaseJwtSetup
                     ValidateIssuerSigningKey = true,
                     ClockSkew = TimeSpan.FromSeconds(30),
                     NameClaimType = ClaimTypes.NameIdentifier,
+                };
+
+                // Browsers cannot set an Authorization header on a WebSocket or EventSource
+                // request, so the SignalR client sends the token as `access_token` in the query
+                // string. Accepted for hub paths only: everywhere else a token in a URL would be
+                // a token in proxy and browser history for no reason. The request log records
+                // the path without the query string, so the token is not logged.
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        if (string.IsNullOrEmpty(context.Token)
+                            && context.HttpContext.Request.Path.StartsWithSegments(HubPathPrefix)
+                            && context.Request.Query["access_token"] is { Count: 1 } token)
+                        {
+                            context.Token = token[0];
+                        }
+
+                        return Task.CompletedTask;
+                    },
                 };
             });
 

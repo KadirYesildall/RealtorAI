@@ -839,6 +839,213 @@ maintenance consequence is stated there plainly: **editing `v1.md` stops the API
 a v2 is added or the hash is updated. That is the intended cost — editing a released prompt
 silently invalidates every audit record citing it.
 
+## R26. The host failed every database request after the twentieth (2026-10-14)
+
+**Severity: high — the API would have gone down about twenty requests after every start.**
+Found by T051, the first suite to send many database-backed requests through one host.
+
+`PostgresEnumMapping.Translator()` built a new `ExplicitEnumLabelTranslator` on every call.
+`AddDbContext` rebuilds `DbContextOptions` per scope, meaning per request, and EF keys its
+internal service provider on those options, comparing each enum mapping's translator **by
+reference**. So every request looked like a new configuration. EF built a fresh internal service
+provider each time, and past twenty it raised `ManyServiceProvidersCreatedWarning`, which this
+project's configuration treats as an error. Request 20 onward returned 500.
+
+Nothing caught it earlier because nothing had made more than a few database calls through one
+host: the integration suites build their own contexts, and before T050 the only endpoints were
+`/health` and `/whoami`, neither of which touches the database.
+
+**Fix**: each mapping creates its translator once, eagerly, and returns that instance.
+**Regression**: `tests/contract/SustainedDatabaseRequestsTests.cs` sends 30 requests and asserts
+that the translator instance is stable. Both tests were confirmed failing with the fix reverted
+("Request 20 of 30 returned 500") and passing with it.
+
+**Lesson recorded**: an option object that EF compares should never be allocated per call. Any
+future `MapEnum`, `UseVector`-style plugin, or interceptor added to `ConfigureNpgsql` must be a
+singleton for the same reason.
+
+## R27. Evaluation harness: two acceptance criteria the specification has not set (2026-10-14)
+
+T054 builds the harness from quickstart §6. Its rule is that a pass must be earned on every
+specified metric: an unmeasured metric, an unset threshold, or a task with no metrics yields
+**Incomplete**, which is never written to the registry. Building it exposed two gaps that the
+harness deliberately does **not** fill with invented numbers, because a threshold chosen by the
+harness author would turn VIII.4's "passes the evaluation harness" into "passes whatever bar was
+convenient":
+
+1. **JSON-schema validity rate (FR-015)** — quickstart §6 says "report + threshold set here" and
+   none has been set. It is required for `photo.analysis`, `listing.content` and
+   `compliance.judge`, so **no chat model can pass until a product owner records a threshold**
+   (in quickstart §6 and `MetricCatalog`).
+2. **`photo.embedding` has no acceptance metric at all.** The specification defines none for the
+   embedding model, so it cannot pass and near-duplicate detection (Story 2) cannot go live on a
+   registry-enabled embedding model until one is defined — e.g. near-duplicate recall on the
+   seeded living-room pair set.
+
+Both are gates on *enablement*, not on the build, and both surface in `aieval --task all` output.
+
+Design decisions recorded with it:
+
+- The harness is a separate console tool (`tools/AiEval`), not part of the API host, and is the
+  **only** writer of `eval_status`; the admin endpoint refuses to set it (T050).
+- A recorded verdict requires `--actor`, a platform administrator, and is audited as
+  `registry_changed` in the same transaction, through the same `AuditWriter` the API uses.
+- The write matches on the evaluated provider/model/endpoint, so a model swapped mid-run is not
+  stamped with another model's verdict.
+- A pass does not enable; a failure of an enabled model disables it in the same change.
+
+## R28. Hangfire on Supabase Postgres — R12's open items, closed by running a job (2026-10-14)
+
+R12 left two things unverified: Hangfire.PostgreSql's compatibility with the stack, and its
+coexistence with Supabase migrations. R17 closed only "it restores on .NET 10".
+
+- **Driver gap, verified.** Hangfire.PostgreSql 1.21.1 targets `netstandard2.0` and is built
+  against **Npgsql 6.0.11**; the host resolves **Npgsql 10.0.3**. A restore proves nothing about a
+  binary dependency four majors apart, so `HangfireStorageTests` enqueues a real job and waits for
+  the host's worker to execute it. It does.
+- **Schema.** `0013_hangfire_schema.sql` creates `hangfire`, revokes it from
+  `public`/`anon`/`authenticated`, and revokes default privileges on objects created in it later.
+  Hangfire installs its own tables inside on first start (`PrepareSchemaIfNecessary`). Tested:
+  its tables exist in `hangfire`, none in `public`, and neither client role holds USAGE on the
+  schema or any privilege on its tables.
+- **DDL ownership.** The constitution's "migrations own all DDL" is kept at the level that
+  matters to this project — where Hangfire lives and who can reach it. Hangfire's internal tables
+  are versioned by the package (`hangfire.schema`) and are not reproduced in a migration, where
+  they would drift from the package version.
+- **No dashboard.** It exposes job arguments (listing ids) under an authorization model separate
+  from the API's token validation. Not mapped.
+- **Still open:** behaviour through the Supabase **pooler** (port 54329, transaction mode).
+  Hangfire uses session-level advisory locks, which transaction-mode pooling does not preserve;
+  the local configuration connects directly on 54322. A production deployment must point
+  `ConnectionStrings:Hangfire` at a direct or session-mode connection, not the transaction pooler.
+
+## R29. CVE-2026-70159 in SignalR — mitigated in code; the runtime still needs patching (2026-10-14)
+
+**Severity: high (CVSS 7.5, denial of service). Found by the NuGet audit gate when adding the
+SignalR client for T056's tests.** GHSA-334f-vvp4-7g6p, published 2026-10-13: a client using
+*stateful reconnect* can block broadcasts indefinitely through `MessageBuffer.ResendAsync`
+backpressure and pin server resources. Affected: `Microsoft.AspNetCore.SignalR.Common` 10.0.0 –
+10.0.12; patched in **10.0.13**.
+
+The package gate caught the **client** package, which was then added at 10.0.13. The more
+important exposure is the **server**: the hub runs on the ASP.NET Core shared framework, which
+NuGet audit does not scan, and this machine has **Microsoft.AspNetCore.App 10.0.10** — affected.
+
+**Mitigation in code.** Stateful reconnect is opt-in on the server. The hub sets
+`AllowStatefulReconnects = false` explicitly, with the CVE cited, and
+`PipelineHubTests.StatefulReconnect_IsDisabledOnTheHub` reads it back from the routing table the
+server serves, so re-enabling it by any route fails the build. The feature was never needed: a
+reconnecting client re-subscribes and re-reads status from the polling endpoint.
+
+**Still required — outside the codebase:** install the **.NET 10.0.13** runtime/SDK on developer
+machines and use a ≥ 10.0.13 base image for deployment. The code mitigation closes the known
+vulnerable path; the patched runtime closes it in depth. Recorded here rather than done
+automatically because it is a machine-level install.
+
+**Lesson recorded:** NuGet audit covers packages, not the shared framework. A framework advisory
+reaches a deployed ASP.NET Core app only through the runtime version, so runtime currency needs
+its own check.
+
+## R30. Write-once originals were only write-once for `authenticated` (2026-10-14)
+
+**Severity: high — FR-001 and FR-065 held only as an application convention.** Found while
+designing T057, before any code used storage.
+
+0011 made `listing-photos-original` write-once with storage RLS: INSERT and SELECT policies, no
+UPDATE or DELETE policy. That binds `authenticated` and nothing else — the service role bypasses
+RLS, and a server-side storage wrapper uses the service key. Verified against the running stack
+with that key before changing anything:
+
+| Request (secret key) | Before 0014 | After 0014 |
+|---|---|---|
+| upload, `x-upsert: false` | 200 | 200 |
+| upload over it, `x-upsert: true` | **200, replaced** | refused (`AccessDenied`) |
+| `POST /object/move` | — | refused |
+| `DELETE /object/...` | **200, deleted** | refused, bytes still served |
+| bulk delete by prefix | — | refused |
+| download / sign | 200 | 200 |
+
+**Fix: `0014_originals_write_once.sql`** — `BEFORE UPDATE` and `BEFORE DELETE` row triggers on
+`storage.objects`, scoped to the originals bucket, that raise for **every** role; plus a
+statement-level `BEFORE TRUNCATE` guard (R18: row triggers do not fire on TRUNCATE, and
+`service_role` holds TRUNCATE on `storage.objects`). The bytes were checked after a refused
+delete rather than assuming Storage removes the row before the file; it does.
+`StorageServiceTests` pins all of this, including SQL-level update/delete/truncate as superuser
+with Supabase's own `protect_delete` guard switched off, so only 0014 can be what refuses.
+
+**Consequences:**
+
+- FR-065's retention purge (T154) is now the only path that could ever delete an original, and
+  it does not exist yet; it must amend this guard for its own credential. Until then nothing can
+  delete an original — the safe direction.
+- Tests that write originals leave them behind in the local stack. `supabase db reset` clears
+  them.
+
+**Also in T057:** the unused `Supabase` 8.3.1 SDK package was removed from `Modules.Media`.
+Storage is called over its REST API, every call of which was exercised against the running stack
+first; the SDK would have added unverified signatures and a large transitive tree (realtime,
+websockets) for five operations.
+
+## R31. Three persistence defects surfaced by the brokerage endpoints (2026-10-14)
+
+T061/T062 were the first endpoints to create several related rows and audit them in one request.
+Three defects, all latent since earlier tasks, came out of it.
+
+### 1. Every API-written timestamp defaulting to `now()` was stored as `-infinity` (high)
+
+R21 fixed EF overriding database defaults for literals, and `ColumnDefaultsTests` deliberately
+excluded `now()` defaults ("the application has nothing to agree with"). But the same mechanism
+applies: with no default declared in the model, EF sends `default(DateTimeOffset)`, which Npgsql
+writes as **`-infinity`**. Checked against the database: **31 of 43 audit rows had
+`created_at = -infinity`** — every one the API wrote via `EfAuditSink` (T042 onward, first
+exercised by T050). An audit trail that cannot say when anything happened defeats FR-049.
+
+Fix: `AppDbContext.ConfigureDatabaseClockDefaults` declares `HasDefaultValueSql` on all 14
+`now()`-defaulted columns. `ColumnDefaultsTests` gains two tests — every `now()` column in the
+live schema must have a model default (failed listing all 14 before the fix), and an audit row
+inserted through EF gets the database clock. The `-infinity` rows already in the local database
+are immutable by design; `supabase db reset` clears them. No deployed environment existed.
+
+### 2. FR-066's 409 on a genuine write race was a 500 (high)
+
+`ConcurrencyGuard` caught `PostgresException` with SQLSTATE 40001, but that exception never
+arrives bare: EF wraps it in `DbUpdateException` and Npgsql's default execution strategy wraps
+that in `InvalidOperationException`. So two writers truly racing on one row got a 500, not the
+version conflict FR-066 and SC-012 require. `TwoConcurrentWritersAtTheSameVersion_OnlyOneSucceeds`
+existed for exactly this and passed only because its writers rarely overlapped; once the suite
+grew heavier they did, every run. Fix: the guard walks the exception chain
+(`IsSerializationFailure`), with unit tests over the real wrapping shapes — and confirming a
+deadlock or constraint violation is *not* reported as a conflict.
+
+### 3. EF cannot order inserts that reference each other (medium, open)
+
+The EF model deliberately has no navigations (see `BrokerageEntities.cs`) — and so no foreign-key
+metadata either, which means EF does not know an audit row citing a new brokerage must be
+inserted after it. One `SaveChanges` batch ordered them wrongly and failed on the FK. T062 saves
+the parent rows first, then the audit rows, inside one explicit transaction, so atomicity is
+unchanged. **Open:** every later endpoint that creates a parent and its dependents in one
+request (listing + fields + photos + audit, T075/T077) meets the same trap. The general fix is
+to declare FK relationships **without navigations** (`HasOne<T>().WithMany().HasForeignKey(...)`,
+`DeleteBehavior.NoAction` to mirror the SQL), plus a schema-drift test comparing them to the live
+constraints. Recommended before US1's endpoints.
+
+## R32. Brokerage endpoints: contract additions and one gap (2026-10-14)
+
+- **Creating a brokerage needs its license number and state** (`brokerages` columns are NOT NULL
+  and FR-021/FR-057 put them in disclosures), which `DeclareMembershipRequest` lacked.
+  Added `brokerageLicenseNumber` and `brokerageState`, required only when creating.
+- **Joining needs the brokerage id.** No endpoint lists brokerages (RLS lets only approved members
+  read one), so the id is shared by its admin; the declared name must match it.
+- **`Membership` gains the agent's name and license**, which an admin needs to decide a request.
+- **First registrant** = no *live* members. A brokerage whose memberships have all ended can be
+  claimed again rather than stranded with nobody able to approve anyone.
+- **Gap: logo upload.** FR-057 lists the logo as configurable, but Slice A's contract has no upload
+  endpoint. `logoStorageKey` is read-only in `PUT /settings`; accepting a free-form key would let
+  a brokerage point its logo at any stored object. Needs a `brokerage-assets` upload endpoint.
+- **Membership resolver bug fixed:** a rejected agent re-declaring the same brokerage leaves two
+  rows there, and `GetMembershipAsync`'s `SingleOrDefault` threw — every request by that agent
+  would have been a 500. It now returns the live row, else a historical one.
+
 ## Open items carried to Slice B (recorded, not resolved)
 
 - **CRMLS API surface**: whether RESO Web API Add/Edit is exposed to vendors or only a proprietary

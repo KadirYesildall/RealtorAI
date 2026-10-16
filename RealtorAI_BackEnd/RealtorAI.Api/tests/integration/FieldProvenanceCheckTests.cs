@@ -36,6 +36,21 @@ public sealed class FieldProvenanceCheckTests
         "Zoning",
     };
 
+    /// <summary>
+    /// T060: every field the public-record pre-fill fills (FR-008) is one a model may never
+    /// fill (FR-007). Checked against the list above, which the theories below pin to the
+    /// database constraint, so the pre-fill set cannot grow to include a field AI could write.
+    /// </summary>
+    [Fact]
+    public void PublicRecordFields_AreAllProtectedFromAi()
+    {
+        var protectedKeys = ProtectedResoKeys.Cast<object[]>().Select(row => (string)row[0]).ToHashSet(StringComparer.Ordinal);
+
+        Assert.All(
+            Modules.Listings.PropertyData.PublicRecordFields.Keys,
+            key => Assert.Contains(key, protectedKeys));
+    }
+
     [Theory]
     [MemberData(nameof(ProtectedResoKeys))]
     public async Task ProtectedKey_WithAiDetectedProvenance_IsRefused(string resoFieldKey)

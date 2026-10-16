@@ -5,7 +5,11 @@ using Api.Authentication;
 using Api.Authorization;
 using Api.Concurrency;
 using Api.Data;
+using Api.Endpoints;
+using Api.Hubs;
+using Api.Media;
 using OpenTelemetry.Metrics;
+using Pipeline;
 using OpenTelemetry.Trace;
 using Serilog;
 
@@ -59,7 +63,26 @@ builder.Services.AddScoped<Modules.Audit.IAuditWriter, Modules.Audit.AuditWriter
 // registry. No vendor, model id or endpoint appears anywhere else in the codebase.
 builder.Services.AddAiPlatform(builder.Configuration, builder.Environment);
 
+// ───────────────────────────── Media ─────────────────────────────
+// Photo storage (write-once originals), non-generative normalization, public-record pre-fill.
+builder.Services.AddMedia(builder.Configuration);
+
 // ───────────────────────────── Pipeline ─────────────────────────────
+// FR-053: durable background analysis. Hangfire stores jobs in the dedicated `hangfire` schema
+// (0013_hangfire_schema.sql), never in `public`.
+builder.Services.AddPipelineJobs(new PipelineOptions(
+    builder.Configuration.GetConnectionString("Hangfire")
+        ?? throw new InvalidOperationException(
+            "ConnectionStrings:Hangfire is not configured. It points at the same Supabase "
+            + "Postgres as ConnectionStrings:Postgres — see quickstart.md."),
+    builder.Configuration.GetValue<int?>("Pipeline:WorkerCount")
+        ?? throw new InvalidOperationException(
+            "Pipeline:WorkerCount is not configured. Size it against the database connection "
+            + "pool: each worker holds a connection while a job runs.")));
+
+// Per-photo progress pushed to the listing owner as each step completes (FR-053).
+builder.Services.AddPipelineHub();
+
 var app = builder.Build();
 
 // VIII.5: refuse to serve traffic if a prompt file no longer matches the hash recorded for
@@ -96,5 +119,10 @@ app.MapGet("/whoami", (ClaimsPrincipal user) =>
     })
     .RequireAuthorization(PolicyRegistry.Authenticated)
     .WithName("WhoAmI");
+
+// ───────────────────────────── Endpoints ─────────────────────────────
+app.MapAiRegistryEndpoints();
+app.MapBrokerageEndpoints();
+app.MapPipelineHub();
 
 app.Run();

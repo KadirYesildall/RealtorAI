@@ -40,11 +40,31 @@ internal sealed record PostgresEnumMapping(
             .ToList();
     }
 
+    // Created eagerly, with the mapping, so there is no window in which two requests race to
+    // create two instances.
+    private readonly INpgsqlNameTranslator? translator = ExplicitLabels is null
+        ? null
+        : new ExplicitEnumLabelTranslator(PgName, ExplicitLabels);
+
     /// <summary>
     /// The translator Npgsql needs, or null when <c>[PgName]</c> already supplies the labels.
     /// </summary>
-    internal INpgsqlNameTranslator? Translator() =>
-        ExplicitLabels is null ? null : new ExplicitEnumLabelTranslator(PgName, ExplicitLabels);
+    /// <remarks>
+    /// <para>
+    /// <b>One instance per mapping, for the life of the process — this is load-bearing.</b>
+    /// <c>AddDbContext</c> rebuilds the options for every scope, i.e. every request, and EF keys
+    /// its internal service provider on those options, comparing each enum mapping's translator
+    /// by reference. A fresh translator per call therefore made every request look like a new
+    /// configuration: EF built a new internal service provider each time and, past twenty,
+    /// raised <c>ManyServiceProvidersCreatedWarning</c> as an error — so the twenty-first
+    /// database-backed request after startup, and every one after it, failed with a 500.
+    /// </para>
+    /// <para>
+    /// Found by the first HTTP contract suite (T051), the first code to send more than a handful
+    /// of database requests through one host. See research R26.
+    /// </para>
+    /// </remarks>
+    internal INpgsqlNameTranslator? Translator() => translator;
 }
 
 /// <summary>

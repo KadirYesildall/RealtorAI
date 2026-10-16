@@ -11,6 +11,7 @@ import {
   GridIcon,
   LogOutIcon,
   SettingsIcon,
+  UsersIcon,
 } from "@/components/ui/icons";
 
 const NAV_ITEMS = [
@@ -21,6 +22,7 @@ const NAV_ITEMS = [
     icon: BuildingIcon,
     enabled: false,
   },
+  { href: "/dashboard/brokerage", key: "brokerage" as const, icon: UsersIcon, enabled: true },
   {
     href: "/dashboard/settings",
     key: "settings" as const,

@@ -12,6 +12,9 @@
   <Folder Name="/tests/unit/">
     <Project Path="tests/unit/Tests.unit.csproj" />
   </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/AiEval/AiEval.csproj" />
+  </Folder>
   <Project Path="Api/Api.csproj" />
   <Project Path="Libs.Ai/Libs.Ai.csproj" />
   <Project Path="Libs.Compliance/Libs.Compliance.csproj" />

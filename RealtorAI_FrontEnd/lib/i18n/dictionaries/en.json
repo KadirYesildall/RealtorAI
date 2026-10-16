@@ -81,6 +81,7 @@
     "sidebar": {
       "home": "Dashboard",
       "newProperty": "New Property",
+      "brokerage": "Brokerage",
       "settings": "Settings",
       "billing": "Billing",
       "comingSoon": "Coming soon",
@@ -94,6 +95,101 @@
     "error": {
       "title": "We couldn't load your dashboard",
       "body": "Something went wrong on our end. Please try again."
+    }
+  },
+  "brokerage": {
+    "title": "Brokerage",
+    "subtitle": "Your brokerage's identity, disclosures and members.",
+    "status": {
+      "pending": "Pending approval",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "revoked": "Revoked"
+    },
+    "role": {
+      "agent": "Agent",
+      "broker_admin": "Broker admin"
+    },
+    "membershipLabel": "Your membership",
+    "none": {
+      "title": "You haven't declared a brokerage",
+      "body": "You'll declare your brokerage when you complete your profile. Until then you can still draft and prepare listings on your own."
+    },
+    "pending": {
+      "title": "Waiting for {brokerage} to approve you",
+      "body": "A broker admin of {brokerage} needs to approve your membership. Until then, nothing about the brokerage is shared with you, and your listings stay private to you."
+    },
+    "ended": {
+      "rejectedTitle": "{brokerage} declined your membership",
+      "revokedTitle": "Your membership at {brokerage} has ended",
+      "body": "You no longer have access to this brokerage. You can still prepare listings on your own, and you can declare a brokerage again from your profile."
+    },
+    "banner": {
+      "title": "Your membership at {brokerage} is pending approval",
+      "body": "You can draft listings, run photo analysis, and generate and check content now. Approving marketing and submitting to the MLS unlock once a broker admin approves you, because both carry the brokerage's name and license.",
+      "link": "View status"
+    },
+    "settings": {
+      "title": "Brokerage settings",
+      "readOnlyNote": "Only a broker admin can change these settings.",
+      "name": "Brokerage name",
+      "licenseNumber": "License number",
+      "state": "State",
+      "stateHint": "Two-letter code, for example CA.",
+      "requiredDisclaimers": "Required disclaimers",
+      "requiredDisclaimersHint": "One per line. These appear on marketing that names the brokerage.",
+      "targetMlsId": "Target MLS",
+      "targetMlsIdHint": "For example CRMLS. Leave empty if you don't submit to an MLS.",
+      "defaultTone": "Default tone",
+      "tones": {
+        "professional": "Professional",
+        "warm": "Warm",
+        "luxury": "Luxury",
+        "concise": "Concise"
+      },
+      "aiBudgetTokens": "AI budget per listing (tokens)",
+      "aiBudgetImages": "AI budget per listing (images)",
+      "budgetHint": "AI work for a listing stops at this limit, and the agent can continue by hand.",
+      "none": "None",
+      "save": "Save settings",
+      "saved": "Settings saved."
+    },
+    "members": {
+      "title": "Members",
+      "pendingTitle": "Waiting for your decision",
+      "pendingEmpty": "No one is waiting for approval.",
+      "othersTitle": "All members",
+      "othersEmpty": "No other members yet.",
+      "license": "License {number} ({state})",
+      "noLicense": "No license on file",
+      "requested": "Requested {date}",
+      "unnamed": "Unnamed agent",
+      "approve": "Approve",
+      "reject": "Reject",
+      "approveLabel": "Approve {name}",
+      "rejectLabel": "Reject {name}",
+      "decidedApproved": "Approved.",
+      "decidedRejected": "Rejected."
+    },
+    "errors": {
+      "validation": "Some fields need attention.",
+      "unauthenticated": "Your session has ended. Sign in again to continue.",
+      "forbidden": "You don't have permission to do that for this brokerage.",
+      "notFound": "We couldn't find that brokerage or request.",
+      "alreadyDecided": "This request has already been decided. Refresh to see its current status.",
+      "unexpected": "Something went wrong. Please try again.",
+      "loadFailed": "We couldn't load your brokerage right now. Please try again.",
+      "nameRequired": "Enter the brokerage name.",
+      "nameTooLong": "The name is too long.",
+      "licenseRequired": "Enter the license number.",
+      "licenseTooLong": "The license number is too long.",
+      "stateFormat": "Use a two-letter state code, for example CA.",
+      "disclaimerTooLong": "Each disclaimer must be under 1,000 characters.",
+      "tooManyDisclaimers": "Use at most 20 disclaimers.",
+      "toneInvalid": "Choose a tone.",
+      "budgetInteger": "Enter a whole number.",
+      "budgetPositive": "Enter a number greater than zero.",
+      "serverRejected": "This value wasn't accepted. Check it and try again."
     }
   }
 }

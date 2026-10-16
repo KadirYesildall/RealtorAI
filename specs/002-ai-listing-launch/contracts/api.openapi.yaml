@@ -28,6 +28,16 @@ info:
     destroy immutable audit records or be blocked by their foreign key. Originals are purged
     3 years later by an out-of-band privileged job, never by this API (FR-065).
 
+    REAL-TIME (FR-053). SignalR hub at /hubs/pipeline (not an OpenAPI operation). Same
+    Supabase JWT; browsers pass it as the `access_token` query parameter, accepted on /hubs
+    paths only. Client invokes SubscribeToListing(listingId) / UnsubscribeFromListing(listingId).
+    Subscribing is LISTING OWNER ONLY — narrower than GET /pipeline, because a subscription is
+    authorized once and would outlive a revoked membership; broker admins poll instead. Server
+    sends StepProgress {listingId, step, state, failureReason} and PhotoProgress {listingId,
+    photoId, state, failureReason}, using the enum spellings of PipelineStatus. Messages carry
+    state only, never listing content. Notifications are best-effort hints; GET /pipeline is the
+    source of truth. Stateful reconnect is disabled (CVE-2026-70159, research R29).
+
     SLICE A BOUNDARY. No MLS submission, marketing pack, publishing, lead, or insight
     operations exist here — those are Slice B/C. Capability predicates CanApproveMarketing and
     CanSubmitToMls exist and always deny for a non-approved membership (FR-061).
@@ -75,8 +85,15 @@ paths:
       summary: Self-declare a brokerage (creates a pending membership)
       description: |
         Creates the membership with status `pending` (FR-060). Confers no brokerage-scoped
-        access until approved. If the brokerage has no members yet, the caller becomes its
-        first `broker_admin` and the membership is created `approved` (FR-062).
+        access until approved. If the brokerage has no live (pending or approved) members — or
+        is being created by this request — the caller becomes its first `broker_admin` and the
+        membership is created `approved` (FR-062), audited as both membership_requested and
+        membership_decided.
+
+        Joining an existing brokerage: send brokerageId (shared by its admin) and its name; the
+        name must match the id, so a mistyped id cannot attach the agent to the wrong
+        brokerage. Creating a new one: omit brokerageId and send brokerageLicenseNumber and
+        brokerageState, which the brokerage record requires (FR-021, FR-057).
       x-authorization: Authenticated with completed profile. One live membership per agent.
       requestBody:
         required: true
@@ -89,11 +106,15 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Membership' }
+        '403': { description: Profile not completed (FR-058) }
         '409': { description: Agent already has a pending or approved membership }
         '422': { $ref: '#/components/responses/ValidationError' }
     get:
       tags: [Brokerage]
       summary: Read own membership status
+      description: |
+        The live membership if there is one, otherwise the most recent ended one (so a rejected
+        agent sees the rejection), otherwise the JSON literal `null`.
       x-authorization: Authenticated; returns only the caller's own membership.
       responses:
         '200':
@@ -124,6 +145,7 @@ paths:
                 type: array
                 items: { $ref: '#/components/schemas/Membership' }
         '403': { $ref: '#/components/responses/Forbidden' }
+        '422': { description: Unknown status filter }
 
   /api/brokerages/{brokerageId}/memberships/{membershipId}/decision:
     parameters:
@@ -153,7 +175,9 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Membership' }
         '403': { $ref: '#/components/responses/Forbidden' }
-        '409': { description: Membership is not pending }
+        '404': { description: No membership with that id in this brokerage }
+        '409': { description: Membership is not pending (a request is decided once) }
+        '422': { description: Decision is not `approved` or `rejected` }
 
   /api/brokerages/{brokerageId}/settings:
     parameters:
@@ -172,7 +196,10 @@ paths:
     put:
       tags: [Brokerage]
       summary: Update brokerage name, license info, logo, state, disclaimers, target MLS
-      description: FR-057.
+      description: |
+        FR-057. logoStorageKey is read-only here: Slice A has no logo upload endpoint, and
+        accepting an arbitrary key would let a brokerage point its logo at any stored object
+        (research R32). targetMlsId must name a rule profile that exists, or be null.
       x-authorization: Requires an APPROVED broker_admin membership of {brokerageId}.
       requestBody:
         required: true
@@ -180,7 +207,11 @@ paths:
           application/json:
             schema: { $ref: '#/components/schemas/BrokerageSettings' }
       responses:
-        '200': { description: Updated }
+        '200':
+          description: Updated; returns the stored settings
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BrokerageSettings' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '422': { $ref: '#/components/responses/ValidationError' }
 
@@ -698,6 +729,17 @@ paths:
         code change (Principle VIII.2). Enabling requires a recorded commercial license AND
         eval_status=passed (VIII.4) — enforced by a database check, so this endpoint cannot
         bypass it.
+
+        Rules this endpoint adds, because a check constraint only sees column values:
+        - evalStatus, evalResult and verifiedAt are written by the evaluation harness. They may
+          be echoed back unchanged; any change is 422.
+        - taskKey is immutable (422).
+        - Changing provider, modelId or endpoint resets the evaluation to `unverified`, clears
+          evalResult/verifiedAt, clears the license unless a new one is recorded in the same
+          request, and leaves the entry disabled. Requesting enabled=true together with such a
+          change is 422.
+        - A fallback must exist, serve the same task, and not be the entry itself (422).
+        - A request that changes nothing returns 200 and records no audit event.
       x-authorization: >
         Requires profiles.platform_admin = true (FR-064). Every change is audited as
         registry_changed with the acting administrator.
@@ -707,8 +749,15 @@ paths:
           application/json:
             schema: { $ref: '#/components/schemas/RegistryEntry' }
       responses:
-        '200': { description: Updated and audited }
-        '422': { description: Cannot enable without license and passing evaluation }
+        '200':
+          description: Updated and audited; returns the stored entry
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RegistryEntry' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { description: No registry entry has that id }
+        '409': { description: Another entry is already enabled for this task }
+        '422': { $ref: '#/components/responses/ValidationError' }
 
 components:
   securitySchemes:
@@ -846,11 +895,28 @@ components:
       properties:
         brokerageId: { type: string, format: uuid, nullable: true }
         brokerageName: { type: string }
+        brokerageLicenseNumber:
+          type: string
+          nullable: true
+          description: Required when brokerageId is null (creating a brokerage).
+        brokerageState:
+          type: string
+          nullable: true
+          pattern: '^[A-Z]{2}$'
+          description: Required when brokerageId is null (creating a brokerage).
     Membership:
       type: object
       properties:
         id: { type: string, format: uuid }
+        agentId: { type: string, format: uuid }
+        agentName:
+          type: string
+          nullable: true
+          description: Shown to the deciding broker admin, with the license, so they know who is asking.
+        agentLicenseNumber: { type: string, nullable: true }
+        agentLicenseState: { type: string, nullable: true }
         brokerageId: { type: string, format: uuid }
+        brokerageName: { type: string }
         status: { $ref: '#/components/schemas/MembershipStatus' }
         role: { $ref: '#/components/schemas/MembershipRole' }
         requestedAt: { type: string, format: date-time }
