@@ -143,6 +143,19 @@ internal static class TestImages
 
     internal static byte[] WebP(uint width = 1400, uint height = 1000) => Create(MagickFormat.WebP, width, height);
 
+    /// <summary>
+    /// A JPEG of one colour with light noise. Two of the same colour are distinct files that
+    /// look alike — the near-duplicate case.
+    /// </summary>
+    internal static byte[] JpegOfColour(byte red, byte green, byte blue, uint width = 1200, uint height = 900)
+    {
+        using var image = new MagickImage(new MagickColor(red, green, blue), width, height);
+        image.AddNoise(NoiseType.Gaussian, 0.2);
+        image.Format = MagickFormat.Jpeg;
+
+        return image.ToByteArray();
+    }
+
     /// <summary>A JPEG carrying GPS coordinates, the metadata the normalized copy must lose.</summary>
     internal static byte[] JpegWithGps(uint width = 2400, uint height = 1600)
     {

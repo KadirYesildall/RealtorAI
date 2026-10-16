@@ -187,15 +187,15 @@ Per [plan.md](./plan.md) "Project Structure" — the repo's two mandated top-lev
 
 ### Tests for User Story 2 (write first, confirm failing)
 
-- [ ] T084 [P] [US2] Contract test `POST /api/listings/{id}/pipeline` covering 202 / 409 budget / 503 no-model in `tests/contract/PipelineStartTests.cs`
-- [ ] T085 [P] [US2] Contract test `GET /api/listings/{id}/pipeline` status shape in `tests/contract/PipelineStatusTests.cs`
-- [ ] T086 [P] [US2] Contract test `PATCH /photos/{photoId}` overrides and the altered declaration in `tests/contract/PhotoPatchTests.cs`
-- [ ] T087 [P] [US2] Contract test `PUT /photos/order` reorder and cover selection in `tests/contract/PhotoOrderTests.cs`
-- [ ] T088 [P] [US2] Sidecar contract tests for `/quality` and `/embed` in `RealtorAI_BackEnd/vision-sidecar/tests/test_contract.py`
-- [ ] T089 [P] [US2] Integration test: with no enabled model the pipeline returns 503 and the listing stays fully completable by hand (SC-010) in `tests/integration/ManualFallbackTests.cs`
-- [ ] T090 [P] [US2] Integration test: near-duplicate detection flags the seeded living-room pair in `tests/integration/NearDuplicateTests.cs`
-- [ ] T091 [P] [US2] Integration test: checksums unchanged after a full analysis run in `tests/integration/AnalysisDoesNotMutateTests.cs`
-- [ ] T092 [P] [US2] E2E test: per-photo streaming, override, drag-reorder in `RealtorAI_FrontEnd/tests/integration/photo-analysis.spec.ts`
+- [X] T084 [P] [US2] Contract test `POST /api/listings/{id}/pipeline` covering 202 / 409 budget / 503 no-model in `tests/contract/PipelineStartTests.cs`
+- [X] T085 [P] [US2] Contract test `GET /api/listings/{id}/pipeline` status shape in `tests/contract/PipelineStatusTests.cs`
+- [X] T086 [P] [US2] Contract test `PATCH /photos/{photoId}` overrides and the altered declaration in `tests/contract/PhotoPatchTests.cs`
+- [X] T087 [P] [US2] Contract test `PUT /photos/order` reorder and cover selection in `tests/contract/PhotoOrderTests.cs`
+- [X] T088 [P] [US2] Sidecar contract tests for `/quality` and `/embed` in `RealtorAI_BackEnd/vision-sidecar/tests/test_contract.py`
+- [X] T089 [P] [US2] Integration test: with no enabled model the pipeline returns 503 and the listing stays fully completable by hand (SC-010) in `tests/integration/ManualFallbackTests.cs`
+- [X] T090 [P] [US2] Integration test: near-duplicate detection flags the seeded living-room pair in `tests/integration/NearDuplicateTests.cs`
+- [X] T091 [P] [US2] Integration test: checksums unchanged after a full analysis run in `tests/integration/AnalysisDoesNotMutateTests.cs`
+- [X] T092 [P] [US2] E2E test: per-photo streaming, override, drag-reorder in `RealtorAI_FrontEnd/tests/integration/photo-analysis.spec.ts`
 
 ### Implementation for User Story 2
 

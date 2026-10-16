@@ -22,13 +22,25 @@ namespace Libs.Ai;
 /// estimate could not be checked before dispatch, which is the only point at which the check
 /// prevents rather than records an overspend.
 /// </param>
+/// <param name="Images">
+/// Images sent with the input, for a vision task. Each must be a normalized copy — downscaled,
+/// EXIF and GPS stripped (VIII.4.c); an original never leaves the write-once bucket. When
+/// present, their count must equal <paramref name="ImageCount"/>, so the budget is charged for
+/// exactly what is sent.
+/// </param>
 public sealed record AiRequest(
     string TaskKey,
     Guid ListingId,
     Guid ActorId,
     string Input,
     int ImageCount,
-    int EstimatedTokens);
+    int EstimatedTokens,
+    IReadOnlyList<AiImage>? Images = null);
+
+/// <summary>One image sent to a vision model.</summary>
+/// <param name="Content">The normalized copy's bytes.</param>
+/// <param name="MediaType">Its media type, e.g. <c>image/jpeg</c>.</param>
+public sealed record AiImage(ReadOnlyMemory<byte> Content, string MediaType);
 
 /// <summary>A validated AI response, with everything needed to audit it.</summary>
 /// <param name="Document">The response, already validated against its declared schema.</param>
