@@ -180,6 +180,11 @@ public sealed class PhotoPatchTests : IClassFixture<ApiFactory>
 
         Assert.True(photo["altered"]!.GetValue<bool>());
         Assert.Equal("virtual_staging", photo["alterationType"]!.GetValue<string>());
+
+        // The labels a client may offer are the rule profile's, served with the listing.
+        using var client = factory.CreateClientFor(agent);
+        var detail = (await client.GetFromJsonAsync<JsonObject>(Listing(listing)))!;
+        Assert.Equal([Label], detail["approvedDisclosureLabels"]!.AsArray().Select(label => label!.GetValue<string>()));
         Assert.Equal(Label, photo["disclosureLabel"]!.GetValue<string>());
         Assert.Equal(photos[0], photo["pairedOriginalId"]!.GetValue<Guid>());
     }

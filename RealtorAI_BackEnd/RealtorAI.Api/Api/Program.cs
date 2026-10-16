@@ -86,7 +86,7 @@ builder.Services.AddPipelineJobs(new PipelineOptions(
 builder.Services.AddAnalysisPipeline(builder.Configuration);
 
 // Per-photo progress pushed to the listing owner as each step completes (FR-053).
-builder.Services.AddPipelineHub();
+builder.Services.AddPipelineHub(builder.Configuration);
 
 var app = builder.Build();
 
@@ -101,6 +101,9 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
 }
+
+// Before authentication, so a preflight is answered without a token. Only the hub has a policy.
+app.UseCors();
 
 app.UseAuthentication();
 app.UseAuthorization();

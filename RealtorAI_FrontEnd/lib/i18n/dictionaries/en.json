@@ -338,6 +338,122 @@
       "measurementFormat": "Enter a number of zero or more.",
       "archiveFailed": "Couldn't archive this listing. Please try again.",
       "loadFailed": "We couldn't load your listings right now. Please try again."
+    },
+    "analysis": {
+      "title": "Photo analysis",
+      "body": "Analysis suggests a room type, visible features, quality and content flags, a caption, a cover and an order for each photo. Every result is a suggestion you can change.",
+      "start": "Analyze photos",
+      "restart": "Analyze again",
+      "retryHint": "Running analysis again only analyzes the photos that failed.",
+      "manual": {
+        "noModel": "Photo analysis isn't available right now. Every step can be done by hand below.",
+        "budget": "This listing's AI budget is used up. Finish the remaining photos by hand below.",
+        "noPhotos": "Add at least one photo before starting analysis."
+      },
+      "steps": {
+        "normalize": "Preparing photos",
+        "technical_quality": "Checking quality",
+        "embeddings": "Finding near-duplicates",
+        "photo_analysis": "Analyzing photos",
+        "cover_and_order": "Suggesting cover and order",
+        "content_generation": "Drafting content",
+        "compliance": "Checking compliance"
+      },
+      "stepState": {
+        "queued": "Waiting",
+        "running": "In progress",
+        "done": "Done",
+        "failed": "Didn't finish",
+        "skipped": "Not available"
+      },
+      "photoState": {
+        "queued": "Waiting",
+        "analyzing": "Analyzing…",
+        "done": "Analyzed",
+        "failed": "Couldn't analyze — set it by hand or analyze again"
+      },
+      "stepsLabel": "Analysis steps",
+      "errors": {
+        "validation": "That change wasn't accepted. Check the highlighted field.",
+        "forbidden": "You can't change this listing's photos.",
+        "notFound": "This photo isn't available any more. Reload the page.",
+        "pairedOriginal": "This photo is shown beside an altered photo. Withdraw that declaration first.",
+        "unexpected": "Something went wrong. Please try again."
+      }
+    },
+    "grid": {
+      "label": "Listing photos",
+      "move": "Reorder photo {n}",
+      "roomType": "Room type for photo {n}",
+      "roomTypeNone": "Not set",
+      "caption": "Caption for photo {n}",
+      "features": "Features for photo {n}",
+      "featuresHint": "Separate with commas",
+      "makeCover": "Make photo {n} the cover",
+      "cover": "Cover",
+      "remove": "Remove photo {n}",
+      "removeConfirm": "Remove photo {n} from this listing? The original file is kept on record.",
+      "declare": "Declare alteration for photo {n}",
+      "altered": "Altered — {label}",
+      "fromAi": "Suggested by AI ({confidence}% sure)",
+      "fromAgent": "Set by you",
+      "useAi": "Use the AI's suggestion",
+      "suggested": "Suggested position {position}",
+      "applySuggestions": "Apply the suggested order and cover",
+      "flagsLabel": "Issues to check for photo {n}",
+      "quality": {
+        "blurry": "Blurry",
+        "too_dark": "Too dark",
+        "overexposed": "Overexposed",
+        "tilted_horizon": "Tilted",
+        "below_min_resolution": "Below the MLS minimum size",
+        "near_duplicate": "Looks like another photo"
+      },
+      "content": {
+        "people_visible": "People visible",
+        "personal_documents": "Personal documents visible",
+        "house_number": "House number visible",
+        "license_plate": "License plate visible",
+        "watermark_or_branding": "Watermark or branding",
+        "possible_prior_alteration": "May have been edited"
+      },
+      "reasons": {
+        "rule:cover:exterior_front": "A clear view of the front makes the best first impression.",
+        "rule:cover:model_recommended": "The clearest photo the analysis recommended as a cover.",
+        "rule:cover:first_clean": "The first photo without an issue to resolve.",
+        "order": "Placed for a walk through the house: {room}."
+      },
+      "rooms": {
+        "exterior_front": "Front exterior",
+        "living_room": "Living room",
+        "kitchen": "Kitchen",
+        "primary_bedroom": "Primary bedroom",
+        "bedroom": "Bedroom",
+        "bathroom": "Bathroom",
+        "backyard": "Backyard",
+        "pool": "Pool",
+        "view": "View",
+        "garage": "Garage",
+        "floor_plan": "Floor plan",
+        "other": "Other"
+      }
+    },
+    "altered": {
+      "title": "Declare an alteration",
+      "body": "California requires an edited photo to be labeled and shown beside its unaltered original. This records what you did elsewhere — this system never edits photos.",
+      "type": "What was changed",
+      "types": {
+        "virtual_staging": "Virtual staging",
+        "other": "Other edit"
+      },
+      "label": "Disclosure label",
+      "paired": "Unaltered original",
+      "pairedNone": "Choose a photo",
+      "save": "Declare alteration",
+      "withdraw": "Withdraw the declaration",
+      "cancel": "Cancel",
+      "noLabels": "No disclosure label is approved for this listing's MLS yet, so an alteration can't be declared. Use the unaltered photo instead.",
+      "noOriginal": "Upload the unaltered original first; it is shown beside the altered photo."
     }
   },
   "profileCompletion": {

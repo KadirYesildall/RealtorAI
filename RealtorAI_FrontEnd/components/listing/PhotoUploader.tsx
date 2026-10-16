@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useId, useState, useTransition } from "react";
+import { useId, useState, useTransition, type ReactNode } from "react";
 import type { Photo, PhotoUploadResult } from "@/lib/api/listings";
 import type { Dictionary } from "@/lib/i18n/getDictionary";
 import { format } from "@/lib/i18n/format";
@@ -31,7 +31,18 @@ type Upload = {
  * already uploaded is touched — and the 50 MB limit. Whether a file is actually a photo is the
  * API's call, made from its bytes.
  */
-export function PhotoUploader({ listingId, photos, dict }: { listingId: string; photos: Photo[]; dict: Dictionary["listings"] }) {
+export function PhotoUploader({
+  listingId,
+  photos,
+  dict,
+  children,
+}: {
+  listingId: string;
+  photos: Photo[];
+  dict: Dictionary["listings"];
+  /** What shows the uploaded photos — the grid (T099). */
+  children?: ReactNode;
+}) {
   const t = dict.photos;
   const inputId = useId();
   const router = useRouter();
@@ -178,30 +189,7 @@ export function PhotoUploader({ listingId, photos, dict }: { listingId: string; 
           </ul>
         )}
 
-        {photos.length === 0 ? (
-          <p className="text-sm text-[var(--color-text-muted)]">{t.empty}</p>
-        ) : (
-          <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {photos.map((photo, index) => (
-              <li
-                key={photo.id}
-                className="aspect-[4/3] overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-muted)]"
-              >
-                {photo.normalizedUrl && (
-                  // A short-lived signed URL to the normalized copy (VIII.4.c). next/image would
-                  // cache it past its expiry under a key that no longer works, so it is shown as is.
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={photo.normalizedUrl}
-                    alt={photo.caption ?? format(t.photoAlt, { n: String(index + 1) })}
-                    className="h-full w-full object-cover"
-                    loading="lazy"
-                  />
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
+        {photos.length === 0 ? <p className="text-sm text-[var(--color-text-muted)]">{t.empty}</p> : children}
       </section>
     </Card>
   );

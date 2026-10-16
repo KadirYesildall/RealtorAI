@@ -338,6 +338,122 @@
       "measurementFormat": "Sıfır ya da daha büyük bir sayı girin.",
       "archiveFailed": "Bu ilan arşivlenemedi. Lütfen tekrar deneyin.",
       "loadFailed": "İlanlarınızı şu anda yükleyemedik. Lütfen tekrar deneyin."
+    },
+    "analysis": {
+      "title": "Fotoğraf analizi",
+      "body": "Analiz her fotoğraf için oda türü, görünen özellikler, kalite ve içerik uyarıları, bir açıklama, bir kapak ve bir sıra önerir. Her sonuç değiştirebileceğiniz bir öneridir.",
+      "start": "Fotoğrafları analiz et",
+      "restart": "Yeniden analiz et",
+      "retryHint": "Analizi yeniden çalıştırmak yalnızca başarısız olan fotoğrafları analiz eder.",
+      "manual": {
+        "noModel": "Fotoğraf analizi şu anda kullanılamıyor. Her adımı aşağıda elle yapabilirsiniz.",
+        "budget": "Bu ilanın yapay zekâ bütçesi doldu. Kalan fotoğrafları aşağıda elle tamamlayın.",
+        "noPhotos": "Analizi başlatmadan önce en az bir fotoğraf ekleyin."
+      },
+      "steps": {
+        "normalize": "Fotoğraflar hazırlanıyor",
+        "technical_quality": "Kalite kontrol ediliyor",
+        "embeddings": "Benzer fotoğraflar aranıyor",
+        "photo_analysis": "Fotoğraflar analiz ediliyor",
+        "cover_and_order": "Kapak ve sıra öneriliyor",
+        "content_generation": "Metin hazırlanıyor",
+        "compliance": "Uygunluk kontrol ediliyor"
+      },
+      "stepState": {
+        "queued": "Bekliyor",
+        "running": "Sürüyor",
+        "done": "Tamamlandı",
+        "failed": "Tamamlanamadı",
+        "skipped": "Kullanılamıyor"
+      },
+      "photoState": {
+        "queued": "Bekliyor",
+        "analyzing": "Analiz ediliyor…",
+        "done": "Analiz edildi",
+        "failed": "Analiz edilemedi — elle ayarlayın ya da yeniden analiz edin"
+      },
+      "stepsLabel": "Analiz adımları",
+      "errors": {
+        "validation": "Bu değişiklik kabul edilmedi. İşaretli alanı kontrol edin.",
+        "forbidden": "Bu ilanın fotoğraflarını değiştiremezsiniz.",
+        "notFound": "Bu fotoğrafa artık erişilemiyor. Sayfayı yenileyin.",
+        "pairedOriginal": "Bu fotoğraf değiştirilmiş bir fotoğrafın yanında gösteriliyor. Önce o beyanı geri çekin.",
+        "unexpected": "Bir şeyler ters gitti. Lütfen tekrar deneyin."
+      }
+    },
+    "grid": {
+      "label": "İlan fotoğrafları",
+      "move": "{n}. fotoğrafı yeniden sırala",
+      "roomType": "{n}. fotoğrafın oda türü",
+      "roomTypeNone": "Belirlenmedi",
+      "caption": "{n}. fotoğrafın açıklaması",
+      "features": "{n}. fotoğrafın özellikleri",
+      "featuresHint": "Virgülle ayırın",
+      "makeCover": "{n}. fotoğrafı kapak yap",
+      "cover": "Kapak",
+      "remove": "{n}. fotoğrafı kaldır",
+      "removeConfirm": "{n}. fotoğraf bu ilandan kaldırılsın mı? Orijinal dosya kayıtta tutulur.",
+      "declare": "{n}. fotoğraf için değişiklik beyan et",
+      "altered": "Değiştirilmiş — {label}",
+      "fromAi": "Yapay zekâ önerisi (%{confidence} emin)",
+      "fromAgent": "Sizin seçiminiz",
+      "useAi": "Yapay zekânın önerisini kullan",
+      "suggested": "Önerilen sıra {position}",
+      "applySuggestions": "Önerilen sırayı ve kapağı uygula",
+      "flagsLabel": "{n}. fotoğrafta kontrol edilecekler",
+      "quality": {
+        "blurry": "Bulanık",
+        "too_dark": "Çok karanlık",
+        "overexposed": "Aşırı pozlanmış",
+        "tilted_horizon": "Eğik",
+        "below_min_resolution": "MLS asgari boyutunun altında",
+        "near_duplicate": "Başka bir fotoğrafa çok benziyor"
+      },
+      "content": {
+        "people_visible": "Kişiler görünüyor",
+        "personal_documents": "Kişisel belgeler görünüyor",
+        "house_number": "Kapı numarası görünüyor",
+        "license_plate": "Plaka görünüyor",
+        "watermark_or_branding": "Filigran ya da marka",
+        "possible_prior_alteration": "Düzenlenmiş olabilir"
+      },
+      "reasons": {
+        "rule:cover:exterior_front": "Ön cephenin net bir görünümü en iyi ilk izlenimi verir.",
+        "rule:cover:model_recommended": "Analizin kapak olarak önerdiği en net fotoğraf.",
+        "rule:cover:first_clean": "Çözülmesi gereken bir sorunu olmayan ilk fotoğraf.",
+        "order": "Ev turu sırasına göre yerleştirildi: {room}."
+      },
+      "rooms": {
+        "exterior_front": "Ön cephe",
+        "living_room": "Oturma odası",
+        "kitchen": "Mutfak",
+        "primary_bedroom": "Ebeveyn yatak odası",
+        "bedroom": "Yatak odası",
+        "bathroom": "Banyo",
+        "backyard": "Arka bahçe",
+        "pool": "Havuz",
+        "view": "Manzara",
+        "garage": "Garaj",
+        "floor_plan": "Kat planı",
+        "other": "Diğer"
+      }
+    },
+    "altered": {
+      "title": "Değişiklik beyan et",
+      "body": "Kaliforniya, düzenlenmiş bir fotoğrafın etiketlenmesini ve değiştirilmemiş orijinalinin yanında gösterilmesini şart koşar. Bu, başka bir yerde yaptığınız değişikliği kaydeder — bu sistem fotoğrafları asla düzenlemez.",
+      "type": "Ne değiştirildi",
+      "types": {
+        "virtual_staging": "Sanal mobilyalama",
+        "other": "Başka bir düzenleme"
+      },
+      "label": "Açıklama etiketi",
+      "paired": "Değiştirilmemiş orijinal",
+      "pairedNone": "Bir fotoğraf seçin",
+      "save": "Değişikliği beyan et",
+      "withdraw": "Beyanı geri çek",
+      "cancel": "Vazgeç",
+      "noLabels": "Bu ilanın MLS'i için henüz onaylanmış bir açıklama etiketi yok, bu yüzden değişiklik beyan edilemez. Bunun yerine değiştirilmemiş fotoğrafı kullanın.",
+      "noOriginal": "Önce değiştirilmemiş orijinali yükleyin; değiştirilmiş fotoğrafın yanında gösterilir."
     }
   },
   "profileCompletion": {

@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { png, randomColour } from "./helpers";
 
 /**
  * T083 — every US1 screen in both themes (constitution: dark mode is baseline, WCAG AA in both).
@@ -101,6 +102,8 @@ for (const theme of THEMES) {
 
     test("listing index, wizard, draft editor and profile completion meet AA contrast", async ({ page }, testInfo) => {
       await signIn(page);
+      // Unique per run, so a listing left by an interrupted run is never mistaken for this one.
+      const street = `${theme} theme check ${Date.now()}`;
 
       // `ready` is something only the loaded screen shows: a check made while loading.tsx is
       // still up would pass against a spinner and prove nothing about the screen itself.
@@ -123,7 +126,7 @@ for (const theme of THEMES) {
       await expect(page.getByText("Enter the street address.")).toBeVisible();
       await check("wizard-basics-with-errors", page.getByRole("button", { name: "Create draft" }));
 
-      await page.getByLabel("Street address").fill(`${theme} theme check`);
+      await page.getByLabel("Street address").fill(street);
       await page.getByLabel("City").fill("Irvine");
       await page.getByLabel("State", { exact: true }).fill("CA");
       await page.getByLabel("ZIP code").fill("92618");
@@ -134,13 +137,24 @@ for (const theme of THEMES) {
       await expect(page.getByText("notes.txt was not accepted")).toBeVisible();
       await check("draft-editor", page.getByRole("region", { name: "Required before publishing" }));
 
+      // ── US2: the photo grid, the analysis card on the manual path, the declaration dialog ──
+      await page.getByLabel("Choose photos").setInputFiles({ name: "front.png", mimeType: "image/png", buffer: png(64, 48, randomColour()) });
+      await expect(page.getByLabel("Room type for photo 1")).toBeVisible();
+      await page.getByRole("button", { name: "Analyze photos" }).click();
+      await expect(page.getByText("Photo analysis isn't available right now")).toBeVisible();
+      await check("photo-grid-and-analysis", page.getByRole("list", { name: "Listing photos" }));
+
+      await page.getByRole("button", { name: "Declare alteration for photo 1" }).click();
+      await check("altered-dialog", page.getByRole("dialog", { name: "Declare an alteration" }));
+      await page.keyboard.press("Escape");
+
       await page.goto("/dashboard/profile/complete");
       await check("profile-completion", page.getByRole("heading", { name: "Complete your profile" }));
 
       await page.goto("/dashboard/listings");
       page.once("dialog", (dialog) => dialog.accept());
-      await page.getByRole("row").filter({ hasText: `${theme} theme check` }).getByRole("button", { name: "Archive" }).click();
-      await expect(page.getByRole("row").filter({ hasText: `${theme} theme check` })).toHaveCount(0);
+      await page.getByRole("row").filter({ hasText: street }).getByRole("button", { name: "Archive" }).click();
+      await expect(page.getByRole("row").filter({ hasText: street })).toHaveCount(0);
     });
   });
 }

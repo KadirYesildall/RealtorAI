@@ -1,5 +1,5 @@
-import { deflateSync } from "node:zlib";
 import { test, expect, type Page } from "@playwright/test";
+import { png, randomColour } from "./helpers";
 
 /**
  * T092 — Story 2 in the browser: start analysis, override results, reorder by drag, choose the
@@ -22,43 +22,6 @@ async function signIn(page: Page) {
   await page.waitForURL("**/dashboard");
 }
 
-function png(rgb: [number, number, number]): Buffer {
-  const crcTable = Array.from({ length: 256 }, (_, n) => {
-    let c = n;
-    for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
-    return c >>> 0;
-  });
-  const crc32 = (bytes: Buffer) => {
-    let c = 0xffffffff;
-    for (const byte of bytes) c = crcTable[(c ^ byte) & 0xff] ^ (c >>> 8);
-    return (c ^ 0xffffffff) >>> 0;
-  };
-  const chunk = (type: string, data: Buffer) => {
-    const length = Buffer.alloc(4);
-    length.writeUInt32BE(data.length);
-    const body = Buffer.concat([Buffer.from(type, "ascii"), data]);
-    const crc = Buffer.alloc(4);
-    crc.writeUInt32BE(crc32(body));
-    return Buffer.concat([length, body, crc]);
-  };
-  const [width, height] = [64, 48];
-  const header = Buffer.alloc(13);
-  header.writeUInt32BE(width, 0);
-  header.writeUInt32BE(height, 4);
-  header[8] = 8;
-  header[9] = 2;
-  const row = Buffer.concat([Buffer.from([0]), Buffer.from(Array.from({ length: width }, () => rgb).flat())]);
-
-  return Buffer.concat([
-    Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
-    chunk("IHDR", header),
-    chunk("IDAT", deflateSync(Buffer.concat(Array.from({ length: height }, () => row)))),
-    chunk("IEND", Buffer.alloc(0)),
-  ]);
-}
-
-const randomColour = () => [0, 0, 0].map(() => Math.floor(Math.random() * 256)) as [number, number, number];
-
 test("analysis falls back to the manual path, and every result can be set by hand", async ({ page }) => {
   const street = `${Math.floor(1000 + Math.random() * 8999)} Analysis Lane`;
   await signIn(page);
@@ -75,8 +38,8 @@ test("analysis falls back to the manual path, and every result can be set by han
   const draftUrl = page.url();
 
   await page.getByLabel("Choose photos").setInputFiles([
-    { name: "first.png", mimeType: "image/png", buffer: png(randomColour()) },
-    { name: "second.png", mimeType: "image/png", buffer: png(randomColour()) },
+    { name: "first.png", mimeType: "image/png", buffer: png(64, 48, randomColour()) },
+    { name: "second.png", mimeType: "image/png", buffer: png(64, 48, randomColour()) },
   ]);
   await expect(page.getByText("2 of 100 photos")).toBeVisible();
 
@@ -94,13 +57,23 @@ test("analysis falls back to the manual path, and every result can be set by han
   // ── Cover ──
   await page.getByRole("button", { name: "Make photo 2 the cover" }).click();
   await expect(page.getByRole("button", { name: "Make photo 2 the cover" })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByText("All changes saved")).toBeVisible({ timeout: 10_000 });
 
   // ── Reorder by drag, with the keyboard (dnd-kit's keyboard sensor) ──
-  const handle = page.getByRole("button", { name: "Move photo 2" });
+  const handle = page.getByRole("button", { name: "Reorder photo 2" });
   await handle.focus();
+  // Each key waits for dnd-kit to confirm the previous one: the handle is pressed while
+  // dragging, and its live region announces the move — what a screen reader user hears.
   await page.keyboard.press("Space");
+  await expect(handle).toHaveAttribute("aria-pressed", "true");
   await page.keyboard.press("ArrowLeft");
+  // dnd-kit also announces the item as "over" itself when it is picked up; wait for the move
+  // onto a different photo.
+  await expect(page.getByText(/Draggable item (\S+) was moved over droppable area (?!\1\.)/)).toBeAttached();
   await page.keyboard.press("Space");
+  // The moved photo is now first, so its handle reads "photo 1" — the order is applied locally
+  // and saved.
+  await expect(page.getByRole("button", { name: "Make photo 1 the cover" })).toHaveAttribute("aria-pressed", "true");
   await expect(page.getByText("All changes saved")).toBeVisible({ timeout: 10_000 });
 
   // ── All of it persisted ──

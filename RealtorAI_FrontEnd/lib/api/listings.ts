@@ -67,3 +67,46 @@ export async function declareMembership(body: {
 }): Promise<components["schemas"]["Membership"]> {
   return createServerApiClient().post<components["schemas"]["Membership"]>("/api/brokerages/memberships", body);
 }
+
+// ───────────────────────────── US2: photos and analysis ─────────────────────────────
+
+export type PipelineStatus = components["schemas"]["PipelineStatus"];
+export type PatchPhotoRequest = {
+  roomType?: components["schemas"]["RoomType"] | null;
+  featureTags?: string[] | null;
+  caption?: string | null;
+  altered?: boolean;
+  alterationType?: "virtual_staging" | "other";
+  disclosureLabel?: string;
+  pairedOriginalId?: string;
+};
+
+/** 202 with the run; 503 (no model) and 409 (budget) arrive as ApiError, both with the manual path open. */
+export async function startPipeline(listingId: string): Promise<PipelineStatus> {
+  return createServerApiClient().post<PipelineStatus>(`${listingPath(listingId)}/pipeline`, {});
+}
+
+export async function getPipeline(listingId: string): Promise<PipelineStatus> {
+  return createServerApiClient().get<PipelineStatus>(`${listingPath(listingId)}/pipeline`);
+}
+
+/** Absent fields are unchanged; roomType or featureTags null returns to the model's value. */
+export async function patchPhoto(listingId: string, photoId: string, body: PatchPhotoRequest): Promise<Photo> {
+  return createServerApiClient().patch<Photo>(`${listingPath(listingId)}/photos/${encodeURIComponent(photoId)}`, body);
+}
+
+export async function reorderPhotos(
+  listingId: string,
+  orderedPhotoIds: string[],
+  coverPhotoId?: string
+): Promise<{ orderedPhotoIds?: string[]; coverPhotoId?: string | null }> {
+  return createServerApiClient().put(`${listingPath(listingId)}/photos/order`, {
+    orderedPhotoIds,
+    ...(coverPhotoId ? { coverPhotoId } : {}),
+  });
+}
+
+/** Detaches the photo; the original stays in the write-once bucket (FR-001). */
+export async function deletePhoto(listingId: string, photoId: string): Promise<void> {
+  await createServerApiClient().delete<void>(`${listingPath(listingId)}/photos/${encodeURIComponent(photoId)}`);
+}

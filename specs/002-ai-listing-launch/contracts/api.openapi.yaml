@@ -1072,6 +1072,13 @@ components:
                 (research R33).
               items: { type: string }
             photos: { type: array, items: { $ref: '#/components/schemas/Photo' } }
+            approvedDisclosureLabels:
+              type: array
+              description: |
+                The disclosure labels the listing's MLS rule profile approves for an altered photo
+                (FR-020) — what a client offers in the declaration. Empty when none are recorded
+                (CRMLS until T161), in which case no alteration can be declared.
+              items: { type: string }
             contentDrafts:
               type: array
               description: Present once content generation exists (US3).

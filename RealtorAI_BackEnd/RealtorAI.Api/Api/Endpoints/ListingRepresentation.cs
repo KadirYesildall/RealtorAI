@@ -79,7 +79,8 @@ internal sealed record ListingDetailDto(
     DateTimeOffset UpdatedAt,
     IReadOnlyList<ListingFieldDto> Fields,
     IReadOnlyList<string> MissingRequiredFieldKeys,
-    IReadOnlyList<PhotoDto> Photos);
+    IReadOnlyList<PhotoDto> Photos,
+    IReadOnlyList<string> ApprovedDisclosureLabels);
 
 /// <summary>The contract's <c>ListingField</c>.</summary>
 internal sealed record ListingFieldDto(
@@ -277,7 +278,8 @@ internal static class ListingRepresentation
             listing.UpdatedAt,
             fields.Select(field => ToDto(field, requiredKeys)).ToList(),
             missing,
-            photos.Select(photo => ToDto(photo, urls.GetValueOrDefault(photo.Id), analyses.GetValueOrDefault(photo.Id))).ToList());
+            photos.Select(photo => ToDto(photo, urls.GetValueOrDefault(photo.Id), analyses.GetValueOrDefault(photo.Id))).ToList(),
+            profile is null ? [] : JsonSerializer.Deserialize<List<string>>(profile.DisclosureLabels) ?? []);
     }
 
     internal static PhotoDto ToDto(Photo photo, string? normalizedUrl, PhotoAnalysis? analysis) => new(

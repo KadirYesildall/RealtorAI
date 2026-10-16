@@ -1135,6 +1135,14 @@ a later story does not have to rediscover them.
   100 connection slots (53300); tests now run one worker and bounded pools.
 - **Photo deletion was in no task.** Story 2 scenario 7 requires it and the contract defines it;
   built with T086. Deleting the paired original of an altered photo is refused (409).
+- **The hub is the one API path the browser calls.** CORS is configured for `/hubs` only
+  (`Cors:PipelineHubOrigins`), without credentials; the token travels as `access_token`. The
+  browser needs `NEXT_PUBLIC_API_BASE_URL` for it — a public URL, not a secret.
+- **Three UI races found by the e2e suite, fixed in the grid:** "saved" shown while a later save
+  was still queued (now counted); a router refresh started before a local change overwriting it
+  (a refresh after every settled save supersedes it); a refresh replacing items mid-drag (held
+  until the drag ends). And dnd-kit's counter-based accessibility ids mismatched across
+  hydration; the context now takes a React id.
 - **Streaming in the browser e2e.** No model can be enabled on the local stack until T159, so
   the Story 2 e2e walks the manual path; per-photo streaming is verified over a real hub
   connection in `PipelineStatusTests`.

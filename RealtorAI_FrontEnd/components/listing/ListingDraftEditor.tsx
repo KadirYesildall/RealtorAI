@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { autosaveListingAction, type BasicsField } from "@/app/actions/listing";
-import type { Listing, ListingDetail } from "@/lib/api/listings";
+import type { Listing, ListingDetail, PipelineStatus } from "@/lib/api/listings";
 import type { Dictionary } from "@/lib/i18n/getDictionary";
 import { format } from "@/lib/i18n/format";
 import { ListingBasicsSchema, PUBLIC_RECORD_FIELDS, type ListingBasicsInput } from "@/lib/validation/listing";
@@ -10,7 +10,9 @@ import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { ListingBasicsFields, type BasicsFormValues } from "@/components/listing/ListingBasicsFields";
+import { PhotoGrid } from "@/components/listing/PhotoGrid";
 import { PhotoUploader } from "@/components/listing/PhotoUploader";
+import { PipelineProgress } from "@/components/listing/PipelineProgress";
 import { RequiredFieldsSection } from "@/components/listing/RequiredFieldsSection";
 
 /** How long the agent must pause before an edit is saved. Short enough that leaving loses nothing. */
@@ -43,7 +45,15 @@ function toFormValues(listing: Pick<Listing, keyof BasicsFormValues>): BasicsFor
  * after it, from the newer version — so the only 409 this can meet is a save made somewhere else
  * (FR-066), which is shown with the choice to load what was saved there, never overwritten.
  */
-export function ListingDraftEditor({ listing, dict }: { listing: ListingDetail; dict: Dictionary["listings"] }) {
+export function ListingDraftEditor({
+  listing,
+  pipeline,
+  dict,
+}: {
+  listing: ListingDetail;
+  pipeline: PipelineStatus | null;
+  dict: Dictionary["listings"];
+}) {
   const listingId = listing.id ?? "";
   const errorText = dict.errors as Record<string, string>;
 
@@ -51,6 +61,7 @@ export function ListingDraftEditor({ listing, dict }: { listing: ListingDetail; 
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<BasicsField, string>>>({});
   const [basicsActivity, setBasicsActivity] = useState<SaveActivity>("idle");
   const [fieldsActivity, setFieldsActivity] = useState<SaveActivity>("idle");
+  const [photosActivity, setPhotosActivity] = useState<SaveActivity>("idle");
   const [conflict, setConflict] = useState<Listing | null>(null);
 
   const versionRef = useRef(listing.rowVersion ?? 1);
@@ -164,7 +175,7 @@ export function ListingDraftEditor({ listing, dict }: { listing: ListingDetail; 
 
   return (
     <div className="space-y-6">
-      <SaveIndicator activity={combine(basicsActivity, fieldsActivity)} dict={dict.save} />
+      <SaveIndicator activity={combine(basicsActivity, fieldsActivity, photosActivity)} dict={dict.save} />
 
       {basicsActivity === "conflict" && (
         <Alert>
@@ -197,7 +208,17 @@ export function ListingDraftEditor({ listing, dict }: { listing: ListingDetail; 
         onMissingCountChange={setRequiredMissing}
       />
 
-      <PhotoUploader listingId={listingId} photos={listing.photos ?? []} dict={dict} />
+      <PhotoUploader listingId={listingId} photos={listing.photos ?? []} dict={dict}>
+        <PhotoGrid
+          listingId={listingId}
+          photos={listing.photos ?? []}
+          approvedLabels={listing.approvedDisclosureLabels ?? []}
+          dict={dict}
+          onActivity={setPhotosActivity}
+        />
+      </PhotoUploader>
+
+      <PipelineProgress listingId={listingId} initialStatus={pipeline} photoCount={photoCount} dict={dict} />
 
       <Card id="progress">
         <h2 className="text-lg font-semibold text-[var(--color-text)]">{dict.progress.title}</h2>

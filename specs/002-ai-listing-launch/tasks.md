@@ -205,9 +205,9 @@ Per [plan.md](./plan.md) "Project Structure" — the repo's two mandated top-lev
 - [X] T096 [US2] Implement the per-photo VLM analysis step plus prompt `prompts/photo.analysis/v1.md` and `v1.schema.json` — *v1 existed with flags that did not match the contract; superseded by v2 (research R34)*
 - [X] T097 [US2] Implement the cover-and-order suggestion step with a stated reason per suggestion in `Pipeline/Steps/CoverAndOrderStep.cs` (FR-010)
 - [X] T098 [US2] Implement pgvector near-duplicate detection with a configurable threshold in `Modules.Media/NearDuplicateDetector.cs` (flag only, never auto-delete)
-- [ ] T099 [P] [US2] Build the photo grid with room labels, quality/content flags, dnd-kit reorder, and cover selection in `RealtorAI_FrontEnd/components/listing/PhotoGrid.tsx`
-- [ ] T100 [P] [US2] Build the altered-photo declaration flow (type, disclosure label, paired original) in `RealtorAI_FrontEnd/components/listing/AlteredPhotoDialog.tsx` (FR-020)
-- [ ] T101 [P] [US2] Build the live pipeline view consuming SignalR in `RealtorAI_FrontEnd/components/listing/PipelineProgress.tsx`, with per-photo queued/analyzing/done/failed states styled in **both themes** plus EN/TR keys
+- [X] T099 [P] [US2] Build the photo grid with room labels, quality/content flags, dnd-kit reorder, and cover selection in `RealtorAI_FrontEnd/components/listing/PhotoGrid.tsx`
+- [X] T100 [P] [US2] Build the altered-photo declaration flow (type, disclosure label, paired original) in `RealtorAI_FrontEnd/components/listing/AlteredPhotoDialog.tsx` (FR-020)
+- [X] T101 [P] [US2] Build the live pipeline view consuming SignalR in `RealtorAI_FrontEnd/components/listing/PipelineProgress.tsx`, with per-photo queued/analyzing/done/failed states styled in **both themes** plus EN/TR keys
 
 **Checkpoint**: US2 independently deliverable — photos are analyzed and agent-correctable
 

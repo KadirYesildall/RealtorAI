@@ -359,4 +359,49 @@ public sealed class PipelineHubTests : IClassFixture<ApiFactory>, IAsyncLifetime
         Assert.NotEmpty(options);
         Assert.All(options, found => Assert.False(found!.AllowStatefulReconnects));
     }
+
+    // ═════════════════════════════ Browser access (CORS) ═════════════════════════════
+
+    private async Task<HttpResponseMessage> PreflightAsync(string origin)
+    {
+        using var client = factory.CreateAnonymousClient();
+        using var request = new HttpRequestMessage(HttpMethod.Options, "/hubs/pipeline/negotiate?negotiateVersion=1");
+        request.Headers.Add("Origin", origin);
+        request.Headers.Add("Access-Control-Request-Method", "POST");
+        request.Headers.Add("Access-Control-Request-Headers", "x-requested-with,x-signalr-user-agent");
+
+        return await client.SendAsync(request);
+    }
+
+    /// <summary>The configured frontend may open the hub from the browser, without credentials.</summary>
+    [Fact]
+    public async Task Preflight_FromTheConfiguredFrontend_IsAllowedWithoutCredentials()
+    {
+        var response = await PreflightAsync("http://localhost:3000");
+
+        Assert.Equal("http://localhost:3000", response.Headers.GetValues("Access-Control-Allow-Origin").Single());
+        Assert.False(response.Headers.Contains("Access-Control-Allow-Credentials"));
+    }
+
+    [Fact]
+    public async Task Preflight_FromAnyOtherOrigin_IsNotAllowed()
+    {
+        var response = await PreflightAsync("https://elsewhere.example");
+
+        Assert.False(response.Headers.Contains("Access-Control-Allow-Origin"));
+    }
+
+    /// <summary>Only the hub is reachable cross-origin; the REST API is called by the Next.js server.</summary>
+    [Fact]
+    public async Task Preflight_ToTheRestApi_IsNotAllowedEvenFromTheFrontend()
+    {
+        using var client = factory.CreateAnonymousClient();
+        using var request = new HttpRequestMessage(HttpMethod.Options, "/api/listings");
+        request.Headers.Add("Origin", "http://localhost:3000");
+        request.Headers.Add("Access-Control-Request-Method", "GET");
+
+        var response = await client.SendAsync(request);
+
+        Assert.False(response.Headers.Contains("Access-Control-Allow-Origin"));
+    }
 }

@@ -1722,6 +1722,12 @@ export interface components {
              */
             missingRequiredFieldKeys?: string[];
             photos?: components["schemas"]["Photo"][];
+            /**
+             * @description The disclosure labels the listing's MLS rule profile approves for an altered photo
+             *     (FR-020) — what a client offers in the declaration. Empty when none are recorded
+             *     (CRMLS until T161), in which case no alteration can be declared.
+             */
+            approvedDisclosureLabels?: string[];
             /** @description Present once content generation exists (US3). */
             contentDrafts?: components["schemas"]["ContentDraft"][];
             /** @description Present once compliance checks exist (US4). */

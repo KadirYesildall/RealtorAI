@@ -147,9 +147,23 @@ internal sealed partial class SignalRPipelineProgressNotifier : IPipelineProgres
 
 internal static class PipelineHubSetup
 {
-    internal static IServiceCollection AddPipelineHub(this IServiceCollection services)
+    /// <summary>The CORS policy the hub, and only the hub, is reachable under.</summary>
+    internal const string CorsPolicy = "pipeline-hub";
+
+    internal static IServiceCollection AddPipelineHub(this IServiceCollection services, IConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configuration);
+
+        // The hub is the one API path a browser calls directly (FR-053): everything else goes
+        // through the Next.js server. Origins are configuration, and credentials are not allowed
+        // — the token travels as access_token on /hubs paths, never as a cookie, so a cross-site
+        // page gains nothing by connecting.
+        var origins = configuration.GetSection("Cors:PipelineHubOrigins").Get<string[]>() ?? [];
+
+        services.AddCors(options => options.AddPolicy(
+            CorsPolicy,
+            policy => policy.WithOrigins(origins).AllowAnyHeader().WithMethods("GET", "POST")));
 
         services.AddSignalR();
         services.AddSingleton<IPipelineProgressNotifier, SignalRPipelineProgressNotifier>();
@@ -164,7 +178,8 @@ internal static class PipelineHubSetup
         // No WithName: MapHub registers two endpoints (negotiate and connect), and one name on
         // both would make endpoint-name lookup ambiguous.
         app.MapHub<PipelineHub>(PipelineHub.Path, ConfigureHub)
-            .RequireAuthorization(PolicyRegistry.Authenticated);
+            .RequireAuthorization(PolicyRegistry.Authenticated)
+            .RequireCors(CorsPolicy);
 
         return app;
     }

@@ -156,3 +156,55 @@ export function safeNextPath(value: string | string[] | undefined): string {
     ? candidate
     : "/dashboard/listings/new";
 }
+
+// ───────────────────────────── US2: photos ─────────────────────────────
+
+/** The contract's RoomType, in the walk-through order the grid offers them. */
+export const ROOM_TYPES = [
+  "exterior_front",
+  "living_room",
+  "kitchen",
+  "primary_bedroom",
+  "bedroom",
+  "bathroom",
+  "backyard",
+  "pool",
+  "view",
+  "garage",
+  "floor_plan",
+  "other",
+] as const;
+
+export type RoomType = (typeof ROOM_TYPES)[number];
+
+/** The API's bounds on an agent's photo edits (PhotoEditEndpoints). */
+export const MAX_PHOTO_TAGS = 20;
+export const MAX_TAG_LENGTH = 60;
+export const MAX_CAPTION_LENGTH = 300;
+
+export const PhotoPatchSchema = z
+  .object({
+    roomType: z.enum(ROOM_TYPES).nullable().optional(),
+    featureTags: z.array(z.string().trim().min(1).max(MAX_TAG_LENGTH)).max(MAX_PHOTO_TAGS).nullable().optional(),
+    caption: z.string().trim().max(MAX_CAPTION_LENGTH).nullable().optional(),
+    altered: z.boolean().optional(),
+    alterationType: z.enum(["virtual_staging", "other"]).optional(),
+    disclosureLabel: z.string().min(1).optional(),
+    pairedOriginalId: z.uuid().optional(),
+  })
+  .strict();
+
+/** "Island, Pendant lights" → ["Island", "Pendant lights"]; blanks and repeats dropped. */
+export function parseTags(text: string): string[] {
+  const seen = new Set<string>();
+
+  return text
+    .split(",")
+    .map((tag) => tag.trim())
+    .filter((tag) => {
+      const key = tag.toLowerCase();
+      if (tag.length === 0 || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+}
