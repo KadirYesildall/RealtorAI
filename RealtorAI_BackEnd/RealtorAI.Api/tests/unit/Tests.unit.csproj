@@ -27,6 +27,7 @@
     <ProjectReference Include="..\..\Libs.Ai\Libs.Ai.csproj" />
     <ProjectReference Include="..\..\tools\AiEval\AiEval.csproj" />
     <ProjectReference Include="..\..\Modules.Media\Modules.Media.csproj" />
+    <ProjectReference Include="..\..\Modules.Listings\Modules.Listings.csproj" />
   </ItemGroup>
 
 </Project>

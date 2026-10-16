@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using Hangfire;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace RealtorAI.Tests.Integration;
@@ -53,12 +54,31 @@ public sealed class HangfireStorageTests : IClassFixture<HangfireStorageTests.Fa
         this.factory = factory;
     }
 
+    /// <summary>
+    /// The real host, plus one worker on a queue no other host listens to.
+    ///
+    /// <para>
+    /// <c>dotnet test</c> runs the test assemblies in parallel processes, and every contract-test
+    /// host runs Hangfire workers against the same database. A probe placed on the shared queues
+    /// could be taken by a worker in another process — where <see cref="HangfireProbe"/> does not
+    /// exist — and fail there, leaving this test waiting for an execution that happened
+    /// elsewhere. A queue unique to this run can only be served by this host.
+    /// </para>
+    /// </summary>
     public sealed class Factory : WebApplicationFactory<Program>
     {
+        internal string ProbeQueue { get; } = "probe_" + Guid.NewGuid().ToString("N");
+
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             ArgumentNullException.ThrowIfNull(builder);
             builder.UseEnvironment("Development");
+            builder.ConfigureTestServices(services =>
+                services.AddHangfireServer(server =>
+                {
+                    server.WorkerCount = 1;
+                    server.Queues = [ProbeQueue];
+                }));
         }
     }
 
@@ -68,7 +88,7 @@ public sealed class HangfireStorageTests : IClassFixture<HangfireStorageTests.Fa
         var client = factory.Services.GetRequiredService<IBackgroundJobClient>();
         var token = Guid.NewGuid();
 
-        var jobId = client.Enqueue(() => HangfireProbe.Mark(token));
+        var jobId = client.Create(() => HangfireProbe.Mark(token), new Hangfire.States.EnqueuedState(factory.ProbeQueue));
 
         Assert.False(string.IsNullOrEmpty(jobId));
 

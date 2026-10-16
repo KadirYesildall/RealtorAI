@@ -163,12 +163,12 @@ Per [plan.md](./plan.md) "Project Structure" — the repo's two mandated top-lev
 
 ### Implementation for User Story 1
 
-- [ ] T073 [US1] Implement the listing aggregate and state machine (`draft → analyzing → ready_for_review → approved`, any → `archived`) in `Modules.Listings/Listing.cs`
-- [ ] T074 [US1] Implement the provenance-aware field service in `Modules.Listings/ListingFieldService.cs` (FR-005, FR-007)
-- [ ] T075 [US1] Implement listings endpoints (create, get, list with `includeArchived`, autosave, soft delete) in `Modules.Listings/Endpoints/ListingEndpoints.cs`
-- [ ] T076 [US1] Implement field upsert and confirm endpoints in `Modules.Listings/Endpoints/ListingFieldEndpoints.cs` (FR-006)
-- [ ] T077 [US1] Implement the photo upload endpoint in `Modules.Media/Endpoints/PhotoEndpoints.cs` — originals + normalized variants, checksum dedupe, per-file accept/reject, 1–100 bound
-- [ ] T078 [US1] Wire public-record prefill through `IPropertyDataProvider` in `Modules.Listings/PrefillService.cs` — the null path marks fields required (FR-008)
+- [X] T073 [US1] Implement the listing aggregate and state machine (`draft → analyzing → ready_for_review → approved`, any → `archived`) in `Modules.Listings/Listing.cs`
+- [X] T074 [US1] Implement the provenance-aware field service in `Modules.Listings/ListingFieldService.cs` (FR-005, FR-007)
+- [X] T075 [US1] Implement listings endpoints (create, get, list with `includeArchived`, autosave, soft delete) in `Modules.Listings/Endpoints/ListingEndpoints.cs` — *built in `Api/Endpoints/ListingEndpoints.cs` with the rules in `Modules.Listings`, because the EF model lives in the host (research R20, R33); `POST /api/profile/complete` is `Api/Endpoints/ProfileEndpoints.cs`*
+- [X] T076 [US1] Implement field upsert and confirm endpoints in `Modules.Listings/Endpoints/ListingFieldEndpoints.cs` (FR-006) — *built in `Api/Endpoints/ListingFieldEndpoints.cs` (research R20)*
+- [X] T077 [US1] Implement the photo upload endpoint in `Modules.Media/Endpoints/PhotoEndpoints.cs` — *built in `Api/Endpoints/PhotoEndpoints.cs` (research R20)* — originals + normalized variants, checksum dedupe, per-file accept/reject, 1–100 bound
+- [X] T078 [US1] Wire public-record prefill through `IPropertyDataProvider` in `Modules.Listings/PrefillService.cs` — the null path marks fields required (FR-008)
 - [ ] T079 [P] [US1] Build the profile completion page at `RealtorAI_FrontEnd/app/dashboard/profile/complete/page.tsx`
 - [ ] T080 [P] [US1] Build the new-listing wizard at `RealtorAI_FrontEnd/app/dashboard/listings/new/page.tsx` (basics → upload → progress)
 - [ ] T081 [P] [US1] Build the listing index at `RealtorAI_FrontEnd/app/dashboard/listings/page.tsx` with the archived filter

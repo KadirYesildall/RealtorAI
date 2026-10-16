@@ -1,10 +1,13 @@
+using Api.Endpoints;
+using Modules.Listings;
 using Modules.Listings.PropertyData;
 using Modules.Media;
 
 namespace Api.Media;
 
 /// <summary>
-/// Registers photo storage, normalization and public-record pre-fill (T057, T058, T060).
+/// Registers photo storage, normalization, upload bounds and public-record pre-fill (T057, T058,
+/// T060, T077, T078).
 /// </summary>
 internal static class MediaSetup
 {
@@ -53,6 +56,10 @@ internal static class MediaSetup
         // No source is configured in Slice A (research R5). FR-008's unconfigured behaviour is
         // the whole behaviour until one is chosen.
         services.AddSingleton<IPropertyDataProvider, NullPropertyDataProvider>();
+        services.AddSingleton<PrefillService>();
+
+        // ───────────── Upload bounds ─────────────
+        services.AddSingleton(new PhotoUploadOptions(Required<long>(configuration, "Storage:MaxUploadBytes")));
 
         return services;
     }

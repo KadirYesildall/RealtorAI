@@ -1046,6 +1046,58 @@ constraints. Recommended before US1's endpoints.
   rows there, and `GetMembershipAsync`'s `SingleOrDefault` threw — every request by that agent
   would have been a 500. It now returns the live row, else a historical one.
 
+## R33. US1 listings: decisions made while building them (2026-10-16)
+
+Each of these was a gap or an ambiguity in the documents; the choice and its reason are recorded so
+a later story does not have to rediscover them.
+
+- **`draft → ready_for_review` without analysis.** data-model.md draws review only through
+  `analyzing`. With every registry entry disabled until its evaluation passes, there is no analysis
+  to run during development or in an AI outage, so SC-010's hand-completion path needs this edge.
+  Added to `ListingLifecycle`; every other edge is data-model.md's.
+- **Empty required fields have no row, so `ListingDetail` gains `missingRequiredFieldKeys`.** FR-008
+  says the public-record fields stay empty and are "visibly marked as required". Writing a
+  placeholder row would claim a provenance for a value nobody supplied, and `listing_fields.value`
+  is NOT NULL anyway. The required set is FR-008's four keys plus the MLS rule profile's
+  `required_fields` (empty for the unverified CRMLS row). `requiredBeforeApproval` still marks a
+  present field.
+- **`If-Match: "0"` creates a field.** The contract requires If-Match on the field upsert, which has
+  no version before the field exists. Versions start at 1, so 0 is free to mean "expect none"; a
+  create that loses a race is answered 409 with the winner, never turned into a blind update.
+- **Property type is a residential RESO `PropertySubType`.** The contract left it a free string;
+  the seed already used `SingleFamilyResidence`. Restricted to ten residential lookup values in
+  `Libs.Reso.ResoPropertySubType` because Slice A drafts residential sale listings for CRMLS. A
+  listing type outside this set is a scope change, not a missing value.
+- **Per-file upload limit = 50 MiB, from configuration.** The spec leaves it to planning; the
+  originals bucket already enforces 50 MiB (0011), so `Storage:MaxUploadBytes` equals it — the API
+  never accepts a file storage would then refuse. Ten files per request bound the body; past that
+  bound the answer is 413, since the files can no longer be read one by one.
+- **"Resumable" is per file.** Each upload request is independent and the wizard sends batches, so
+  an interrupted upload resumes by sending the files that did not land. No chunked-upload
+  protocol: the size bound makes one file per round trip cheap, and the write-once bucket would
+  make a half-written original permanent.
+- **The 100-photo bound is checked before anything is stored.** Every file is judged first (size,
+  format from its bytes, exact duplicate by SHA-256), then the bound, then storage — under a row
+  lock on the listing — so a refused batch leaves no orphaned original in a bucket that cannot
+  delete one.
+- **A listing is filed under the agent's live membership.** Pending or approved, per FR-061; a
+  rejected or revoked membership is not live, so later work is not that brokerage's. `targetMlsId`
+  comes from the brokerage's settings, never the request.
+- **Profile completion requires license and state; the API does not require a brokerage.**
+  `Capabilities.CanPrepareListing` (T036) already permits drafting with no brokerage, and the
+  contract's authorization for `POST /api/listings` names only `profile_completed_at`. Story 1
+  scenario 7's routing through brokerage declaration is the frontend's job: the wizard sends an
+  agent with no license or no brokerage to `/dashboard/profile/complete` first.
+- **No `listing_created` audit action.** FR-049 audits edits, and creation is not one; the row
+  itself records who created it and when. Public-record pre-fill *is* audited, as `field_edit`
+  per field. An autosave that changes nothing writes no audit event.
+- **`PendingMembershipScopeTests` (T071) covers US1's operations.** Starting analysis under a
+  pending membership is asserted in `PipelineStartTests` (T084), where that endpoint is specified.
+- **`HangfireStorageTests` flaked once US1 added hosts.** `dotnet test` runs test assemblies in
+  parallel processes, and every host runs workers on the shared queues; the probe job could be
+  taken by a worker in a process where the probe type does not exist. The probe now uses a queue
+  only its own host serves.
+
 ## Open items carried to Slice B (recorded, not resolved)
 
 - **CRMLS API surface**: whether RESO Web API Add/Edit is exposed to vendors or only a proprietary

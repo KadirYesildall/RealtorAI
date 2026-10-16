@@ -1,4 +1,5 @@
 using Api.Concurrency;
+using Modules.Listings;
 
 namespace Api.Data.Entities;
 

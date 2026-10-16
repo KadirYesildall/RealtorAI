@@ -34,8 +34,16 @@ public static class VersionConflict
     /// user what moved rather than silently retrying — a blind retry would overwrite an edit
     /// nobody saw, which is the failure FR-066 exists to prevent.
     /// </summary>
-    public static ProblemHttpResult Conflict(int? currentRowVersion) =>
-        TypedResults.Problem(new ProblemDetails
+    public static ProblemHttpResult Conflict(int? currentRowVersion) => Conflict(currentRowVersion, current: null);
+
+    /// <summary>
+    /// 409 carrying the resource as the server now holds it, under <c>current</c> — the
+    /// contract's VersionConflict response — so the UI can show what changed without a second
+    /// request (SC-012). Null when the resource is gone.
+    /// </summary>
+    public static ProblemHttpResult Conflict(int? currentRowVersion, object? current)
+    {
+        var problem = new ProblemDetails
         {
             Type = VersionConflictType,
             Title = "The record changed since you loaded it",
@@ -47,7 +55,15 @@ public static class VersionConflict
                 : "Your change was based on an older version of this record. Reload it and "
                     + "apply your edit again.",
             Extensions = { ["currentRowVersion"] = currentRowVersion },
-        });
+        };
+
+        if (current is not null)
+        {
+            problem.Extensions["current"] = current;
+        }
+
+        return TypedResults.Problem(problem);
+    }
 
     /// <summary>
     /// 428, not 400. The request is well-formed; what is missing is the precondition that makes

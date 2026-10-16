@@ -160,10 +160,13 @@ public sealed class PhotoUploadTests : IClassFixture<ApiFactory>, IClassFixture<
     {
         var agent = await TestAgents.CreateAsync("upload-oversize");
         var listing = IdOf(await CreateAsync(smallLimitFactory, agent));
-        var large = TestImages.Png(1600, 1200);
+        // Over the per-file limit, but within the request bound (ten files' worth), so the
+        // request is read and the file judged on its own.
+        var large = TestImages.Png(600, 400);
         var small = TestImages.Jpeg(400, 300);
 
         Assert.True(large.Length > SmallUploadLimitApiFactory.LimitBytes);
+        Assert.True(large.Length < SmallUploadLimitApiFactory.LimitBytes * 10);
         Assert.True(small.Length < SmallUploadLimitApiFactory.LimitBytes);
 
         var results = await UploadAsync(
@@ -353,6 +356,21 @@ public sealed class PhotoUploadTests : IClassFixture<ApiFactory>, IClassFixture<
         var normalized = await storage.GetByteArrayAsync(url);
         Assert.NotEqual(content, normalized);
         Assert.Equal([0xFF, 0xD8], normalized[..2]);
+    }
+
+    /// <summary>A body past the request bound is answered 413 with the bound stated, not a 500.</summary>
+    [Fact]
+    public async Task Upload_ABodyPastTheRequestBound_Is413()
+    {
+        var agent = await TestAgents.CreateAsync("upload-body-bound");
+        var listing = IdOf(await CreateAsync(smallLimitFactory, agent));
+        using var client = smallLimitFactory.CreateClientFor(agent);
+        using var form = Files(("huge.bin", new byte[(SmallUploadLimitApiFactory.LimitBytes * 10) + (2 * 1024 * 1024)], "image/jpeg"));
+
+        var response = await client.PostAsync(Photos(listing), form);
+
+        Assert.Equal(HttpStatusCode.RequestEntityTooLarge, response.StatusCode);
+        Assert.Equal(0L, await PhotoCountAsync(listing));
     }
 
     /// <summary>GIF is a real image format, just not one FR-003 accepts.</summary>

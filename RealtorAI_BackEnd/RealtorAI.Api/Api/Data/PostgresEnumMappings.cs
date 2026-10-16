@@ -167,10 +167,25 @@ internal static class PostgresEnumMappings
             ["OriginalsPurged"] = "originals_purged",
         }),
 
+        new(typeof(Modules.Listings.ListingStatus), "listing_status", new Dictionary<string, string>
+        {
+            ["Draft"] = "draft",
+            ["Analyzing"] = "analyzing",
+            ["ReadyForReview"] = "ready_for_review",
+            ["Approved"] = "approved",
+            ["Archived"] = "archived",
+        }),
+
+        new(typeof(Modules.Listings.Provenance), "provenance", new Dictionary<string, string>
+        {
+            ["AgentEntered"] = "agent_entered",
+            ["PublicRecord"] = "public_record",
+            ["AiDetectedFromPhoto"] = "ai_detected_from_photo",
+            ["AiSuggested"] = "ai_suggested",
+        }),
+
         // ── Persistence-owned (labels come from [PgName]) ──
         new(typeof(Tone), "tone", null),
-        new(typeof(Provenance), "provenance", null),
-        new(typeof(ListingStatus), "listing_status", null),
         new(typeof(AlterationType), "alteration_type", null),
         new(typeof(RoomType), "room_type", null),
         new(typeof(ContentKind), "content_kind", null),

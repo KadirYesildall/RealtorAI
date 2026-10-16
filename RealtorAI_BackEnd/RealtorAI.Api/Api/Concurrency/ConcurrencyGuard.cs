@@ -48,6 +48,19 @@ public interface IConcurrencyGuard
         Action<TEntity> mutate,
         CancellationToken cancellationToken)
         where TEntity : class, IVersionedEntity;
+
+    /// <summary>
+    /// As above, running <paramref name="beforeCommit"/> after the change is saved and before
+    /// the transaction commits — for the audit record of the change, which must commit with it
+    /// or not at all (FR-049). Whatever it adds to the context is saved in the same transaction.
+    /// </summary>
+    Task<ConcurrencyResult<TEntity>> MutateAsync<TEntity>(
+        Guid id,
+        int expectedRowVersion,
+        Action<TEntity> mutate,
+        Func<TEntity, CancellationToken, Task> beforeCommit,
+        CancellationToken cancellationToken)
+        where TEntity : class, IVersionedEntity;
 }
 
 /// <summary>
@@ -87,14 +100,24 @@ internal sealed class ConcurrencyGuard : IConcurrencyGuard
         this.context = context;
     }
 
-    public async Task<ConcurrencyResult<TEntity>> MutateAsync<TEntity>(
+    public Task<ConcurrencyResult<TEntity>> MutateAsync<TEntity>(
         Guid id,
         int expectedRowVersion,
         Action<TEntity> mutate,
         CancellationToken cancellationToken)
+        where TEntity : class, IVersionedEntity =>
+        MutateAsync(id, expectedRowVersion, mutate, static (_, _) => Task.CompletedTask, cancellationToken);
+
+    public async Task<ConcurrencyResult<TEntity>> MutateAsync<TEntity>(
+        Guid id,
+        int expectedRowVersion,
+        Action<TEntity> mutate,
+        Func<TEntity, CancellationToken, Task> beforeCommit,
+        CancellationToken cancellationToken)
         where TEntity : class, IVersionedEntity
     {
         ArgumentNullException.ThrowIfNull(mutate);
+        ArgumentNullException.ThrowIfNull(beforeCommit);
 
         await using var transaction = await context.Database.BeginTransactionAsync(
             IsolationLevel.RepeatableRead,
@@ -128,6 +151,10 @@ internal sealed class ConcurrencyGuard : IConcurrencyGuard
 
         try
         {
+            // Saved before the hook runs: rows the hook adds (an audit event) reference this one,
+            // and the model has no foreign-key metadata to order one batch by (research R31).
+            await context.SaveChangesAsync(cancellationToken);
+            await beforeCommit(entity, cancellationToken);
             await context.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
         }

@@ -5,10 +5,10 @@ namespace Api.Data;
 // T009 — CLR mirrors of the PostgreSQL enum types whose values are purely a persistence
 // concern.
 //
-// Three of the schema's enums are NOT here: membership_status, membership_role and
-// audit_action are domain vocabulary, so they are declared in the modules that own them
-// (Modules.Brokerage, Modules.Audit) and their database labels are listed in
-// PostgresEnumMappings. That keeps one definition of each concept instead of a copy on
+// Five of the schema's enums are NOT here: membership_status, membership_role, audit_action,
+// listing_status and provenance are domain vocabulary, so they are declared in the modules
+// that own them (Modules.Brokerage, Modules.Audit, Modules.Listings) and their database labels
+// are listed in PostgresEnumMappings. That keeps one definition of each concept instead of a copy on
 // each side of the module boundary.
 //
 // Every member carries an explicit [PgName]. Npgsql's default snake_case translator would
@@ -27,28 +27,6 @@ public enum Tone
     [PgName("warm")] Warm,
     [PgName("luxury")] Luxury,
     [PgName("concise")] Concise,
-}
-
-/// <summary>
-/// public.provenance — 0005_listings.sql. FR-007: the two AI values are rejected by a check
-/// constraint on measurement and legal RESO keys, so a value here is not freely assignable.
-/// </summary>
-public enum Provenance
-{
-    [PgName("agent_entered")] AgentEntered,
-    [PgName("public_record")] PublicRecord,
-    [PgName("ai_detected_from_photo")] AiDetectedFromPhoto,
-    [PgName("ai_suggested")] AiSuggested,
-}
-
-/// <summary>public.listing_status — 0005_listings.sql</summary>
-public enum ListingStatus
-{
-    [PgName("draft")] Draft,
-    [PgName("analyzing")] Analyzing,
-    [PgName("ready_for_review")] ReadyForReview,
-    [PgName("approved")] Approved,
-    [PgName("archived")] Archived,
 }
 
 /// <summary>

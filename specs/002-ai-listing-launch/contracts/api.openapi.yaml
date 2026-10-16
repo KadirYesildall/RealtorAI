@@ -73,7 +73,9 @@ paths:
             schema: { $ref: '#/components/schemas/CompleteProfileRequest' }
       responses:
         '200':
-          description: Profile completed
+          description: |
+            Profile completed. Calling again corrects the license; profileCompletedAt keeps the
+            first completion time.
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Profile' }
@@ -232,7 +234,10 @@ paths:
             schema: { $ref: '#/components/schemas/CreateListingRequest' }
       responses:
         '201':
-          description: Draft created
+          description: |
+            Draft created. `Location` names the listing and `ETag` carries its row version. The
+            listing is filed under the caller's live (pending or approved) membership, and its
+            targetMlsId comes from that brokerage's settings, never from the request.
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Listing' }
@@ -285,9 +290,15 @@ paths:
           application/json:
             schema: { $ref: '#/components/schemas/CreateListingRequest' }
       responses:
-        '200': { description: Saved }
+        '200':
+          description: Saved. `ETag` carries the new row version.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Listing' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '409': { $ref: '#/components/responses/VersionConflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '428': { $ref: '#/components/responses/PreconditionRequired' }
     delete:
       tags: [Listings]
       summary: Soft-delete a listing
@@ -311,7 +322,13 @@ paths:
         Rejects AI provenance on measurement and legal fields (FR-007) — LivingArea,
         LotSizeSquareFeet, YearBuilt, TaxAnnualAmount, AssociationFee, HighSchoolDistrict,
         Zoning accept only agent_entered or public_record. Enumerated fields are validated
-        against the RESO lookup restricted by the MLS rule profile.
+        against the RESO lookup restricted by the MLS rule profile. A public_record value needs
+        its sourceNote (FR-008).
+
+        If-Match carries the FIELD's row version. `If-Match: "0"` means "create: this field does
+        not exist yet". Versions start at 1, so a create that races another create for the same
+        key is answered 409 with the field that won. Changing the value or provenance of a
+        confirmed field clears its confirmation (FR-006).
       x-authorization: Listing owner only.
       parameters: [{ $ref: '#/components/parameters/IfMatch' }]
       requestBody:
@@ -320,10 +337,15 @@ paths:
           application/json:
             schema: { $ref: '#/components/schemas/UpsertFieldRequest' }
       responses:
-        '200': { description: Field saved }
+        '200':
+          description: Field saved. `ETag` carries its row version.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ListingField' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '409': { $ref: '#/components/responses/VersionConflict' }
         '422': { $ref: '#/components/responses/ValidationError' }
+        '428': { $ref: '#/components/responses/PreconditionRequired' }
 
   /api/listings/{listingId}/fields/{fieldId}/confirm:
     parameters:
@@ -340,8 +362,14 @@ paths:
         Records confirmed_by and confirmed_at.
       x-authorization: Listing owner only — confirmation is a human act and cannot be delegated.
       responses:
-        '200': { description: Confirmed }
+        '200':
+          description: Confirmed. Idempotent; confirming again changes nothing.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ListingField' }
         '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { description: The field is not AI-derived, so there is nothing to confirm }
 
   # ───────────────────────────────── Media ─────────────────────────────────
   /api/listings/{listingId}/photos:
@@ -355,7 +383,11 @@ paths:
         stripped) for processing (FR-002, VIII.4.c). Returns a per-file accept/reject result:
         invalid files are rejected by name with a reason while valid files still upload
         (Story 1 scenario 2). Exact duplicates are rejected with a reference to the existing
-        photo.
+        photo. At most 10 files per request; the per-file limit is configuration
+        (Storage:MaxUploadBytes, equal to the originals bucket's 50 MiB). A file's type is judged
+        from its bytes, never from its name or declared content type. "Resumable" is per file:
+        each request is independent, so an interrupted upload resumes by sending the files that
+        did not land.
       x-authorization: Listing owner only.
       requestBody:
         required: true
@@ -376,7 +408,9 @@ paths:
                 type: array
                 items: { $ref: '#/components/schemas/PhotoUploadResult' }
         '403': { $ref: '#/components/responses/Forbidden' }
-        '409': { description: Would exceed the 100-photo bound; no valid files discarded }
+        '409': { description: Would exceed the 100-photo bound; nothing stored, no existing photo discarded }
+        '413': { description: The request body as a whole is past the per-request bound }
+        '422': { description: No files, more than 10, or not multipart/form-data }
 
   /api/listings/{listingId}/photos/order:
     parameters: [{ $ref: '#/components/parameters/ListingId' }]
@@ -813,6 +847,13 @@ components:
       content:
         application/problem+json:
           schema: { $ref: '#/components/schemas/Problem' }
+    PreconditionRequired:
+      description: >
+        If-Match was missing or malformed (FR-066). A conditional write is never applied
+        unconditionally; retry with the row version you read.
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
     VersionConflict:
       description: >
         Stale row version — the resource changed since the client read it (FR-066). The body
@@ -946,15 +987,19 @@ components:
       type: object
       required: [addressLine1, city, state, postalCode, propertyType]
       properties:
-        addressLine1: { type: string }
-        city: { type: string }
-        state: { type: string }
-        postalCode: { type: string }
-        propertyType: { type: string }
-        listPrice: { type: number, nullable: true }
-        bedrooms: { type: integer, nullable: true }
-        bathrooms: { type: number, nullable: true }
-        agentNotes: { type: string, nullable: true }
+        addressLine1: { type: string, minLength: 1, maxLength: 200 }
+        city: { type: string, minLength: 1, maxLength: 200 }
+        state: { type: string, pattern: '^[A-Z]{2}$' }
+        postalCode: { type: string, pattern: '^[0-9]{5}(-[0-9]{4})?$' }
+        propertyType:
+          type: string
+          description: A residential RESO PropertySubType (research R33).
+          enum: [SingleFamilyResidence, Condominium, Townhouse, Duplex, Triplex, Quadruplex,
+                 ManufacturedHome, ManufacturedOnLand, StockCooperative, Cabin]
+        listPrice: { type: number, nullable: true, minimum: 0, maximum: 9999999999.99, multipleOf: 0.01 }
+        bedrooms: { type: integer, nullable: true, minimum: 0, maximum: 99 }
+        bathrooms: { type: number, nullable: true, minimum: 0, maximum: 99.5, multipleOf: 0.5 }
+        agentNotes: { type: string, nullable: true, maxLength: 5000 }
     Listing:
       type: object
       properties:
@@ -968,6 +1013,10 @@ components:
         listPrice: { type: number, nullable: true }
         bedrooms: { type: integer, nullable: true }
         bathrooms: { type: number, nullable: true }
+        agentNotes:
+          type: string
+          nullable: true
+          description: The agent's own notes. Returned to them; never copied into public remarks (FR-019).
         targetMlsId: { type: string, nullable: true }
         coverPhotoId: { type: string, format: uuid, nullable: true }
         rowVersion:
@@ -982,9 +1031,23 @@ components:
         - type: object
           properties:
             fields: { type: array, items: { $ref: '#/components/schemas/ListingField' } }
+            missingRequiredFieldKeys:
+              type: array
+              description: |
+                RESO keys required before approval that have no value yet: FR-008's public-record
+                set plus the MLS rule profile's required fields. An empty field has no
+                ListingField row to mark, so this is how it is "visibly marked as required"
+                (research R33).
+              items: { type: string }
             photos: { type: array, items: { $ref: '#/components/schemas/Photo' } }
-            contentDrafts: { type: array, items: { $ref: '#/components/schemas/ContentDraft' } }
-            findings: { type: array, items: { $ref: '#/components/schemas/ComplianceFinding' } }
+            contentDrafts:
+              type: array
+              description: Present once content generation exists (US3).
+              items: { $ref: '#/components/schemas/ContentDraft' }
+            findings:
+              type: array
+              description: Present once compliance checks exist (US4).
+              items: { $ref: '#/components/schemas/ComplianceFinding' }
             approvalBlockers:
               type: array
               description: Machine-readable reasons the approve action is disabled.

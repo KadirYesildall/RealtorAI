@@ -30,7 +30,10 @@ export interface paths {
                 };
             };
             responses: {
-                /** @description Profile completed */
+                /**
+                 * @description Profile completed. Calling again corrects the license; profileCompletedAt keeps the
+                 *     first completion time.
+                 */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -390,7 +393,11 @@ export interface paths {
                 };
             };
             responses: {
-                /** @description Draft created */
+                /**
+                 * @description Draft created. `Location` names the listing and `ETag` carries its row version. The
+                 *     listing is filed under the caller's live (pending or approved) membership, and its
+                 *     targetMlsId comes from that brokerage's settings, never from the request.
+                 */
                 201: {
                     headers: {
                         [name: string]: unknown;
@@ -508,15 +515,19 @@ export interface paths {
                 };
             };
             responses: {
-                /** @description Saved */
+                /** @description Saved. `ETag` carries the new row version. */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": components["schemas"]["Listing"];
+                    };
                 };
                 403: components["responses"]["Forbidden"];
                 409: components["responses"]["VersionConflict"];
+                422: components["responses"]["ValidationError"];
+                428: components["responses"]["PreconditionRequired"];
             };
         };
         trace?: never;
@@ -536,7 +547,13 @@ export interface paths {
          * @description Rejects AI provenance on measurement and legal fields (FR-007) — LivingArea,
          *     LotSizeSquareFeet, YearBuilt, TaxAnnualAmount, AssociationFee, HighSchoolDistrict,
          *     Zoning accept only agent_entered or public_record. Enumerated fields are validated
-         *     against the RESO lookup restricted by the MLS rule profile.
+         *     against the RESO lookup restricted by the MLS rule profile. A public_record value needs
+         *     its sourceNote (FR-008).
+         *
+         *     If-Match carries the FIELD's row version. `If-Match: "0"` means "create: this field does
+         *     not exist yet". Versions start at 1, so a create that races another create for the same
+         *     key is answered 409 with the field that won. Changing the value or provenance of a
+         *     confirmed field clears its confirmation (FR-006).
          */
         put: {
             parameters: {
@@ -556,16 +573,19 @@ export interface paths {
                 };
             };
             responses: {
-                /** @description Field saved */
+                /** @description Field saved. `ETag` carries its row version. */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": components["schemas"]["ListingField"];
+                    };
                 };
                 403: components["responses"]["Forbidden"];
                 409: components["responses"]["VersionConflict"];
                 422: components["responses"]["ValidationError"];
+                428: components["responses"]["PreconditionRequired"];
             };
         };
         post?: never;
@@ -604,14 +624,24 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description Confirmed */
+                /** @description Confirmed. Idempotent; confirming again changes nothing. */
                 200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ListingField"];
+                    };
+                };
+                403: components["responses"]["Forbidden"];
+                404: components["responses"]["NotFound"];
+                /** @description The field is not AI-derived */
+                422: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content?: never;
                 };
-                403: components["responses"]["Forbidden"];
             };
         };
         delete?: never;
@@ -638,7 +668,11 @@ export interface paths {
          *     stripped) for processing (FR-002, VIII.4.c). Returns a per-file accept/reject result:
          *     invalid files are rejected by name with a reason while valid files still upload
          *     (Story 1 scenario 2). Exact duplicates are rejected with a reference to the existing
-         *     photo.
+         *     photo. At most 10 files per request; the per-file limit is configuration
+         *     (Storage:MaxUploadBytes, equal to the originals bucket's 50 MiB). A file's type is judged
+         *     from its bytes, never from its name or declared content type. "Resumable" is per file:
+         *     each request is independent, so an interrupted upload resumes by sending the files that
+         *     did not land.
          */
         post: {
             parameters: {
@@ -667,8 +701,22 @@ export interface paths {
                     };
                 };
                 403: components["responses"]["Forbidden"];
-                /** @description Would exceed the 100-photo bound; no valid files discarded */
+                /** @description Would exceed the 100-photo bound; nothing stored */
                 409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description The request body as a whole is past the per-request bound */
+                413: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description No files */
+                422: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -1592,7 +1640,11 @@ export interface components {
             city: string;
             state: string;
             postalCode: string;
-            propertyType: string;
+            /**
+             * @description A residential RESO PropertySubType (research R33).
+             * @enum {string}
+             */
+            propertyType: "SingleFamilyResidence" | "Condominium" | "Townhouse" | "Duplex" | "Triplex" | "Quadruplex" | "ManufacturedHome" | "ManufacturedOnLand" | "StockCooperative" | "Cabin";
             listPrice?: number | null;
             bedrooms?: number | null;
             bathrooms?: number | null;
@@ -1610,6 +1662,8 @@ export interface components {
             listPrice?: number | null;
             bedrooms?: number | null;
             bathrooms?: number | null;
+            /** @description The agent's own notes. Returned to them; never copied into public remarks (FR-019). */
+            agentNotes?: string | null;
             targetMlsId?: string | null;
             /** Format: uuid */
             coverPhotoId?: string | null;
@@ -1624,8 +1678,17 @@ export interface components {
         };
         ListingDetail: components["schemas"]["Listing"] & {
             fields?: components["schemas"]["ListingField"][];
+            /**
+             * @description RESO keys required before approval that have no value yet: FR-008's public-record
+             *     set plus the MLS rule profile's required fields. An empty field has no
+             *     ListingField row to mark, so this is how it is "visibly marked as required"
+             *     (research R33).
+             */
+            missingRequiredFieldKeys?: string[];
             photos?: components["schemas"]["Photo"][];
+            /** @description Present once content generation exists (US3). */
             contentDrafts?: components["schemas"]["ContentDraft"][];
+            /** @description Present once compliance checks exist (US4). */
             findings?: components["schemas"]["ComplianceFinding"][];
             /** @description Machine-readable reasons the approve action is disabled. */
             approvalBlockers?: string[];
@@ -1873,6 +1936,15 @@ export interface components {
         };
         /** @description Well-formed but semantically invalid (422); malformed requests return 400 */
         ValidationError: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/problem+json": components["schemas"]["Problem"];
+            };
+        };
+        /** @description If-Match was missing or malformed (FR-066). A conditional write is never applied unconditionally; retry with the row version you read. */
+        PreconditionRequired: {
             headers: {
                 [name: string]: unknown;
             };
