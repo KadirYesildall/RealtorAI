@@ -50,7 +50,11 @@ export const config = {
     /*
      * Match all paths except static assets and image optimization files, so auth
      * cookie refresh and locale detection run on every real page/action request.
+     *
+     * Photo upload is excluded too: proxy makes Next.js buffer the request body and truncate
+     * it past proxyClientMaxBodySize (10 MB), which would corrupt a photo silently. That route
+     * handler refreshes the session itself (app/api/listings/[listingId]/photos/route.ts).
      */
-    "/((?!_next/static|_next/image|favicon.ico).*)",
+    "/((?!_next/static|_next/image|favicon.ico|api/listings/[^/]+/photos).*)",
   ],
 };

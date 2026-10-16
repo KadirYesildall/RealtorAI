@@ -17,7 +17,7 @@ import type { ProblemDetails } from "@/lib/api/types";
  */
 
 /** Base URL of the .NET API. Server-side and browser-side builds read different variables. */
-function resolveBaseUrl(): string {
+export function resolveBaseUrl(): string {
   // NEXT_PUBLIC_ is required for the browser bundle. The value is a public URL, not a secret;
   // no key or token is ever exposed this way (constitution: no secrets in NEXT_PUBLIC_).
   const url = process.env.NEXT_PUBLIC_API_BASE_URL ?? process.env.API_BASE_URL;

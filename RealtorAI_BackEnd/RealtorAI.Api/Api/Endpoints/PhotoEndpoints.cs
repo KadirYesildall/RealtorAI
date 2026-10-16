@@ -13,13 +13,37 @@ using Modules.Media;
 
 namespace Api.Endpoints;
 
-/// <summary>The contract's <c>PhotoUploadResult</c>, one per file in request order.</summary>
+/// <summary>
+/// The contract's <c>PhotoUploadResult</c>, one per file in request order.
+/// <c>RejectionCode</c> is the machine-readable form of <c>RejectionReason</c>, so the UI can
+/// say it in the agent's language; the reason stays English prose for logs and API clients.
+/// </summary>
 internal sealed record PhotoUploadResultDto(
     string FileName,
     bool Accepted,
     Guid? PhotoId,
     string? RejectionReason,
-    Guid? DuplicateOfPhotoId);
+    Guid? DuplicateOfPhotoId,
+    string? RejectionCode = null);
+
+/// <summary>The contract's <c>PhotoRejectionCode</c> spellings.</summary>
+internal static class PhotoRejectionCodes
+{
+    internal const string TooLarge = "too_large";
+    internal const string UnsupportedFormat = "unsupported_format";
+    internal const string TooManyPixels = "too_many_pixels";
+    internal const string Unreadable = "unreadable";
+    internal const string Duplicate = "duplicate";
+    internal const string StorageFailed = "storage_failed";
+
+    internal static string For(UnsupportedImageReason reason) => reason switch
+    {
+        UnsupportedImageReason.UnsupportedFormat => UnsupportedFormat,
+        UnsupportedImageReason.TooManyPixels => TooManyPixels,
+        UnsupportedImageReason.Unreadable => Unreadable,
+        _ => throw new ArgumentOutOfRangeException(nameof(reason), reason, null),
+    };
+}
 
 /// <summary>Upload bounds. <c>MaxFileBytes</c> is configuration; the photo count is FR-003's.</summary>
 /// <param name="MaxFileBytes">
@@ -189,6 +213,7 @@ internal static class PhotoEndpoints
             {
                 results[index] = Rejected(
                     fileName,
+                    PhotoRejectionCodes.TooLarge,
                     string.Create(
                         CultureInfo.InvariantCulture,
                         $"{fileName} is {Megabytes(file.Length)} MB, over the {Megabytes(options.MaxFileBytes)} MB limit per photo. Export it at a smaller size and upload it again."));
@@ -204,7 +229,7 @@ internal static class PhotoEndpoints
             }
             catch (UnsupportedImageException exception)
             {
-                results[index] = Rejected(fileName, $"{fileName} was not accepted: {exception.Message}");
+                results[index] = Rejected(fileName, PhotoRejectionCodes.For(exception.Reason), $"{fileName} was not accepted: {exception.Message}");
                 continue;
             }
 
@@ -217,7 +242,8 @@ internal static class PhotoEndpoints
                     Accepted: false,
                     PhotoId: null,
                     $"{fileName} is identical to a photo already on this listing.",
-                    duplicateOf);
+                    duplicateOf,
+                    PhotoRejectionCodes.Duplicate);
                 continue;
             }
 
@@ -230,7 +256,8 @@ internal static class PhotoEndpoints
                     Accepted: false,
                     PhotoId: null,
                     $"{fileName} is identical to {Path.GetFileName(files[earlierIndex].FileName)} in this upload.",
-                    DuplicateOfPhotoId: null);
+                    DuplicateOfPhotoId: null,
+                    PhotoRejectionCodes.Duplicate);
                 continue;
             }
 
@@ -265,7 +292,7 @@ internal static class PhotoEndpoints
             }
             catch (UnsupportedImageException exception)
             {
-                results[candidate.Index] = Rejected(candidate.FileName, $"{candidate.FileName} was not accepted: {exception.Message}");
+                results[candidate.Index] = Rejected(candidate.FileName, PhotoRejectionCodes.For(exception.Reason), $"{candidate.FileName} was not accepted: {exception.Message}");
                 continue;
             }
 
@@ -287,6 +314,7 @@ internal static class PhotoEndpoints
             {
                 results[candidate.Index] = Rejected(
                     candidate.FileName,
+                    PhotoRejectionCodes.StorageFailed,
                     $"{candidate.FileName} could not be stored just now. Upload it again; the other photos are unaffected.");
                 continue;
             }
@@ -324,8 +352,8 @@ internal static class PhotoEndpoints
         return TypedResults.Json(results.Select(result => result!).ToList(), statusCode: StatusCodes.Status207MultiStatus);
     }
 
-    private static PhotoUploadResultDto Rejected(string fileName, string reason) =>
-        new(fileName, Accepted: false, PhotoId: null, reason, DuplicateOfPhotoId: null);
+    private static PhotoUploadResultDto Rejected(string fileName, string code, string reason) =>
+        new(fileName, Accepted: false, PhotoId: null, reason, DuplicateOfPhotoId: null, code);
 
     private static async Task<byte[]> ReadAsync(IFormFile file, CancellationToken cancellationToken)
     {

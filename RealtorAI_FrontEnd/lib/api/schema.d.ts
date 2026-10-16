@@ -1722,6 +1722,12 @@ export interface components {
             rejectionReason?: string | null;
             /** Format: uuid */
             duplicateOfPhotoId?: string | null;
+            /**
+             * @description Machine-readable rejectionReason, so a client can state it in the agent's language.
+             *     Null when accepted.
+             * @enum {string|null}
+             */
+            rejectionCode?: "too_large" | "unsupported_format" | "too_many_pixels" | "unreadable" | "duplicate" | "storage_failed" | null;
         };
         Photo: {
             /** Format: uuid */

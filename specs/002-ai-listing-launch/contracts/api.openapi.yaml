@@ -1085,6 +1085,13 @@ components:
           nullable: true
           description: Human-readable and file-specific (Story 1 scenario 2).
         duplicateOfPhotoId: { type: string, format: uuid, nullable: true }
+        rejectionCode:
+          type: string
+          nullable: true
+          description: |
+            Machine-readable rejectionReason, so a client can state it in the agent's language.
+            Null when accepted.
+          enum: [too_large, unsupported_format, too_many_pixels, unreadable, duplicate, storage_failed]
     Photo:
       type: object
       properties:

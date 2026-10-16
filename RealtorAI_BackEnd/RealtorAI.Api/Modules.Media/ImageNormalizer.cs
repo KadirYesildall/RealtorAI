@@ -27,12 +27,38 @@ public sealed record NormalizedImage(
     int SourceHeight,
     string SourceMimeType);
 
+/// <summary>Why an upload could not be accepted as a photo.</summary>
+public enum UnsupportedImageReason
+{
+    /// <summary>The bytes are not an image at all, or an image in a format FR-003 does not accept.</summary>
+    UnsupportedFormat,
+
+    /// <summary>An accepted format whose declared dimensions exceed the decode limit.</summary>
+    TooManyPixels,
+
+    /// <summary>Empty, damaged, or only partly uploaded.</summary>
+    Unreadable,
+}
+
 /// <summary>
 /// The upload is not an image in an accepted format (FR-003). The message is written for the
-/// agent, because it is shown per file.
+/// agent, because it is shown per file; <see cref="Reason"/> is the same thing for a client that
+/// shows its own, localized, text.
 /// </summary>
 public sealed class UnsupportedImageException : Exception
 {
+    public UnsupportedImageException(UnsupportedImageReason reason, string message)
+        : base(message)
+    {
+        Reason = reason;
+    }
+
+    public UnsupportedImageException(UnsupportedImageReason reason, string message, Exception innerException)
+        : base(message, innerException)
+    {
+        Reason = reason;
+    }
+
     public UnsupportedImageException(string message)
         : base(message)
     {
@@ -46,6 +72,8 @@ public sealed class UnsupportedImageException : Exception
         : base(message, innerException)
     {
     }
+
+    public UnsupportedImageReason Reason { get; } = UnsupportedImageReason.UnsupportedFormat;
 }
 
 /// <summary>
@@ -151,6 +179,7 @@ public sealed class ImageNormalizer
         catch (MagickException exception)
         {
             throw new UnsupportedImageException(
+                UnsupportedImageReason.Unreadable,
                 "This file looks like an image but could not be read. It may be damaged or "
                 + "only partly uploaded. Try exporting it again.",
                 exception);
@@ -161,7 +190,7 @@ public sealed class ImageNormalizer
     {
         if (original.IsEmpty)
         {
-            throw new UnsupportedImageException("This file is empty.");
+            throw new UnsupportedImageException(UnsupportedImageReason.Unreadable, "This file is empty.");
         }
 
         MagickImageInfo info;
@@ -174,6 +203,7 @@ public sealed class ImageNormalizer
         catch (MagickException exception)
         {
             throw new UnsupportedImageException(
+                UnsupportedImageReason.UnsupportedFormat,
                 "This file is not a photo in a supported format. Use JPEG, PNG, HEIC or WebP.",
                 exception);
         }
@@ -181,12 +211,14 @@ public sealed class ImageNormalizer
         if (!AcceptedFormats.TryGetValue(info.Format, out var mimeType))
         {
             throw new UnsupportedImageException(
+                UnsupportedImageReason.UnsupportedFormat,
                 $"{info.Format} files are not accepted. Use JPEG, PNG, HEIC or WebP.");
         }
 
         if ((long)info.Width * info.Height > options.MaxSourcePixels)
         {
             throw new UnsupportedImageException(
+                UnsupportedImageReason.TooManyPixels,
                 $"This photo is {info.Width}×{info.Height} pixels, larger than can be processed. "
                 + "Export it at a smaller size and upload it again.");
         }

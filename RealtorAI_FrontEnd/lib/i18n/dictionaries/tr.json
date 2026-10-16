@@ -80,7 +80,7 @@
     "usageLabel": "Kullanılan AI üretimi",
     "sidebar": {
       "home": "Panel",
-      "newProperty": "Yeni İlan",
+      "listings": "İlanlar",
       "brokerage": "Brokerlik",
       "settings": "Ayarlar",
       "billing": "Faturalandırma",
@@ -190,6 +190,189 @@
       "budgetInteger": "Tam sayı girin.",
       "budgetPositive": "Sıfırdan büyük bir sayı girin.",
       "serverRejected": "Bu değer kabul edilmedi. Kontrol edip tekrar deneyin."
+    }
+  },
+  "listings": {
+    "index": {
+      "title": "İlanlar",
+      "subtitle": "Kaldığınız yerden devam edebileceğiniz taslaklar.",
+      "newListing": "Yeni ilan",
+      "showArchived": "Arşivlenenleri göster",
+      "empty": "Henüz ilanınız yok. Fotoğraf yüklemek ve temel bilgileri girmek için bir ilan başlatın.",
+      "emptyArchived": "Arşivlenmiş ya da etkin hiçbir ilan yok.",
+      "columns": {
+        "address": "Adres",
+        "status": "Durum",
+        "updated": "Son kayıt",
+        "actions": "İşlemler"
+      },
+      "continue": "Devam et",
+      "continueLabel": "{address} ilanına devam et",
+      "archive": "Arşivle",
+      "archiveLabel": "{address} ilanını arşivle",
+      "archiveConfirm": "{address} arşivlensin mi? İlanlarınızdan kalkar, geçmişi saklanır."
+    },
+    "status": {
+      "draft": "Taslak",
+      "analyzing": "Analiz ediliyor",
+      "ready_for_review": "İncelemeye hazır",
+      "approved": "Onaylandı",
+      "archived": "Arşivlendi"
+    },
+    "propertyTypes": {
+      "SingleFamilyResidence": "Müstakil ev",
+      "Condominium": "Kat mülkiyetli daire",
+      "Townhouse": "Sıra ev",
+      "Duplex": "İki birimli konut",
+      "Triplex": "Üç birimli konut",
+      "Quadruplex": "Dört birimli konut",
+      "ManufacturedHome": "Prefabrik ev",
+      "ManufacturedOnLand": "Arsasıyla prefabrik ev",
+      "StockCooperative": "Kooperatif konut",
+      "Cabin": "Kulübe"
+    },
+    "wizard": {
+      "title": "Yeni ilan",
+      "subtitle": "Temel bilgileri girin, fotoğrafları ekleyin, istediğiniz zaman geri dönün — her şey siz çalışırken kaydedilir.",
+      "stepsLabel": "İlan adımları",
+      "steps": {
+        "basics": "Temel bilgiler",
+        "photos": "Fotoğraflar",
+        "progress": "Yayından önce"
+      },
+      "archived": "Bu ilan arşivlendi. Geçmişiyle birlikte saklanır ama artık değiştirilemez."
+    },
+    "basics": {
+      "title": "Temel bilgiler",
+      "address": "Sokak adresi",
+      "city": "Şehir",
+      "state": "Eyalet",
+      "stateHint": "İki harf, ör. CA",
+      "postalCode": "Posta kodu",
+      "propertyType": "Mülk türü",
+      "chooseType": "Bir tür seçin",
+      "listPrice": "Liste fiyatı",
+      "listPriceHint": "ABD doları cinsinden",
+      "bedrooms": "Yatak odası",
+      "bathrooms": "Banyo",
+      "bathroomsHint": "Yarımlar olabilir, ör. 2,5",
+      "agentNotes": "Kendinize notlar",
+      "agentNotesHint": "Yalnızca size özel. Kamuya açık açıklamalara asla kopyalanmaz.",
+      "create": "Taslak oluştur"
+    },
+    "save": {
+      "saving": "Kaydediliyor…",
+      "saved": "Tüm değişiklikler kaydedildi",
+      "failed": "Son değişikliğiniz kaydedilemedi. Burada duruyor; yeniden düzenlediğinizde kayıt devam eder.",
+      "invalid": "İşaretli alanı düzeltin, kaydedilecektir.",
+      "conflictTitle": "Bu taslak başka bir yerde değişti",
+      "conflictBody": "Başka bir sekme ya da cihaz daha yeni bir sürüm kaydetti. Devam etmek için onu yükleyin; o zamandan beri burada yapılan düzenlemelerin yerini alır.",
+      "loadLatest": "En son sürümü yükle"
+    },
+    "required": {
+      "title": "Yayından önce zorunlu",
+      "body": "Bağlı bir kamu kaydı kaynağı yok, bu yüzden bunları siz girin. Bu alanlar asla yapay zekâ tarafından doldurulmaz.",
+      "badge": "Zorunlu",
+      "entered": "Sizin girdiğiniz",
+      "publicRecord": "Kaynak: {source}",
+      "fields": {
+        "LivingArea": "Yaşam alanı (ft²)",
+        "LotSizeSquareFeet": "Arsa büyüklüğü (ft²)",
+        "YearBuilt": "Yapım yılı",
+        "TaxAnnualAmount": "Yıllık emlak vergisi (USD)"
+      }
+    },
+    "photos": {
+      "title": "Fotoğraflar",
+      "body": "1 ile 100 arasında fotoğraf ekleyin. Orijinaller yüklendiği gibi saklanır; hiçbir şey üretilmez ya da rötuşlanmaz.",
+      "choose": "Fotoğraf seçin",
+      "formats": "JPEG, PNG, HEIC ya da WebP; her biri en fazla 50 MB.",
+      "count": "{count} / 100 fotoğraf",
+      "overLimit": "{chosen} fotoğraf seçtiniz, ama bu ilanda {room} fotoğraflık yer kaldı. Hiçbiri yüklenmedi; daha az seçin.",
+      "full": "Bu ilanda izin verilen en fazla sayı olan 100 fotoğraf var.",
+      "empty": "Henüz fotoğraf yok.",
+      "photoAlt": "Fotoğraf {n}",
+      "uploadsLabel": "Yükleme durumu",
+      "state": {
+        "queued": "Bekliyor",
+        "uploading": "Yükleniyor…",
+        "uploaded": "Yüklendi"
+      },
+      "rejected": {
+        "too_large": "{file} kabul edilmedi: 50 MB'tan büyük.",
+        "unsupported_format": "{file} kabul edilmedi: JPEG, PNG, HEIC ya da WebP fotoğrafı değil.",
+        "too_many_pixels": "{file} kabul edilmedi: boyutları işlenemeyecek kadar büyük.",
+        "unreadable": "{file} kabul edilmedi: hasarlı ya da yarım kaydedilmiş görünüyor.",
+        "duplicate": "{file} eklenmedi: bu ilandaki bir fotoğrafla birebir aynı.",
+        "storage_failed": "{file} şu anda saklanamadı. Yeniden ekleyin.",
+        "unknown": "{file} yüklenemedi. Yeniden ekleyin."
+      }
+    },
+    "progress": {
+      "title": "Yayından önce",
+      "photosNone": "En az bir fotoğraf ekleyin.",
+      "photosCount": "Eklenen fotoğraf: {count}",
+      "requiredMissing": "Hâlâ boş zorunlu alan: {count}",
+      "requiredDone": "Zorunlu alanlar girildi",
+      "aiNote": "Sırada fotoğraf analizi ve metin taslağı var. Yapay zekânın her çıktısı siz onaylayana kadar taslak olarak kalır."
+    },
+    "errors": {
+      "validation": "İşaretli alanları kontrol edin.",
+      "unauthenticated": "Oturumunuz sona erdi. Yeniden giriş yapın.",
+      "forbidden": "Bu ilanı değiştiremezsiniz.",
+      "notFound": "Bu ilana erişilemiyor.",
+      "profileIncomplete": "İlan oluşturmadan önce profilinizi tamamlayın.",
+      "unexpected": "Bir şeyler ters gitti. Lütfen tekrar deneyin.",
+      "serverRejected": "Bu değer kabul edilmedi.",
+      "addressRequired": "Sokak adresini girin.",
+      "cityRequired": "Şehri girin.",
+      "stateFormat": "İki harfli eyalet kodunu kullanın, ör. CA.",
+      "postalCodeFormat": "Beş haneli bir posta kodu kullanın, ör. 92618.",
+      "propertyTypeInvalid": "Bir mülk türü seçin.",
+      "priceFormat": "Dolar ve sent cinsinden bir tutar girin.",
+      "bedroomsFormat": "0 ile 99 arasında bir tam sayı girin.",
+      "bathroomsFormat": "Tam ya da yarım sayı kullanın, ör. 2 veya 2,5.",
+      "notesTooLong": "Notlar en fazla 5.000 karakter olabilir.",
+      "tooLong": "Bu çok uzun.",
+      "yearFormat": "Dört haneli bir yıl girin.",
+      "measurementFormat": "Sıfır ya da daha büyük bir sayı girin.",
+      "archiveFailed": "Bu ilan arşivlenemedi. Lütfen tekrar deneyin.",
+      "loadFailed": "İlanlarınızı şu anda yükleyemedik. Lütfen tekrar deneyin."
+    }
+  },
+  "profileCompletion": {
+    "title": "Profilinizi tamamlayın",
+    "subtitle": "İlanlar lisansınız altında oluşturulur; brokerliğinizin adı ve lisansı reklamlarda yer alır.",
+    "license": {
+      "title": "Lisansınız",
+      "number": "Lisans numarası",
+      "state": "Lisans eyaleti",
+      "stateHint": "İki harf, ör. CA"
+    },
+    "brokerage": {
+      "title": "Brokerliğiniz",
+      "body": "Üyeliğinizi bir broker yöneticisi onaylar. O zamana kadar ilan taslağı hazırlayıp kontrol edebilirsiniz, ama yayımlayamazsınız.",
+      "name": "Brokerlik adı",
+      "id": "Brokerlik kimliği",
+      "idHint": "Brokeriniz size bir kimlik verdiyse, brokerliğine katılmak için girin. Yeni bir brokerlik kaydetmek için boş bırakın.",
+      "licenseNumber": "Brokerlik lisans numarası",
+      "state": "Brokerlik eyaleti",
+      "current": "{brokerage} üyesisiniz ({status})."
+    },
+    "submit": "Kaydet ve devam et",
+    "errors": {
+      "validation": "İşaretli alanları kontrol edin.",
+      "unauthenticated": "Oturumunuz sona erdi. Yeniden giriş yapın.",
+      "brokerageConflict": "Zaten bir brokerlik üyeliğiniz var. Görmek için sayfayı yenileyin.",
+      "unexpected": "Bir şeyler ters gitti. Lütfen tekrar deneyin.",
+      "serverRejected": "Bu değer kabul edilmedi.",
+      "licenseRequired": "Lisans numarasını girin.",
+      "licenseTooLong": "Bu lisans numarası çok uzun.",
+      "stateFormat": "İki harfli eyalet kodunu kullanın, ör. CA.",
+      "brokerageNameRequired": "Brokerliğinizin adını girin.",
+      "brokerageIdFormat": "Bu bir brokerlik kimliğine benzemiyor.",
+      "tooLong": "Bu çok uzun.",
+      "loadFailed": "Profilinizi şu anda yükleyemedik. Lütfen tekrar deneyin."
     }
   }
 }

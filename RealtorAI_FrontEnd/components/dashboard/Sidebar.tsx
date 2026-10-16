@@ -16,12 +16,7 @@ import {
 
 const NAV_ITEMS = [
   { href: "/dashboard", key: "home" as const, icon: GridIcon, enabled: true },
-  {
-    href: "/dashboard/properties",
-    key: "newProperty" as const,
-    icon: BuildingIcon,
-    enabled: false,
-  },
+  { href: "/dashboard/listings", key: "listings" as const, icon: BuildingIcon, enabled: true },
   { href: "/dashboard/brokerage", key: "brokerage" as const, icon: UsersIcon, enabled: true },
   {
     href: "/dashboard/settings",
@@ -48,7 +43,10 @@ export function Sidebar({ dict }: { dict: Dictionary }) {
 
         <nav className="space-y-1">
           {NAV_ITEMS.map((item) => {
-            const active = pathname === item.href;
+            // Nested routes (a listing's wizard) keep their section highlighted; the dashboard
+            // home matches only itself, or it would be active everywhere.
+            const active =
+              pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(`${item.href}/`));
             const label = t[item.key];
             const ItemIcon = item.icon;
 

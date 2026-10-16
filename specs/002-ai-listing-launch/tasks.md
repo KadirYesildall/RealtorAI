@@ -169,11 +169,11 @@ Per [plan.md](./plan.md) "Project Structure" — the repo's two mandated top-lev
 - [X] T076 [US1] Implement field upsert and confirm endpoints in `Modules.Listings/Endpoints/ListingFieldEndpoints.cs` (FR-006) — *built in `Api/Endpoints/ListingFieldEndpoints.cs` (research R20)*
 - [X] T077 [US1] Implement the photo upload endpoint in `Modules.Media/Endpoints/PhotoEndpoints.cs` — *built in `Api/Endpoints/PhotoEndpoints.cs` (research R20)* — originals + normalized variants, checksum dedupe, per-file accept/reject, 1–100 bound
 - [X] T078 [US1] Wire public-record prefill through `IPropertyDataProvider` in `Modules.Listings/PrefillService.cs` — the null path marks fields required (FR-008)
-- [ ] T079 [P] [US1] Build the profile completion page at `RealtorAI_FrontEnd/app/dashboard/profile/complete/page.tsx`
-- [ ] T080 [P] [US1] Build the new-listing wizard at `RealtorAI_FrontEnd/app/dashboard/listings/new/page.tsx` (basics → upload → progress)
-- [ ] T081 [P] [US1] Build the listing index at `RealtorAI_FrontEnd/app/dashboard/listings/page.tsx` with the archived filter
-- [ ] T082 [P] [US1] Add Zod schemas in `RealtorAI_FrontEnd/lib/validation/listing.ts`
-- [ ] T083 [P] [US1] Add EN/TR keys for all US1 strings in `RealtorAI_FrontEnd/lib/i18n/dictionaries/{en,tr}.json` and verify both themes on every US1 screen
+- [X] T079 [P] [US1] Build the profile completion page at `RealtorAI_FrontEnd/app/dashboard/profile/complete/page.tsx`
+- [X] T080 [P] [US1] Build the new-listing wizard at `RealtorAI_FrontEnd/app/dashboard/listings/new/page.tsx` (basics → upload → progress) — *photos go through the Route Handler `app/api/listings/[listingId]/photos/route.ts`, which proxy.ts skips (its body buffering truncates past 10 MB)*
+- [X] T081 [P] [US1] Build the listing index at `RealtorAI_FrontEnd/app/dashboard/listings/page.tsx` with the archived filter
+- [X] T082 [P] [US1] Add Zod schemas in `RealtorAI_FrontEnd/lib/validation/listing.ts`
+- [X] T083 [P] [US1] Add EN/TR keys for all US1 strings in `RealtorAI_FrontEnd/lib/i18n/dictionaries/{en,tr}.json` and verify both themes on every US1 screen — *verified by `tests/integration/us1-themes.spec.ts`: computed WCAG AA contrast on every rendered text node, plus screenshots, light and dark*
 
 **Checkpoint**: US1 independently deliverable — an agent can create and resume a listing draft
 

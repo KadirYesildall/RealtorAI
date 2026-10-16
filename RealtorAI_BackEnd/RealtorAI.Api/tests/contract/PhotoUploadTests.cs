@@ -151,6 +151,9 @@ public sealed class PhotoUploadTests : IClassFixture<ApiFactory>, IClassFixture<
 
         Assert.Equal("notes.jpg", results[1]!["fileName"]!.GetValue<string>());
         Assert.Equal("floorplan.gif", results[2]!["fileName"]!.GetValue<string>());
+        Assert.Equal("unsupported_format", results[1]!["rejectionCode"]!.GetValue<string>());
+        Assert.Equal("unsupported_format", results[2]!["rejectionCode"]!.GetValue<string>());
+        Assert.Null(results[0]!["rejectionCode"]);
         Assert.Equal(2L, await PhotoCountAsync(listing));
     }
 
@@ -178,6 +181,7 @@ public sealed class PhotoUploadTests : IClassFixture<ApiFactory>, IClassFixture<
 
         Assert.False(results[0]!["accepted"]!.GetValue<bool>());
         Assert.Contains("huge.png", results[0]!["rejectionReason"]!.GetValue<string>(), StringComparison.Ordinal);
+        Assert.Equal("too_large", results[0]!["rejectionCode"]!.GetValue<string>());
         Assert.True(results[1]!["accepted"]!.GetValue<bool>());
         Assert.Equal(1L, await PhotoCountAsync(listing));
     }
@@ -195,6 +199,7 @@ public sealed class PhotoUploadTests : IClassFixture<ApiFactory>, IClassFixture<
 
         Assert.False(second[0]!["accepted"]!.GetValue<bool>());
         Assert.Equal(first[0]!["photoId"]!.GetValue<Guid>(), second[0]!["duplicateOfPhotoId"]!.GetValue<Guid>());
+        Assert.Equal("duplicate", second[0]!["rejectionCode"]!.GetValue<string>());
         Assert.Equal(1L, await PhotoCountAsync(listing));
     }
 

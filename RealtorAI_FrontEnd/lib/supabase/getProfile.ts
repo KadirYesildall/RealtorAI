@@ -10,6 +10,10 @@ export type Profile = {
   preferredLanguage: string;
   subscriptionTier: string;
   apiUsageCount: number;
+  licenseNumber: string | null;
+  licenseState: string | null;
+  /** Set once license number and state are recorded (FR-058); null until then. */
+  profileCompletedAt: string | null;
 };
 
 /**
@@ -26,7 +30,9 @@ export const getAuthenticatedProfile = cache(async (): Promise<Profile> => {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, full_name, company_name, preferred_language, subscription_tier, api_usage_count")
+    .select(
+      "id, full_name, company_name, preferred_language, subscription_tier, api_usage_count, license_number, license_state, profile_completed_at"
+    )
     .eq("id", userData.user.id)
     .single();
 
@@ -43,5 +49,8 @@ export const getAuthenticatedProfile = cache(async (): Promise<Profile> => {
     preferredLanguage: profile.preferred_language,
     subscriptionTier: profile.subscription_tier,
     apiUsageCount: profile.api_usage_count,
+    licenseNumber: profile.license_number,
+    licenseState: profile.license_state?.trim() ?? null,
+    profileCompletedAt: profile.profile_completed_at,
   };
 });

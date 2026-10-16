@@ -80,7 +80,7 @@
     "usageLabel": "AI generations used",
     "sidebar": {
       "home": "Dashboard",
-      "newProperty": "New Property",
+      "listings": "Listings",
       "brokerage": "Brokerage",
       "settings": "Settings",
       "billing": "Billing",
@@ -190,6 +190,189 @@
       "budgetInteger": "Enter a whole number.",
       "budgetPositive": "Enter a number greater than zero.",
       "serverRejected": "This value wasn't accepted. Check it and try again."
+    }
+  },
+  "listings": {
+    "index": {
+      "title": "Listings",
+      "subtitle": "Drafts you can pick up where you left off.",
+      "newListing": "New listing",
+      "showArchived": "Show archived",
+      "empty": "You have no listings yet. Start one to upload photos and enter the basics.",
+      "emptyArchived": "No listings, archived or otherwise.",
+      "columns": {
+        "address": "Address",
+        "status": "Status",
+        "updated": "Last saved",
+        "actions": "Actions"
+      },
+      "continue": "Continue",
+      "continueLabel": "Continue {address}",
+      "archive": "Archive",
+      "archiveLabel": "Archive {address}",
+      "archiveConfirm": "Archive {address}? It leaves your listings, and its history is kept."
+    },
+    "status": {
+      "draft": "Draft",
+      "analyzing": "Analyzing",
+      "ready_for_review": "Ready for review",
+      "approved": "Approved",
+      "archived": "Archived"
+    },
+    "propertyTypes": {
+      "SingleFamilyResidence": "Single-family home",
+      "Condominium": "Condominium",
+      "Townhouse": "Townhouse",
+      "Duplex": "Duplex",
+      "Triplex": "Triplex",
+      "Quadruplex": "Fourplex",
+      "ManufacturedHome": "Manufactured home",
+      "ManufacturedOnLand": "Manufactured home on land",
+      "StockCooperative": "Stock cooperative",
+      "Cabin": "Cabin"
+    },
+    "wizard": {
+      "title": "New listing",
+      "subtitle": "Enter the basics, add photos, and come back any time — everything saves as you go.",
+      "stepsLabel": "Listing steps",
+      "steps": {
+        "basics": "Basic details",
+        "photos": "Photos",
+        "progress": "Before you publish"
+      },
+      "archived": "This listing is archived. It's kept with its history but can no longer be changed."
+    },
+    "basics": {
+      "title": "Basic details",
+      "address": "Street address",
+      "city": "City",
+      "state": "State",
+      "stateHint": "Two letters, e.g. CA",
+      "postalCode": "ZIP code",
+      "propertyType": "Property type",
+      "chooseType": "Choose a type",
+      "listPrice": "List price",
+      "listPriceHint": "In US dollars",
+      "bedrooms": "Bedrooms",
+      "bathrooms": "Bathrooms",
+      "bathroomsHint": "Halves are fine, e.g. 2.5",
+      "agentNotes": "Notes for yourself",
+      "agentNotesHint": "Private to you. Never copied into public remarks.",
+      "create": "Create draft"
+    },
+    "save": {
+      "saving": "Saving…",
+      "saved": "All changes saved",
+      "failed": "Couldn't save your last change. It's still here, and saving resumes when you edit again.",
+      "invalid": "Fix the highlighted field and it will save.",
+      "conflictTitle": "This draft changed somewhere else",
+      "conflictBody": "Another tab or device saved a newer version. Load it to continue; edits made here since then will be replaced.",
+      "loadLatest": "Load the latest version"
+    },
+    "required": {
+      "title": "Required before publishing",
+      "body": "No public-record source is connected, so enter these yourself. They are never filled in by AI.",
+      "badge": "Required",
+      "entered": "Entered by you",
+      "publicRecord": "From {source}",
+      "fields": {
+        "LivingArea": "Living area (sq ft)",
+        "LotSizeSquareFeet": "Lot size (sq ft)",
+        "YearBuilt": "Year built",
+        "TaxAnnualAmount": "Annual property tax (USD)"
+      }
+    },
+    "photos": {
+      "title": "Photos",
+      "body": "Add 1 to 100 photos. Originals are kept exactly as uploaded; nothing is generated or retouched.",
+      "choose": "Choose photos",
+      "formats": "JPEG, PNG, HEIC or WebP, up to 50 MB each.",
+      "count": "{count} of 100 photos",
+      "overLimit": "You chose {chosen} photos, but this listing has room for {room} more. Nothing was uploaded; choose fewer.",
+      "full": "This listing has 100 photos, the most allowed.",
+      "empty": "No photos yet.",
+      "photoAlt": "Photo {n}",
+      "uploadsLabel": "Upload progress",
+      "state": {
+        "queued": "Waiting",
+        "uploading": "Uploading…",
+        "uploaded": "Uploaded"
+      },
+      "rejected": {
+        "too_large": "{file} was not accepted: it is larger than 50 MB.",
+        "unsupported_format": "{file} was not accepted: it isn't a JPEG, PNG, HEIC or WebP photo.",
+        "too_many_pixels": "{file} was not accepted: its dimensions are too large to process.",
+        "unreadable": "{file} was not accepted: it looks damaged or only partly saved.",
+        "duplicate": "{file} was not added: it is identical to a photo already on this listing.",
+        "storage_failed": "{file} couldn't be stored just now. Add it again.",
+        "unknown": "{file} couldn't be uploaded. Add it again."
+      }
+    },
+    "progress": {
+      "title": "Before you publish",
+      "photosNone": "Add at least one photo.",
+      "photosCount": "Photos added: {count}",
+      "requiredMissing": "Required fields still empty: {count}",
+      "requiredDone": "Required fields entered",
+      "aiNote": "Photo analysis and content drafting come next. Every AI result stays a draft until you approve it."
+    },
+    "errors": {
+      "validation": "Check the highlighted fields.",
+      "unauthenticated": "Your session ended. Sign in again.",
+      "forbidden": "You can't change this listing.",
+      "notFound": "This listing isn't available.",
+      "profileIncomplete": "Complete your profile before creating a listing.",
+      "unexpected": "Something went wrong. Please try again.",
+      "serverRejected": "This value wasn't accepted.",
+      "addressRequired": "Enter the street address.",
+      "cityRequired": "Enter the city.",
+      "stateFormat": "Use the two-letter state code, e.g. CA.",
+      "postalCodeFormat": "Use a five-digit ZIP code, e.g. 92618.",
+      "propertyTypeInvalid": "Choose a property type.",
+      "priceFormat": "Enter an amount in dollars and cents.",
+      "bedroomsFormat": "Enter a whole number from 0 to 99.",
+      "bathroomsFormat": "Use whole or half numbers, e.g. 2 or 2.5.",
+      "notesTooLong": "Notes can be at most 5,000 characters.",
+      "tooLong": "This is too long.",
+      "yearFormat": "Enter a four-digit year.",
+      "measurementFormat": "Enter a number of zero or more.",
+      "archiveFailed": "Couldn't archive this listing. Please try again.",
+      "loadFailed": "We couldn't load your listings right now. Please try again."
+    }
+  },
+  "profileCompletion": {
+    "title": "Complete your profile",
+    "subtitle": "Listings are created under your license, and your brokerage's name and license appear in advertising.",
+    "license": {
+      "title": "Your license",
+      "number": "License number",
+      "state": "License state",
+      "stateHint": "Two letters, e.g. CA"
+    },
+    "brokerage": {
+      "title": "Your brokerage",
+      "body": "A broker admin approves your membership. Until then you can draft and check listings, but not publish them.",
+      "name": "Brokerage name",
+      "id": "Brokerage ID",
+      "idHint": "If your broker gave you an ID, enter it to join their brokerage. Leave it empty to register a new brokerage.",
+      "licenseNumber": "Brokerage license number",
+      "state": "Brokerage state",
+      "current": "You're a member of {brokerage} ({status})."
+    },
+    "submit": "Save and continue",
+    "errors": {
+      "validation": "Check the highlighted fields.",
+      "unauthenticated": "Your session ended. Sign in again.",
+      "brokerageConflict": "You already have a brokerage membership. Reload the page to see it.",
+      "unexpected": "Something went wrong. Please try again.",
+      "serverRejected": "This value wasn't accepted.",
+      "licenseRequired": "Enter the license number.",
+      "licenseTooLong": "This license number is too long.",
+      "stateFormat": "Use the two-letter state code, e.g. CA.",
+      "brokerageNameRequired": "Enter your brokerage's name.",
+      "brokerageIdFormat": "This doesn't look like a brokerage ID.",
+      "tooLong": "This is too long.",
+      "loadFailed": "We couldn't load your profile right now. Please try again."
     }
   }
 }
