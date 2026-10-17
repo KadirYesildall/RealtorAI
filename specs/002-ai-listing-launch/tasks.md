@@ -327,7 +327,7 @@ Per [plan.md](./plan.md) "Project Structure" — the repo's two mandated top-lev
 - [X] T163 [P] Add `loading.tsx` and `error.tsx` to every new route segment under `RealtorAI_FrontEnd/app/dashboard/`
 - [X] T164 [P] Add an automated accessibility suite (keyboard reach, accessible labels, WCAG AA contrast in both themes) covering every new screen, in `RealtorAI_FrontEnd/tests/integration/accessibility.spec.ts` — **reuse the existing accessible names the current e2e suite pins** so those tests keep passing
 - [X] T165 [P] Add an i18n completeness test asserting en/tr key parity and no hardcoded user-facing strings, in `RealtorAI_FrontEnd/tests/contract/i18n-parity.test.ts`
-- [ ] T166 [P] Add the end-to-end performance validation for SC-001 (upload → approved under 15 min for a 30-photo listing) and SC-005 (analysis under 2 min p90) in `RealtorAI_FrontEnd/tests/integration/performance-slice-a.spec.ts`
+- [X] T166 [P] Add the end-to-end performance validation for SC-001 (upload → approved under 15 min for a 30-photo listing) and SC-005 (analysis under 2 min p90) in `RealtorAI_FrontEnd/tests/integration/performance-slice-a.spec.ts`
 - [ ] T167 [P] Refresh `specs/002-ai-listing-launch/quickstart.md` with the **actual** values reported by `supabase start`
 - [ ] T168 [P] Dark/light screenshot pass over every new screen including empty, queued, analyzing, failed, blocking, and warning states
 - [ ] T169 Record the final constitution compliance review (Principles I–VIII, Sections A–E, workflow gates) against v3.0.0 in the post-implementation Constitution Check of `specs/002-ai-listing-launch/plan.md`
