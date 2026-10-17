@@ -32,6 +32,8 @@ builder.Host.UseSerilog((context, services, configuration) => configuration
 builder.Services.AddOpenTelemetry()
     .WithTracing(tracing => tracing
         .AddAspNetCoreInstrumentation()
+        // T162: a span per pipeline run and per step (Pipeline/PipelineTelemetry.cs).
+        .AddSource(global::Pipeline.PipelineTelemetry.SourceName)
         .AddOtlpExporter())
     .WithMetrics(metrics => metrics
         .AddAspNetCoreInstrumentation()

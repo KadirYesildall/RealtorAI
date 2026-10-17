@@ -323,7 +323,7 @@ Per [plan.md](./plan.md) "Project Structure" — the repo's two mandated top-lev
 - [ ] T159 Write the model-enablement runbook in `specs/002-ai-listing-launch/quickstart.md` §6 and flip registry entries to `enabled` **only after** Hub verification and a passing eval (research R1, VIII.4)
 - [ ] T160 [P] Populate the CRMLS rule profile with **verified published values** via a new migration in `RealtorAI_BackEnd/supabase/migrations/` (research R2) — and verify the unverified RESO lookup seed `Libs.Reso/Lookups/dd-2.0-slice-a.json` against the official Data Dictionary, then set its `verified` flag (research R35)
 - [ ] T161 [P] Record counsel's or CRMLS compliance staff's confirmation of AB 723 disclosure label text and placement in `specs/002-ai-listing-launch/research.md` R4, then seed the approved labels (research R4)
-- [ ] T162 [P] Add OpenTelemetry spans across every pipeline step in `Pipeline/Steps/`
+- [X] T162 [P] Add OpenTelemetry spans across every pipeline step in `Pipeline/Steps/`
 - [ ] T163 [P] Add `loading.tsx` and `error.tsx` to every new route segment under `RealtorAI_FrontEnd/app/dashboard/`
 - [ ] T164 [P] Add an automated accessibility suite (keyboard reach, accessible labels, WCAG AA contrast in both themes) covering every new screen, in `RealtorAI_FrontEnd/tests/integration/accessibility.spec.ts` — **reuse the existing accessible names the current e2e suite pins** so those tests keep passing
 - [ ] T165 [P] Add an i18n completeness test asserting en/tr key parity and no hardcoded user-facing strings, in `RealtorAI_FrontEnd/tests/contract/i18n-parity.test.ts`

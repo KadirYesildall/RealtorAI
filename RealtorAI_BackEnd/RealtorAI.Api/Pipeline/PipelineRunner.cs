@@ -75,6 +75,8 @@ public sealed partial class PipelineRunner
             return;
         }
 
+        using var runSpan = PipelineTelemetry.StartRun(first, queued.Select(step => step.Kind).ToList());
+
         foreach (var step in queued)
         {
             // Re-read for every step: each works on the listing as the previous step left it.
@@ -88,6 +90,7 @@ public sealed partial class PipelineRunner
 
             await reporter.StepAsync(run, step.Kind, StepState.Running, null, cancellationToken);
 
+            using var stepSpan = PipelineTelemetry.StartStep(run, step.Kind);
             StepOutcome outcome;
 
             try
@@ -96,11 +99,16 @@ public sealed partial class PipelineRunner
             }
             catch (Exception exception) when (exception is not OperationCanceledException)
             {
+                stepSpan?.AddException(exception);
+
                 // A defect, not an expected failure — steps report those as outcomes. Recorded
                 // so the run still finishes and the listing is not left "analyzing" for ever.
                 LogStepCrashed(logger, exception, step.Kind, runId);
                 outcome = StepOutcome.Failed("This step stopped unexpectedly. Run analysis again; everything can also be done by hand.");
             }
+
+            PipelineTelemetry.Finish(stepSpan, outcome);
+            stepSpan?.Stop();
 
             if (step.Kind == PipelineStep.PhotoAnalysis)
             {
@@ -117,6 +125,9 @@ public sealed partial class PipelineRunner
 
             await reporter.StepAsync(run, step.Kind, outcome.State, outcome.Reason, cancellationToken);
         }
+
+        // A failed step is visible on its own span; the run itself completed.
+        runSpan?.SetStatus(System.Diagnostics.ActivityStatusCode.Ok);
     }
 
     [LoggerMessage(Level = LogLevel.Warning, Message = "Pipeline run {RunId} no longer exists; nothing to do.")]
