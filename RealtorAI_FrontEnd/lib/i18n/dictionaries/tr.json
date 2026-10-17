@@ -210,7 +210,9 @@
       "continueLabel": "{address} ilanına devam et",
       "archive": "Arşivle",
       "archiveLabel": "{address} ilanını arşivle",
-      "archiveConfirm": "{address} arşivlensin mi? İlanlarınızdan kalkar, geçmişi saklanır."
+      "archiveConfirm": "{address} arşivlensin mi? İlanlarınızdan kalkar, geçmişi saklanır.",
+      "review": "İncele",
+      "reviewLabel": "{address} ilanını incele"
     },
     "status": {
       "draft": "Taslak",
@@ -581,6 +583,109 @@
       "cancel": "Vazgeç",
       "noLabels": "Bu ilanın MLS'i için henüz onaylanmış bir açıklama etiketi yok, bu yüzden değişiklik beyan edilemez. Bunun yerine değiştirilmemiş fotoğrafı kullanın.",
       "noOriginal": "Önce değiştirilmemiş orijinali yükleyin; değiştirilmiş fotoğrafın yanında gösterilir."
+    },
+    "review": {
+      "place": "{city}, {state} {postalCode}",
+      "audit": "Denetim kaydı"
+    },
+    "facts": {
+      "title": "İlan bilgileri",
+      "body": "İlandaki her bilgi ve nereden geldiği. Yapay zekânın tespit ettiği bilgiler siz onaylayana kadar onaysız kalır ve bunlara dayanan içerik o zamana kadar onaylanamaz.",
+      "empty": "Henüz bilgi girilmedi.",
+      "columns": {
+        "field": "Bilgi",
+        "value": "Değer",
+        "source": "Kaynak",
+        "actions": "İşlemler"
+      },
+      "provenance": {
+        "agent_entered": "Sizin girdiğiniz",
+        "public_record": "Resmî kayıt",
+        "ai_detected_from_photo": "Fotoğraflarda tespit edildi",
+        "ai_suggested": "Yapay zekâ önerisi"
+      },
+      "confirmed": "Onaylandı",
+      "unconfirmed": "Onaylanmadı",
+      "confirm": "{field} bilgisini onayla"
+    },
+    "approval": {
+      "title": "Onay",
+      "body": "Her çıktıyı inceledikten sonra MLS için onaylayın. Onay; sizi, zamanı ve tam olarak neyi onayladığınızı kaydeder. Sonradan herhangi bir değişiklik onayı geri çeker.",
+      "listing": "İlan",
+      "approve": "{name} için MLS onayı ver",
+      "approveListing": "İlanı MLS için onayla",
+      "approved": "{name} onaylandı.",
+      "listingApproved": "İlan onaylandı.",
+      "changed": "Bu, sayfayı yükledikten sonra değişti. Sayfa yenilendi — yeniden inceleyip onaylayın.",
+      "state": {
+        "approved": "Onaylandı",
+        "notApproved": "Henüz onaylanmadı"
+      },
+      "notYet": "Henüz değil:",
+      "blockers": {
+        "blocking_finding_open": "Açık bir engelleyici uyumluluk bulgusu var.",
+        "finding": "Açık bir engelleyici bulgu var: “{phrase}”.",
+        "unconfirmed_ai_fact": "Onaylamadığınız bir bilgiye dayanıyor.",
+        "unconfirmedField": "{field} onaylanmadı.",
+        "required_field_missing": "Zorunlu bir bilgi eksik.",
+        "requiredField": "{field} zorunlu.",
+        "membership_not_approved": "Aracı kurum üyeliğiniz henüz onaylanmadı.",
+        "rule_profile_incomplete": "MLS kuralları henüz doğrulanmadı, bu yüzden onlara göre hiçbir şey onaylanamaz.",
+        "content_changed_since_review": "İncelemenizden sonra değişti.",
+        "compliance_not_run": "Son değişikliğinden beri uyumluluk kontrolünden geçmedi. Kontrolü çalıştırın.",
+        "content_not_approved": "Önce yayımlayacağı içeriği onaylayın.",
+        "analysis_in_progress": "Analiz ya da içerik üretimi hâlâ sürüyor.",
+        "unknown": "Henüz onaylanamaz."
+      },
+      "errors": {
+        "validation": "Bu onay kabul edilmedi. Sayfayı yenileyip yeniden deneyin.",
+        "forbidden": "İlanı yalnızca ilanın emlakçısı onaylayabilir.",
+        "notFound": "Bu artık mevcut değil. Sayfayı yenileyin.",
+        "unexpected": "Bir sorun oluştu. Lütfen yeniden deneyin."
+      }
+    },
+    "audit": {
+      "title": "Denetim kaydı",
+      "back": "İlana dön",
+      "empty": "Henüz bir şey kaydedilmedi.",
+      "older": "Daha eski kayıtlar",
+      "columns": {
+        "when": "Zaman",
+        "action": "Ne oldu",
+        "by": "Kim",
+        "item": "Öğe",
+        "hash": "İçerik özeti"
+      },
+      "you": "Siz",
+      "someoneElse": "Başka bir kullanıcı",
+      "system": "Sistem",
+      "targets": {
+        "listing": "İlan",
+        "listing_field": "Bilgi",
+        "content_draft": "İçerik",
+        "photo": "Fotoğraf",
+        "compliance_finding": "Uyumluluk bulgusu"
+      },
+      "actions": {
+        "ai_call": "Yapay zekâ çağrısı",
+        "field_edit": "Bilgi düzenlendi",
+        "field_confirm": "Bilgi onaylandı",
+        "photo_override": "Fotoğraf sonucu değiştirildi",
+        "photo_reorder": "Fotoğraflar yeniden sıralandı",
+        "photo_delete": "Fotoğraf kaldırıldı",
+        "finding_raised": "Uyumluluk bulgusu oluştu",
+        "finding_acknowledged": "Uyarı kabul edildi",
+        "content_generated": "İçerik oluşturuldu",
+        "content_edited": "İçerik düzenlendi",
+        "approval_granted": "Onay verildi",
+        "approval_revoked": "Onay geri çekildi",
+        "approval_rejected_hash_mismatch": "Onay reddedildi: içerik değişmişti",
+        "membership_requested": "Üyelik istendi",
+        "membership_decided": "Üyelik kararı verildi",
+        "registry_changed": "Yapay zekâ model ayarları değişti",
+        "listing_soft_deleted": "İlan arşivlendi",
+        "originals_purged": "Orijinal fotoğraflar silindi"
+      }
     }
   },
   "profileCompletion": {

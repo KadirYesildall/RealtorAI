@@ -104,6 +104,13 @@ function ListingRow({
         {!archived && (
           <div className="flex justify-end gap-2">
             <Link
+              href={`/dashboard/listings/${encodeURIComponent(listing.id ?? "")}`}
+              aria-label={format(dict.index.reviewLabel, { address })}
+              className={buttonVariants({ size: "sm" })}
+            >
+              {dict.index.review}
+            </Link>
+            <Link
               href={`/dashboard/listings/new?id=${encodeURIComponent(listing.id ?? "")}`}
               aria-label={format(dict.index.continueLabel, { address })}
               className={buttonVariants({ variant: "secondary", size: "sm" })}

@@ -172,3 +172,34 @@ export async function acknowledgeFinding(listingId: string, findingId: string, r
     reason,
   });
 }
+
+// ───────────────────────────── US5: review and approval ─────────────────────────────
+
+export type Approval = components["schemas"]["Approval"];
+export type ApprovalOutput = components["schemas"]["ApprovalOutput"];
+export type ApprovalBlocker = components["schemas"]["ApprovalBlocker"];
+export type AuditEvent = components["schemas"]["AuditEvent"];
+
+/**
+ * FR-026/FR-066: approves exactly the content whose hash the screen rendered. 409 carries the
+ * blockers; a hash mismatch is `content_changed_since_review`.
+ */
+export async function approve(
+  listingId: string,
+  body: { targetType: "listing" | "content_draft"; targetId: string; reviewedContentHash: string }
+): Promise<Approval> {
+  return createServerApiClient().post<Approval>(`${listingPath(listingId)}/approvals`, { ...body, channel: "mls" });
+}
+
+/** FR-006: the agent affirms an AI-derived fact. */
+export async function confirmField(listingId: string, fieldId: string): Promise<ListingField> {
+  return createServerApiClient().post<ListingField>(`${listingPath(listingId)}/fields/${encodeURIComponent(fieldId)}/confirm`);
+}
+
+/** Newest first; `next` is the cursor of the following page, when there is one. */
+export async function listAudit(listingId: string, cursor?: string): Promise<{ events: AuditEvent[]; next: string | null }> {
+  const query = cursor ? `?cursor=${encodeURIComponent(cursor)}` : "";
+  const { data, headers } = await createServerApiClient().getWithHeaders<AuditEvent[]>(`${listingPath(listingId)}/audit${query}`);
+
+  return { events: data, next: headers.get("X-Next-Cursor") };
+}

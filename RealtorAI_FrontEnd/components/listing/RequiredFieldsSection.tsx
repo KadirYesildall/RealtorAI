@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useRef, useState, useTransition } from "react";
 import { saveListingFieldAction } from "@/app/actions/listing";
 import type { ListingField } from "@/lib/api/listings";
 import type { Dictionary } from "@/lib/i18n/getDictionary";
@@ -45,6 +46,8 @@ export function RequiredFieldsSection({
 }) {
   const t = dict.required;
   const errorText = dict.errors as Record<string, string>;
+  const router = useRouter();
+  const [, startTransition] = useTransition();
 
   const [state, setState] = useState<Record<PublicRecordField, FieldState>>(() => {
     const initial = {} as Record<PublicRecordField, FieldState>;
@@ -113,6 +116,10 @@ export function RequiredFieldsSection({
 
       if (inFlight.current === 0) {
         onActivity("saved");
+        // The rest of the page reads the facts too — the review screen's facts table and what
+        // blocks approval. This section keeps its own state, so the refresh cannot undo a value
+        // typed meanwhile.
+        startTransition(() => router.refresh());
       }
 
       return;

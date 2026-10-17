@@ -35,9 +35,13 @@ export function Sidebar({ dict }: { dict: Dictionary }) {
     // No `h-full` here: the parent is `min-h-screen`, so `height:100%` would resolve
     // against an auto height and collapse the rail to its content. Flex `align-items:
     // stretch` is what makes it span the viewport.
-    <aside className="flex w-64 shrink-0 flex-col justify-between border-r border-[var(--color-border)] bg-[var(--color-surface)] p-4">
+    //
+    // Below md the rail narrows to its icons (T153: every screen usable at phone width). The
+    // labels stay in the DOM as screen-reader text, so every link and the sign-out button keep
+    // the same accessible name at every width.
+    <aside className="flex w-16 shrink-0 flex-col justify-between border-r border-[var(--color-border)] bg-[var(--color-surface)] p-2 md:w-64 md:p-4">
       <div>
-        <div className="px-2 pb-6 pt-2">
+        <div className="hidden px-2 pb-6 pt-2 md:block">
           <Logo />
         </div>
 
@@ -58,8 +62,8 @@ export function Sidebar({ dict }: { dict: Dictionary }) {
                   className="flex items-center gap-3 rounded-[var(--radius-md)] px-3 py-2 text-sm text-[var(--color-text-muted)] opacity-60"
                 >
                   <ItemIcon className="h-[18px] w-[18px] shrink-0" />
-                  <span className="flex-1">{label}</span>
-                  <span className="text-[0.6875rem]">{t.comingSoon}</span>
+                  <span className="sr-only flex-1 md:not-sr-only">{label}</span>
+                  <span className="sr-only text-[0.6875rem] md:not-sr-only">{t.comingSoon}</span>
                 </div>
               );
             }
@@ -77,7 +81,7 @@ export function Sidebar({ dict }: { dict: Dictionary }) {
                 )}
               >
                 <ItemIcon className="h-[18px] w-[18px] shrink-0" />
-                {label}
+                <span className="sr-only md:not-sr-only">{label}</span>
               </a>
             );
           })}
@@ -94,7 +98,7 @@ export function Sidebar({ dict }: { dict: Dictionary }) {
           className="flex w-full items-center gap-3 rounded-[var(--radius-md)] px-3 py-2 text-left text-sm text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface-muted)] hover:text-[var(--color-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
         >
           <LogOutIcon className="h-[18px] w-[18px] shrink-0" />
-          {t.signOut}
+          <span className="sr-only md:not-sr-only">{t.signOut}</span>
         </button>
       </form>
     </aside>

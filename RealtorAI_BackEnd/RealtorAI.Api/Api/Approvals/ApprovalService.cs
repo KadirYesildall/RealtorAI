@@ -23,7 +23,7 @@ internal sealed record ApprovalOutputDto(
     Guid? ApprovalId,
     IReadOnlyList<BlockerDto> Blockers);
 
-internal sealed record BlockerDto(string Code, string Detail, Guid? TargetId);
+internal sealed record BlockerDto(string Code, string Detail, Guid? TargetId, string? FieldKey = null);
 
 /// <summary>
 /// T147 — the approval gate's view of a listing: each approvable output, its hash, and its
@@ -194,5 +194,5 @@ internal static class ApprovalService
         return outputs;
     }
 
-    private static BlockerDto ToDto(Blocker blocker) => new(blocker.Code, blocker.Detail, blocker.TargetId);
+    private static BlockerDto ToDto(Blocker blocker) => new(blocker.Code, blocker.Detail, blocker.TargetId, blocker.FieldKey);
 }

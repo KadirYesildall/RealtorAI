@@ -210,7 +210,9 @@
       "continueLabel": "Continue {address}",
       "archive": "Archive",
       "archiveLabel": "Archive {address}",
-      "archiveConfirm": "Archive {address}? It leaves your listings, and its history is kept."
+      "archiveConfirm": "Archive {address}? It leaves your listings, and its history is kept.",
+      "review": "Review",
+      "reviewLabel": "Review {address}"
     },
     "status": {
       "draft": "Draft",
@@ -581,6 +583,109 @@
       "cancel": "Cancel",
       "noLabels": "No disclosure label is approved for this listing's MLS yet, so an alteration can't be declared. Use the unaltered photo instead.",
       "noOriginal": "Upload the unaltered original first; it is shown beside the altered photo."
+    },
+    "review": {
+      "place": "{city}, {state} {postalCode}",
+      "audit": "Audit trail"
+    },
+    "facts": {
+      "title": "Listing facts",
+      "body": "Every fact on the listing and where it came from. Facts detected by AI stay unconfirmed until you confirm them, and content resting on them can't be approved until then.",
+      "empty": "No facts entered yet.",
+      "columns": {
+        "field": "Fact",
+        "value": "Value",
+        "source": "Source",
+        "actions": "Actions"
+      },
+      "provenance": {
+        "agent_entered": "Entered by you",
+        "public_record": "Public record",
+        "ai_detected_from_photo": "Detected in photos",
+        "ai_suggested": "Suggested by AI"
+      },
+      "confirmed": "Confirmed",
+      "unconfirmed": "Not confirmed",
+      "confirm": "Confirm {field}"
+    },
+    "approval": {
+      "title": "Approval",
+      "body": "Approve each output for the MLS once you have reviewed it. Approval records you, the time, and exactly what you approved. Editing anything afterwards withdraws the approval.",
+      "listing": "The listing",
+      "approve": "Approve {name} for the MLS",
+      "approveListing": "Approve the listing for the MLS",
+      "approved": "{name} approved.",
+      "listingApproved": "Listing approved.",
+      "changed": "This changed since you loaded the page. It has been refreshed — review it again, then approve.",
+      "state": {
+        "approved": "Approved",
+        "notApproved": "Not approved yet"
+      },
+      "notYet": "Not yet:",
+      "blockers": {
+        "blocking_finding_open": "A blocking compliance finding is still open.",
+        "finding": "A blocking finding is open: “{phrase}”.",
+        "unconfirmed_ai_fact": "It rests on a fact you haven't confirmed.",
+        "unconfirmedField": "{field} hasn't been confirmed.",
+        "required_field_missing": "A required fact is missing.",
+        "requiredField": "{field} is required.",
+        "membership_not_approved": "Your brokerage membership isn't approved yet.",
+        "rule_profile_incomplete": "The MLS's rules aren't verified yet, so nothing can be approved against them.",
+        "content_changed_since_review": "It changed since you reviewed it.",
+        "compliance_not_run": "It hasn't been checked for compliance since it last changed. Run the check.",
+        "content_not_approved": "Approve the content it publishes first.",
+        "analysis_in_progress": "Analysis or generation is still running.",
+        "unknown": "It can't be approved yet."
+      },
+      "errors": {
+        "validation": "That approval wasn't accepted. Reload the page and try again.",
+        "forbidden": "Only the listing's agent can approve it.",
+        "notFound": "This isn't available any more. Reload the page.",
+        "unexpected": "Something went wrong. Please try again."
+      }
+    },
+    "audit": {
+      "title": "Audit trail",
+      "back": "Back to the listing",
+      "empty": "Nothing has been recorded yet.",
+      "older": "Older entries",
+      "columns": {
+        "when": "When",
+        "action": "What happened",
+        "by": "By",
+        "item": "Item",
+        "hash": "Content hash"
+      },
+      "you": "You",
+      "someoneElse": "Another user",
+      "system": "System",
+      "targets": {
+        "listing": "Listing",
+        "listing_field": "Fact",
+        "content_draft": "Content",
+        "photo": "Photo",
+        "compliance_finding": "Compliance finding"
+      },
+      "actions": {
+        "ai_call": "AI call",
+        "field_edit": "Fact edited",
+        "field_confirm": "Fact confirmed",
+        "photo_override": "Photo result changed",
+        "photo_reorder": "Photos reordered",
+        "photo_delete": "Photo removed",
+        "finding_raised": "Compliance finding raised",
+        "finding_acknowledged": "Warning acknowledged",
+        "content_generated": "Content generated",
+        "content_edited": "Content edited",
+        "approval_granted": "Approval granted",
+        "approval_revoked": "Approval revoked",
+        "approval_rejected_hash_mismatch": "Approval refused: content had changed",
+        "membership_requested": "Membership requested",
+        "membership_decided": "Membership decided",
+        "registry_changed": "AI model settings changed",
+        "listing_soft_deleted": "Listing archived",
+        "originals_purged": "Original photos purged"
+      }
     }
   },
   "profileCompletion": {

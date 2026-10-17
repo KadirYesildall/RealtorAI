@@ -29,11 +29,11 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     <div className="flex min-h-screen bg-[var(--color-surface-muted)]">
       <Sidebar dict={dict} />
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex items-center justify-end gap-4 border-b border-[var(--color-border)] bg-[var(--color-surface)] px-6 py-3">
+        <header className="flex items-center justify-end gap-4 border-b border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 md:px-6">
           <LanguageSwitcher dict={dict} currentLocale={locale} />
           <ThemeToggle labels={dict.theme} initial={themePreference} />
         </header>
-        <main className="flex-1 p-6 lg:p-8">
+        <main className="min-w-0 flex-1 p-4 md:p-6 lg:p-8">
           {membership?.status === "pending" && (
             <PendingMembershipBanner
               dict={dict.brokerage.banner}

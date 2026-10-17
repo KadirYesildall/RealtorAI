@@ -2161,6 +2161,8 @@ export interface components {
              * @description What to act on — a finding, a field or a draft.
              */
             targetId?: string | null;
+            /** @description The RESO key of the field concerned, for required_field_missing and unconfirmed_ai_fact. */
+            fieldKey?: string | null;
         };
         ApprovalBlocked: {
             blockers?: components["schemas"]["ApprovalBlocker"][];

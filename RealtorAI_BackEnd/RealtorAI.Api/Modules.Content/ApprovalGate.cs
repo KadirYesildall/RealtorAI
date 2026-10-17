@@ -17,7 +17,8 @@ public static class BlockerCodes
 /// <summary>One reason an output cannot be approved.</summary>
 /// <param name="Detail">English, for logs and API clients; the UI states the code in the agent's language.</param>
 /// <param name="TargetId">What the agent must act on: a finding, a field or a draft; null when it is the output itself.</param>
-public sealed record Blocker(string Code, string Detail, Guid? TargetId = null);
+/// <param name="FieldKey">The RESO key of the field concerned, for a missing or unconfirmed field.</param>
+public sealed record Blocker(string Code, string Detail, Guid? TargetId = null, string? FieldKey = null);
 
 /// <summary>An open blocking finding, as the gate reads it.</summary>
 public sealed record GateFinding(Guid Id, string TargetType, Guid TargetId, string RuleId, string Reason);
@@ -84,7 +85,7 @@ public static class ApprovalGate
             .Select(finding => new Blocker(BlockerCodes.BlockingFindingOpen, finding.Reason, finding.Id)));
 
         blockers.AddRange(draft.UnconfirmedFacts.Select(fact =>
-            new Blocker(BlockerCodes.UnconfirmedAiFact, $"A sentence rests on {fact.Key}, which has not been confirmed.", fact.FieldId)));
+            new Blocker(BlockerCodes.UnconfirmedAiFact, $"A sentence rests on {fact.Key}, which has not been confirmed.", fact.FieldId, fact.Key)));
 
         return blockers;
     }
@@ -109,10 +110,10 @@ public static class ApprovalGate
             .Select(finding => new Blocker(BlockerCodes.BlockingFindingOpen, finding.Reason, finding.Id)));
 
         blockers.AddRange(listing.MissingRequiredKeys.Select(key =>
-            new Blocker(BlockerCodes.RequiredFieldMissing, $"{key} is required before the listing can be approved.")));
+            new Blocker(BlockerCodes.RequiredFieldMissing, $"{key} is required before the listing can be approved.", FieldKey: key)));
 
         blockers.AddRange(listing.UnconfirmedFields.Select(field =>
-            new Blocker(BlockerCodes.UnconfirmedAiFact, $"{field.Key} was detected by AI and has not been confirmed.", field.FieldId)));
+            new Blocker(BlockerCodes.UnconfirmedAiFact, $"{field.Key} was detected by AI and has not been confirmed.", field.FieldId, field.Key)));
 
         if (!listing.SelectedDrafts.Any(draft => draft.Kind == ContentKinds.PublicRemarks))
         {

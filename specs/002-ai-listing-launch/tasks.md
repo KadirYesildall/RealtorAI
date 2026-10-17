@@ -304,10 +304,10 @@ Per [plan.md](./plan.md) "Project Structure" — the repo's two mandated top-lev
 - [X] T147 [US5] Implement the approval service in `Modules.Content/ApprovalService.cs` — content hashing, blocker computation, revocation on edit
 - [X] T148 [US5] Implement the approval endpoint enforcing `reviewedContentHash` in `Modules.Content/Endpoints/ApprovalEndpoints.cs`, auditing mismatches as `approval_rejected_hash_mismatch` (FR-066)
 - [X] T149 [US5] Implement audit query endpoints (listing and brokerage, membership-scoped) in `Modules.Audit/Endpoints/AuditEndpoints.cs` (FR-050)
-- [ ] T150 [P] [US5] Build the review screen shell with provenance badges and confirm actions at `RealtorAI_FrontEnd/app/dashboard/listings/[id]/page.tsx` (plus `loading.tsx` and `error.tsx`)
-- [ ] T151 [P] [US5] Build the approve control rendering machine-readable blockers as human-readable disabled reasons in `RealtorAI_FrontEnd/components/approval/ApprovalBar.tsx`
-- [ ] T152 [P] [US5] Build the audit trail view at `RealtorAI_FrontEnd/app/dashboard/listings/[id]/audit/page.tsx`
-- [ ] T153 [P] [US5] Add EN/TR keys for US5 and verify WCAG AA in both themes, mobile width, and full keyboard reachability on the review screen
+- [X] T150 [P] [US5] Build the review screen shell with provenance badges and confirm actions at `RealtorAI_FrontEnd/app/dashboard/listings/[id]/page.tsx` (plus `loading.tsx` and `error.tsx`)
+- [X] T151 [P] [US5] Build the approve control rendering machine-readable blockers as human-readable disabled reasons in `RealtorAI_FrontEnd/components/approval/ApprovalBar.tsx`
+- [X] T152 [P] [US5] Build the audit trail view at `RealtorAI_FrontEnd/app/dashboard/listings/[id]/audit/page.tsx`
+- [X] T153 [P] [US5] Add EN/TR keys for US5 and verify WCAG AA in both themes, mobile width, and full keyboard reachability on the review screen
 
 **Checkpoint**: US5 complete — Slice A delivers an approved, launch-ready listing
 

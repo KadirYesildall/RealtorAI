@@ -104,11 +104,16 @@ export interface RequestOptions {
 /** Resolves the caller's Supabase access token, or null when not signed in. */
 export type TokenResolver = () => Promise<string | null>;
 
-async function request<TResponse>(
+async function request<TResponse>(path: string, getToken: TokenResolver, options: RequestOptions = {}): Promise<TResponse> {
+  return (await send<TResponse>(path, getToken, options)).data;
+}
+
+/** As {@link request}, with the response headers — for the pagination cursor of the audit trail. */
+async function send<TResponse>(
   path: string,
   getToken: TokenResolver,
   options: RequestOptions = {}
-): Promise<TResponse> {
+): Promise<{ data: TResponse; headers: Headers }> {
   const { method = "GET", body, formData, ifMatch, signal, cache = "no-store" } = options;
 
   if (body !== undefined && formData !== undefined) {
@@ -146,10 +151,10 @@ async function request<TResponse>(
 
   // 204 and 205 carry no body; parsing them as JSON would throw on an otherwise fine response.
   if (response.status === 204 || response.status === 205) {
-    return undefined as TResponse;
+    return { data: undefined as TResponse, headers: response.headers };
   }
 
-  return (await response.json()) as TResponse;
+  return { data: (await response.json()) as TResponse, headers: response.headers };
 }
 
 /**
@@ -182,6 +187,7 @@ function buildErrorMessage(response: Response): string {
  */
 export interface ApiClient {
   get<TResponse>(path: string, options?: Omit<RequestOptions, "method" | "body">): Promise<TResponse>;
+  getWithHeaders<TResponse>(path: string, options?: Omit<RequestOptions, "method" | "body">): Promise<{ data: TResponse; headers: Headers }>;
   post<TResponse>(path: string, body?: unknown, options?: Omit<RequestOptions, "method" | "body">): Promise<TResponse>;
   patch<TResponse>(path: string, body?: unknown, options?: Omit<RequestOptions, "method" | "body">): Promise<TResponse>;
   put<TResponse>(path: string, body?: unknown, options?: Omit<RequestOptions, "method" | "body">): Promise<TResponse>;
@@ -194,6 +200,7 @@ export interface ApiClient {
 export function createApiClient(getToken: TokenResolver): ApiClient {
   return {
     get: (path, options) => request(path, getToken, { ...options, method: "GET" }),
+    getWithHeaders: (path, options) => send(path, getToken, { ...options, method: "GET" }),
     post: (path, body, options) => request(path, getToken, { ...options, method: "POST", body }),
     patch: (path, body, options) => request(path, getToken, { ...options, method: "PATCH", body }),
     put: (path, body, options) => request(path, getToken, { ...options, method: "PUT", body }),

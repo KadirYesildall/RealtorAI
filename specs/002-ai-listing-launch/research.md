@@ -1287,6 +1287,11 @@ a later story does not have to rediscover them.
 - **The e2e walkthrough (T145) takes the manual path.** No model can be enabled on the local stack
   until T159, so it walks Stories 1–5 by hand (SC-010). The AI steps with deterministic fixtures
   are covered at the API, where the model is substituted (`AiEnabledApiFactory`).
+- **The dashboard rail was not usable on a phone** (feature 001): a fixed 256px sidebar left the
+  review screen 134px at 390px wide. Below `md` it now narrows to its icons, with the labels kept
+  as screen-reader text so every accessible name is unchanged. Found by T153's mobile check.
+- **Required facts now refresh the page when saved**, so the facts table and the approval
+  blockers on the same screen follow them.
 - **Endpoints live in the host**, not the modules tasks.md names, for the reason in R20.
 
 ## Open items carried to Slice B (recorded, not resolved)
