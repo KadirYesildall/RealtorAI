@@ -1025,7 +1025,58 @@ export interface paths {
             };
         };
         put?: never;
-        post?: never;
+        /**
+         * Write a kind's content by hand
+         * @description The manual path for content (SC-010, FR-054): stores the agent's own words as the kind's
+         *     selected draft, with no model involved and no claims. Needs no verified MLS profile —
+         *     the compliance checks hold the listing to the MLS's rules — but a known limit is
+         *     enforced. Refused with 409 when the kind already has a current draft: edit that one.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    listingId: components["parameters"]["ListingId"];
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        kind: components["schemas"]["ContentKind"];
+                        body: string;
+                        tone?: components["schemas"]["Tone"];
+                    };
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ContentDraft"];
+                    };
+                };
+                403: components["responses"]["Forbidden"];
+                /** @description The kind already has a current draft */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Unknown kind or tone */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;

@@ -24,6 +24,8 @@ internal sealed record RegenerateContentRequest(string? Kind, string? Tone);
 
 internal sealed record EditContentRequest(string? Body, bool? Selected);
 
+internal sealed record CreateContentRequest(string? Kind, string? Body, string? Tone);
+
 /// <summary>
 /// T112 — content: list, regenerate, edit and select (FR-013, FR-014, FR-015, FR-025, FR-066;
 /// Story 3).
@@ -38,6 +40,12 @@ internal sealed record EditContentRequest(string? Body, bool? Selected);
 /// <c>GET /pipeline</c> like any run, and held to one unfinished run per listing. It is refused
 /// before anything is queued: with no writer model (503), with no verified limit for the kind
 /// (409, research R2), or with the budget spent (409). Each refusal names the manual path.
+/// </para>
+/// <para>
+/// <b>Written by hand.</b> <c>POST /content</c> stores the agent's own words as a kind's draft,
+/// with no model involved, so the manual path SC-010 promises reaches the copy too. It needs no
+/// verified profile. The compliance checks (Story 4) hold the listing to the MLS's rules, and a
+/// limit that is known is enforced here as well.
 /// </para>
 /// <para>
 /// <b>Editing approved words revokes the approval</b>, in the same transaction as the edit, and
@@ -60,6 +68,7 @@ internal static class ContentEndpoints
             .WithTags("Content");
 
         group.MapGet("/", ListAsync).WithName("ListContentDrafts");
+        group.MapPost("/", CreateAsync).WithName("CreateContentDraft");
         group.MapPost("/regenerate", RegenerateAsync).WithName("RegenerateContent");
         group.MapPatch("/{draftId:guid}", EditAsync).WithName("EditContentDraft");
 
@@ -88,6 +97,123 @@ internal static class ContentEndpoints
         }
 
         return TypedResults.Ok(await ContentRepresentation.LoadCurrentAsync(context, listingId, cancellationToken));
+    }
+
+    // ═════════════════════════════ Create by hand ═════════════════════════════
+
+    private static async Task<Results<Created<ContentDraftDto>, ProblemHttpResult, UnauthorizedHttpResult>> CreateAsync(
+        Guid listingId,
+        CreateContentRequest request,
+        ClaimsPrincipal user,
+        AppDbContext context,
+        IResourceAuthorizer authorizer,
+        IAuditWriter audit,
+        CancellationToken cancellationToken)
+    {
+        if (user.GetAgentId() is not { } agentId)
+        {
+            return TypedResults.Unauthorized();
+        }
+
+        var authorization = await authorizer.AuthorizeListingAsync(agentId, listingId, cancellationToken);
+
+        if (!authorization.CanWrite)
+        {
+            return ListingRepresentation.Denied(
+                authorization,
+                "Only the listing's agent can write its content. A broker admin's access is read-only.");
+        }
+
+        if (ContentRepresentation.ParseKind(request.Kind) is not { } kind)
+        {
+            return ApiProblems.Validation("kind", "Use public_remarks, private_remarks or headline.");
+        }
+
+        Tone? tone = null;
+
+        if (request.Tone is not null && (tone = ContentRepresentation.ParseTone(request.Tone)) is null)
+        {
+            return ApiProblems.Validation("tone", "Use professional, warm, luxury or concise.");
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Body))
+        {
+            return ApiProblems.Validation("body", "Write the content before saving it.");
+        }
+
+        var (_, profile) = await ContentRepresentation.LoadContextAsync(context, listingId, cancellationToken);
+
+        if (ContentRules.LimitFor(ContentRepresentation.Label(kind), profile) is { } limit && request.Body.Length > limit)
+        {
+            return ApiProblems.Validation("body", $"The MLS allows at most {limit} characters here; this is {request.Body.Length}.");
+        }
+
+        await using var transaction = await context.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable, cancellationToken);
+
+        var versions = await context.ContentDrafts
+            .Where(draft => draft.ListingId == listingId && draft.Kind == kind)
+            .Select(draft => new { draft.Version, draft.Status })
+            .ToListAsync(cancellationToken);
+
+        if (versions.Any(draft => draft.Status != ContentStatus.Stale))
+        {
+            await transaction.RollbackAsync(cancellationToken);
+
+            return ApiProblems.Conflict(
+                "This listing already has this content",
+                "Edit the current draft instead of writing a new one.");
+        }
+
+        var created = new ContentDraft
+        {
+            Id = Guid.CreateVersion7(),
+            ListingId = listingId,
+            Kind = kind,
+            VariantIndex = 0,
+            Tone = tone,
+            Body = request.Body,
+            SupportingFieldIds = ClaimStorage.Serialize([]),
+            Version = versions.Count == 0 ? 1 : versions.Max(draft => draft.Version) + 1,
+            Status = ContentStatus.Draft,
+            Selected = true,
+        };
+
+        context.ContentDrafts.Add(created);
+
+        try
+        {
+            await context.SaveChangesAsync(cancellationToken);
+
+            await audit.WriteAsync(
+                new AuditEntry
+                {
+                    Action = AuditAction.ContentEdited,
+                    ActorId = agentId,
+                    ListingId = listingId,
+                    BrokerageId = await BrokerageOfAsync(context, listingId, cancellationToken),
+                    TargetType = ContentRepresentation.DraftTarget,
+                    TargetId = created.Id,
+                    AfterValue = JsonSerializer.Serialize(Snapshot(created), Web),
+                },
+                cancellationToken);
+
+            await context.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+        }
+        catch (Exception exception) when (ConcurrencyGuard.IsSerializationFailure(exception)
+            || exception is DbUpdateException { InnerException: PostgresException { SqlState: PostgresErrorCodes.UniqueViolation } })
+        {
+            // Written at the same moment from elsewhere: that draft is the one to edit.
+            await transaction.RollbackAsync(cancellationToken);
+
+            return ApiProblems.Conflict(
+                "This listing already has this content",
+                "Edit the current draft instead of writing a new one.");
+        }
+
+        return TypedResults.Created(
+            $"/api/listings/{listingId}/content/{created.Id}",
+            await ContentRepresentation.LoadOneAsync(context, created, cancellationToken));
     }
 
     // ═════════════════════════════ Regenerate ═════════════════════════════

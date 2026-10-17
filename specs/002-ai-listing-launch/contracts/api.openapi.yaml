@@ -559,6 +559,35 @@ paths:
           content:
             application/json:
               schema: { type: array, items: { $ref: '#/components/schemas/ContentDraft' } }
+    post:
+      tags: [Content]
+      summary: Write a kind's content by hand
+      description: |
+        The manual path for content (SC-010, FR-054): stores the agent's own words as the kind's
+        selected draft, with no model involved and no claims. Needs no verified MLS profile —
+        the compliance checks hold the listing to the MLS's rules — but a known limit is
+        enforced. Refused with 409 when the kind already has a current draft: edit that one.
+      x-authorization: Listing owner only.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [kind, body]
+              properties:
+                kind: { $ref: '#/components/schemas/ContentKind' }
+                body: { type: string }
+                tone: { $ref: '#/components/schemas/Tone' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ContentDraft' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { description: The kind already has a current draft }
+        '422': { description: Unknown kind or tone, an empty body, or a body over the MLS limit }
 
   /api/listings/{listingId}/content/regenerate:
     parameters: [{ $ref: '#/components/parameters/ListingId' }]

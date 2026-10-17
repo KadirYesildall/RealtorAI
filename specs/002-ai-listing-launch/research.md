@@ -1196,6 +1196,11 @@ a later story does not have to rediscover them.
   belongs to the compliance checks (US4).
 - **Endpoints live in the host** (`Api/Endpoints/ContentEndpoints.cs`), not `Modules.Content`
   as tasks.md says, for the reason in R20.
+- **Content by hand was in no task.** SC-010 promises a listing can be completed by hand in a
+  total AI outage, and the contract only had regenerate and edit. `POST /content {kind, body,
+  tone?}` stores the agent's words as the kind's selected draft (no model, no claims, audited
+  `content_edited`); 409 if the kind already has a current draft. It needs no verified profile,
+  because compliance (US4) holds the listing to the MLS's rules, but a known limit is enforced.
 
 ## Open items carried to Slice B (recorded, not resolved)
 
