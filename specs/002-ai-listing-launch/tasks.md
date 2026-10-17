@@ -315,8 +315,8 @@ Per [plan.md](./plan.md) "Project Structure" — the repo's two mandated top-lev
 
 ## Phase 8: Polish & Cross-Cutting Concerns
 
-- [ ] T154 [P] Implement the FR-065 retention purge job in `RealtorAI_BackEnd/ops/retention-purge/` — **a separate ops task with its own credential, deliberately not a Hangfire job**, since the application identity must never hold delete rights on the originals bucket
-- [ ] T155 [P] Integration test: the purge removes originals only past the retention window and no application role can delete them, in `tests/integration/RetentionPurgeTests.cs`
+- [X] T154 [P] Implement the FR-065 retention purge job in `RealtorAI_BackEnd/ops/retention-purge/` — **a separate ops task with its own credential, deliberately not a Hangfire job**, since the application identity must never hold delete rights on the originals bucket
+- [X] T155 [P] Integration test: the purge removes originals only past the retention window and no application role can delete them, in `tests/integration/RetentionPurgeTests.cs`
 - [ ] T156 [P] Build the labeled photo evaluation set and assert room classification ≥90% accepted (SC-002) in `RealtorAI.Api/tools/AiEval/PhotoEval.cs`
 - [ ] T157 [P] Build the labeled text evaluation set and assert Fair Housing recall ≥95% with ≤10% false positives (SC-003) in `RealtorAI.Api/tools/AiEval/ComplianceEval.cs`
 - [ ] T158 [P] Add schema-validity rate, p90 latency (<2 min for 30 photos, SC-005), and cost-per-listing metrics to `RealtorAI.Api/tools/AiEval/`

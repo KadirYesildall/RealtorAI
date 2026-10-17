@@ -1294,6 +1294,31 @@ a later story does not have to rediscover them.
   blockers on the same screen follow them.
 - **Endpoints live in the host**, not the modules tasks.md names, for the reason in R20.
 
+## R38. FR-065 retention purge: how the one legitimate deletion opens the guard (2026-10-17)
+
+- **The Storage API is the only path that removes an original's bytes**, and it acts as the
+  application's role. So the write-once trigger (0014) cannot tell the purge job from the API by
+  role. 0019 amends it: a DELETE passes only when `retention_purger` has written an authorization
+  for that object in `ops.purge_authorizations` *and* the object's listing is still past the
+  retention period at that moment. UPDATE is never allowed.
+- **The purge credential is its own.** `retention_purger` is created without a login; each
+  environment grants one out of band. It can read listings' deletion times and originals' names,
+  write authorizations, and append `originals_purged` events with no actor — nothing else.
+  `anon`, `authenticated` and `service_role` hold no privilege on the `ops` schema. Who wrote an
+  authorization is stamped by trigger, not supplied by the writer.
+- **Not even the purge credential can open the guard early.** Eligibility is re-checked inside
+  the guard, so a hand-written authorization for an original still under retention does nothing.
+- **Retention is configurable** (`ops.retention_settings`, 3 years by default), a reviewed
+  database change; its legal value is confirmed in the AB 723 review (R4).
+- **Which originals.** Keys are `{listing_id}/{photo_id}.{ext}`, so an original is tied to its
+  listing even after its photo row is gone (an agent's photo deletion detaches it, FR-001).
+- **⚠ Residual, recorded:** locally the API connects as `postgres`, which owns the `ops` objects
+  and could therefore write an authorization itself. No database guard can bind an object's
+  owner. A production deployment must connect the API as a role that owns nothing (a
+  pre-production item alongside the constitution's .NET-version amendment).
+- **Not a Hangfire job** (plan.md): `RealtorAI_BackEnd/ops/retention-purge/` is a console job run
+  by the operations platform. `RetentionPurgeTests` drives it against the local stack.
+
 ## Open items carried to Slice B (recorded, not resolved)
 
 - **CRMLS API surface**: whether RESO Web API Add/Edit is exposed to vendors or only a proprietary

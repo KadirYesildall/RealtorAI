@@ -1,4 +1,4 @@
-<Solution>
+﻿<Solution>
   <Folder Name="/tests/" />
   <Folder Name="/tests/contract/">
     <Project Path="tests/contract/Tests.contract.csproj" />
@@ -14,6 +14,9 @@
   </Folder>
   <Folder Name="/tools/">
     <Project Path="tools/AiEval/AiEval.csproj" />
+  </Folder>
+  <Folder Name="/ops/">
+    <Project Path="../ops/retention-purge/RetentionPurge.csproj" />
   </Folder>
   <Project Path="Api/Api.csproj" />
   <Project Path="Libs.Ai/Libs.Ai.csproj" />

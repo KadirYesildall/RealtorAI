@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <!--
     Testcontainers.PostgreSql was removed rather than left unused. These tests verify RLS
@@ -41,6 +41,7 @@
     <ProjectReference Include="..\..\Api\Api.csproj" />
     <ProjectReference Include="..\..\tools\AiEval\AiEval.csproj" />
     <ProjectReference Include="..\..\Modules.Media\Modules.Media.csproj" />
+    <ProjectReference Include="..\..\..\ops\retention-purge\RetentionPurge.csproj" />
   </ItemGroup>
 
 </Project>
