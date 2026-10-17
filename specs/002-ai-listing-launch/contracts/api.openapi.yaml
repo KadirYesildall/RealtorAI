@@ -730,11 +730,25 @@ paths:
                 targetType: { type: string, enum: [listing, content_draft, photo] }
                 targetId: { type: string, format: uuid }
       responses:
-        '202': { description: Check enqueued }
+        '202':
+          description: |
+            Check enqueued as a pipeline run of the compliance step, over the listing or the one
+            item named; progress reads through GET /pipeline (research R36). Without a judge model
+            the deterministic layers still run, and a warning finding
+            fair_housing.judge_unavailable says the contextual review did not.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PipelineStatus' }
         '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { description: A pipeline run is already in progress (reason pipeline_running) }
+        '422': { description: Unknown target type, or the target is not a current item of this listing }
     get:
       tags: [Compliance]
       summary: List findings
+      description: |
+        Blocking first, then the listing's, the drafts' and the photos' findings, each in text
+        order. Stale findings (of superseded items) are listed only when status=stale is asked
+        for.
       x-authorization: Listing owner, or an APPROVED broker_admin of the listing's brokerage.
       parameters:
         - name: severity
@@ -751,6 +765,7 @@ paths:
               schema:
                 type: array
                 items: { $ref: '#/components/schemas/ComplianceFinding' }
+        '422': { description: Unknown severity or status }
 
   /api/listings/{listingId}/compliance/{findingId}/apply-fix:
     parameters:
@@ -759,11 +774,20 @@ paths:
     post:
       tags: [Compliance]
       summary: Apply the suggested rewrite to the target span
-      description: One-click rewrite; re-runs compliance on the edited item only.
+      description: |
+        One-click rewrite; re-runs compliance on the edited item only. An edit like any other:
+        audited (content_edited, with appliedFinding), revoking an approval of the old words.
       x-authorization: Listing owner only.
       responses:
-        '200': { description: Applied; item returned to draft and re-checked }
+        '200':
+          description: Applied; item returned to draft and re-checked
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ContentDraft' }
         '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { description: No such finding on this listing }
+        '409': { description: The finding is not open, the draft is superseded, or its words have moved }
+        '422': { description: The finding has no rewrite, or the rewrite would exceed the MLS limit }
 
   /api/listings/{listingId}/compliance/{findingId}/acknowledge:
     parameters:
@@ -787,8 +811,15 @@ paths:
               properties:
                 reason: { type: string, minLength: 10 }
       responses:
-        '200': { description: Acknowledged and audited }
-        '422': { description: Finding is blocking and cannot be acknowledged }
+        '200':
+          description: Acknowledged and audited
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ComplianceFinding' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { description: No such finding on this listing }
+        '409': { description: The finding is no longer open }
+        '422': { description: Finding is blocking and cannot be acknowledged, or the reason is under 10 characters }
 
   # ───────────────────────────────── Audit ─────────────────────────────────
   /api/listings/{listingId}/audit:
@@ -1330,6 +1361,9 @@ components:
         id: { type: string, format: uuid }
         targetType: { type: string, enum: [listing, content_draft, photo] }
         targetId: { type: string, format: uuid }
+        ruleId:
+          type: string
+          description: Stable rule identifier, e.g. mls.forbidden.phone_number; with span, phrase and reason, a finding's identity across re-checks.
         checkType:
           type: string
           enum: [fair_housing, risky_claim, mls_rule, photo_integrity,

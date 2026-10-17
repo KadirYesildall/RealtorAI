@@ -75,6 +75,10 @@ public sealed class ComplianceFinding
     public string TargetType { get; set; } = string.Empty;
 
     public Guid TargetId { get; set; }
+
+    /// <summary>The rule that raised it (0017) — with the span, phrase and reason, its identity across re-checks.</summary>
+    public string RuleId { get; set; } = string.Empty;
+
     public CheckType CheckType { get; set; }
     public FindingSeverity Severity { get; set; }
     public FindingSource Source { get; set; }

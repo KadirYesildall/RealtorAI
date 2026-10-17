@@ -19,7 +19,7 @@ public sealed class FairHousingLexiconTests
 
     [Theory]
     // ── Federal: familial status ──
-    [InlineData("Perfect for young families, with a big yard.", "perfect for young families", "familial_status", Severity.Blocking)]
+    [InlineData("Perfect for young families, with a big yard.", "Perfect for young families", "familial_status", Severity.Blocking)]
     [InlineData("No children, please.", "No children", "familial_status", Severity.Blocking)]
     [InlineData("This is an adults only building.", "adults only", "familial_status", Severity.Blocking)]
     [InlineData("Ideal for a mature couple.", "Ideal for a mature couple", "familial_status", Severity.Blocking)]
@@ -109,7 +109,7 @@ public sealed class FairHousingLexiconTests
         Assert.All(Lexicon.Rules, rule =>
         {
             Assert.Matches("^[a-z_]+$", rule.ProtectedClass);
-            Assert.Contains(rule.Jurisdiction, new[] { "federal", "CA" });
+            Assert.True(rule.Jurisdiction is "federal" or "CA", rule.Id);
             Assert.False(string.IsNullOrWhiteSpace(rule.Explanation));
             Assert.False(string.IsNullOrWhiteSpace(rule.Rewrite));
         });

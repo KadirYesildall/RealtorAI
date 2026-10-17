@@ -36,7 +36,7 @@ internal sealed record CreateContentRequest(string? Kind, string? Body, string? 
 /// (research R20). What content may say and how it is grounded stays in the module.
 /// </para>
 /// <para>
-/// <b>Regenerate is a pipeline run of one step.</b> It is queued, reported through
+/// <b>Regenerate is a pipeline run of the content step, then compliance.</b> It is queued, reported through
 /// <c>GET /pipeline</c> like any run, and held to one unfinished run per listing. It is refused
 /// before anything is queued: with no writer model (503), with no verified limit for the kind
 /// (409, research R2), or with the budget spent (409). Each refusal names the manual path.
@@ -148,7 +148,9 @@ internal static class ContentEndpoints
             return ApiProblems.Validation("body", $"The MLS allows at most {limit} characters here; this is {request.Body.Length}.");
         }
 
-        await using var transaction = await context.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable, cancellationToken);
+        // Two writers at once both read no current draft and pick the same next version; the
+        // unique (listing, kind, variant, version) constraint lets one of them in.
+        await using var transaction = await context.Database.BeginTransactionAsync(cancellationToken);
 
         var versions = await context.ContentDrafts
             .Where(draft => draft.ListingId == listingId && draft.Kind == kind)
@@ -200,8 +202,7 @@ internal static class ContentEndpoints
             await context.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
         }
-        catch (Exception exception) when (ConcurrencyGuard.IsSerializationFailure(exception)
-            || exception is DbUpdateException { InnerException: PostgresException { SqlState: PostgresErrorCodes.UniqueViolation } })
+        catch (DbUpdateException exception) when (exception.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
         {
             // Written at the same moment from elsewhere: that draft is the one to edit.
             await transaction.RollbackAsync(cancellationToken);
@@ -324,12 +325,10 @@ internal static class ContentEndpoints
                     "Wait for the current run to finish, then generate again. Its progress is on the listing.");
             }
 
-            context.PipelineStepStates.Add(new PipelineStepState
-            {
-                RunId = runId,
-                Step = PipelineSpellings.Of(PipelineStep.ContentGeneration),
-                Position = 0,
-            });
+            // The new words are checked in the same run (FR-025).
+            context.PipelineStepStates.AddRange(
+                new PipelineStepState { RunId = runId, Step = PipelineSpellings.Of(PipelineStep.ContentGeneration), Position = 0 },
+                new PipelineStepState { RunId = runId, Step = PipelineSpellings.Of(PipelineStep.Compliance), Position = 1 });
             await context.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
         }
@@ -354,6 +353,7 @@ internal static class ContentEndpoints
         IResourceAuthorizer authorizer,
         IConcurrencyGuard guard,
         IAuditWriter audit,
+        Api.Compliance.ComplianceService compliance,
         HttpResponse response,
         CancellationToken cancellationToken)
     {
@@ -410,11 +410,57 @@ internal static class ContentEndpoints
             return ApiProblems.Validation("body", $"The MLS allows at most {limit} characters here; this is {body.Length}.");
         }
 
+        var result = await ApplyEditAsync(context, guard, audit, agentId, listingId, draftId, expectedVersion, request.Body, request.Selected, null, cancellationToken);
+
+        switch (result.Outcome)
+        {
+            case ConcurrencyOutcome.NotFound:
+                return ApiProblems.NotFound("No such draft on this listing.");
+
+            case ConcurrencyOutcome.Conflict:
+                var current = await context.ContentDrafts.AsNoTracking().SingleOrDefaultAsync(draft => draft.Id == draftId, cancellationToken);
+
+                return VersionConflict.Conflict(
+                    result.CurrentRowVersion,
+                    current is null ? null : await ContentRepresentation.LoadOneAsync(context, current, cancellationToken));
+        }
+
+        // FR-025: edited words are re-checked at once, in this request.
+        if (request.Body is not null)
+        {
+            await compliance.CheckDraftAsync(listingId, draftId, agentId, cancellationToken);
+        }
+
+        ListingRepresentation.SetETag(response, result.Entity!.RowVersion);
+
+        return TypedResults.Ok(await ContentRepresentation.LoadOneAsync(context, result.Entity, cancellationToken));
+    }
+
+    /// <summary>
+    /// An edit, a selection, or both, of one draft, from <paramref name="expectedVersion"/>
+    /// (FR-066): the claims follow the words, an approval of edited words is revoked, an approved
+    /// listing returns to review (FR-025), and the change is audited with before and after — all
+    /// in one transaction. Shared by the inline edit and the one-click compliance rewrite, which
+    /// records the finding it applied.
+    /// </summary>
+    internal static async Task<ConcurrencyResult<ContentDraft>> ApplyEditAsync(
+        AppDbContext context,
+        IConcurrencyGuard guard,
+        IAuditWriter audit,
+        Guid agentId,
+        Guid listingId,
+        Guid draftId,
+        int expectedVersion,
+        string? newBody,
+        bool? selected,
+        Guid? appliedFinding,
+        CancellationToken cancellationToken)
+    {
         object? before = null;
         var edited = false;
         var wasApproved = false;
 
-        var result = await guard.MutateAsync<ContentDraft>(
+        return await guard.MutateAsync<ContentDraft>(
             draftId,
             expectedVersion,
             draft =>
@@ -422,7 +468,7 @@ internal static class ContentEndpoints
                 before = Snapshot(draft);
                 wasApproved = draft.Status == ContentStatus.Approved;
 
-                if (request.Body is { } newBody && newBody != draft.Body)
+                if (newBody is not null && newBody != draft.Body)
                 {
                     var claims = GroundingService.Relocate(draft.Body, ClaimStorage.Parse(draft.SupportingFieldIds), newBody);
 
@@ -438,9 +484,9 @@ internal static class ContentEndpoints
             },
             async (draft, token) =>
             {
-                var selectionChanged = request.Selected is { } selected && selected != draft.Selected;
+                var selectionChanged = selected is { } choice && choice != draft.Selected;
 
-                if (request.Selected == true && selectionChanged)
+                if (selected == true && selectionChanged)
                 {
                     // The others first: one selected draft per kind is a unique index.
                     await context.ContentDrafts
@@ -452,9 +498,9 @@ internal static class ContentEndpoints
                             token);
                 }
 
-                if (request.Selected is { } choice)
+                if (selected is { } chosen)
                 {
-                    draft.Selected = choice;
+                    draft.Selected = chosen;
                 }
 
                 if (edited && wasApproved)
@@ -482,28 +528,23 @@ internal static class ContentEndpoints
                         TargetType = ContentRepresentation.DraftTarget,
                         TargetId = draft.Id,
                         BeforeValue = JsonSerializer.Serialize(before, Web),
-                        AfterValue = JsonSerializer.Serialize(Snapshot(draft), Web),
+                        AfterValue = After(draft, appliedFinding),
                     },
                     token);
             },
             cancellationToken);
+    }
 
-        switch (result.Outcome)
+    private static string After(ContentDraft draft, Guid? appliedFinding)
+    {
+        var after = JsonSerializer.SerializeToNode(Snapshot(draft), Web)!.AsObject();
+
+        if (appliedFinding is { } finding)
         {
-            case ConcurrencyOutcome.NotFound:
-                return ApiProblems.NotFound("No such draft on this listing.");
-
-            case ConcurrencyOutcome.Conflict:
-                var current = await context.ContentDrafts.AsNoTracking().SingleOrDefaultAsync(draft => draft.Id == draftId, cancellationToken);
-
-                return VersionConflict.Conflict(
-                    result.CurrentRowVersion,
-                    current is null ? null : await ContentRepresentation.LoadOneAsync(context, current, cancellationToken));
+            after["appliedFinding"] = finding.ToString();
         }
 
-        ListingRepresentation.SetETag(response, result.Entity!.RowVersion);
-
-        return TypedResults.Ok(await ContentRepresentation.LoadOneAsync(context, result.Entity, cancellationToken));
+        return after.ToJsonString();
     }
 
     /// <summary>Revokes the draft's live approvals, each audited (FR-025).</summary>

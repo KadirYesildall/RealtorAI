@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Compliance judge result",
+  "description": "Fair Housing findings for one piece of listing copy (FR-017). Phrases are located in the text by the caller; a phrase not found there is dropped.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["findings"],
+  "properties": {
+    "findings": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["phrase", "protectedClass", "severity", "reason", "rewrite"],
+        "properties": {
+          "phrase": { "type": "string", "minLength": 1, "maxLength": 300 },
+          "protectedClass": { "type": "string", "minLength": 1, "maxLength": 60 },
+          "severity": { "type": "string", "enum": ["blocking", "warning"] },
+          "reason": { "type": "string", "minLength": 1, "maxLength": 500 },
+          "rewrite": { "type": "string", "minLength": 1, "maxLength": 300 }
+        }
+      }
+    }
+  }
+}

@@ -21,6 +21,7 @@ public sealed record PipelinePhoto(
 /// <param name="ContentKind">The one kind a regeneration is for; null for an analysis run, which generates every kind.</param>
 /// <param name="Tone">The tone asked for, in the contract's spelling; null for the brokerage's default.</param>
 /// <param name="VariantCount">The public-remarks alternatives asked for; null for the default.</param>
+/// <param name="ComplianceTargetType">The one item a compliance run checks; null for the whole listing.</param>
 public sealed record PipelineRunContext(
     Guid RunId,
     Guid ListingId,
@@ -31,7 +32,9 @@ public sealed record PipelineRunContext(
     IReadOnlyList<PipelineStep> Steps,
     string? ContentKind,
     string? Tone,
-    int? VariantCount);
+    int? VariantCount,
+    string? ComplianceTargetType,
+    Guid? ComplianceTargetId);
 
 /// <summary>A schema-validated <c>photo.analysis</c> result and where it came from (VIII.5).</summary>
 public sealed record PhotoAnalysisOutcome(

@@ -1329,7 +1329,12 @@ export interface paths {
             };
             cookie?: never;
         };
-        /** List findings */
+        /**
+         * List findings
+         * @description Blocking first, then the listing's, the drafts' and the photos' findings, each in text
+         *     order. Stale findings (of superseded items) are listed only when status=stale is asked
+         *     for.
+         */
         get: {
             parameters: {
                 query?: {
@@ -1352,6 +1357,13 @@ export interface paths {
                     content: {
                         "application/json": components["schemas"]["ComplianceFinding"][];
                     };
+                };
+                /** @description Unknown severity or status */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
                 };
             };
         };
@@ -1383,14 +1395,35 @@ export interface paths {
                 };
             };
             responses: {
-                /** @description Check enqueued */
+                /**
+                 * @description Check enqueued as a pipeline run of the compliance step, over the listing or the one
+                 *     item named; progress reads through GET /pipeline (research R36). Without a judge model
+                 *     the deterministic layers still run, and a warning finding
+                 *     fair_housing.judge_unavailable says the contextual review did not.
+                 */
                 202: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PipelineStatus"];
+                    };
+                };
+                403: components["responses"]["Forbidden"];
+                /** @description A pipeline run is already in progress (reason pipeline_running) */
+                409: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content?: never;
                 };
-                403: components["responses"]["Forbidden"];
+                /** @description Unknown target type */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
             };
         };
         delete?: never;
@@ -1413,7 +1446,8 @@ export interface paths {
         put?: never;
         /**
          * Apply the suggested rewrite to the target span
-         * @description One-click rewrite; re-runs compliance on the edited item only.
+         * @description One-click rewrite; re-runs compliance on the edited item only. An edit like any other:
+         *     audited (content_edited, with appliedFinding), revoking an approval of the old words.
          */
         post: {
             parameters: {
@@ -1432,9 +1466,32 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": components["schemas"]["ContentDraft"];
+                    };
                 };
                 403: components["responses"]["Forbidden"];
+                /** @description No such finding on this listing */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description The finding is not open */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description The finding has no rewrite */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
             };
         };
         delete?: never;
@@ -1481,6 +1538,23 @@ export interface paths {
             responses: {
                 /** @description Acknowledged and audited */
                 200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ComplianceFinding"];
+                    };
+                };
+                403: components["responses"]["Forbidden"];
+                /** @description No such finding on this listing */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description The finding is no longer open */
+                409: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -1988,6 +2062,8 @@ export interface components {
             targetType?: "listing" | "content_draft" | "photo";
             /** Format: uuid */
             targetId?: string;
+            /** @description Stable rule identifier, e.g. mls.forbidden.phone_number; with span, phrase and reason, a finding's identity across re-checks. */
+            ruleId?: string;
             /** @enum {string} */
             checkType?: "fair_housing" | "risky_claim" | "mls_rule" | "photo_integrity" | "advertising_disclosure";
             severity?: components["schemas"]["FindingSeverity"];

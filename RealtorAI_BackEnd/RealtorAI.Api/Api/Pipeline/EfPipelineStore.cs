@@ -98,7 +98,9 @@ internal sealed class EfPipelineStore : IPipelineStore
             steps,
             run.ContentKind is { } kind ? Label(kind) : null,
             run.Tone is { } tone ? Label(tone) : null,
-            run.VariantCount);
+            run.VariantCount,
+            run.ComplianceTargetType,
+            run.ComplianceTargetId);
     }
 
     public Task SetStepStateAsync(Guid runId, PipelineStep pipelineStep, StepState state, string? reason, CancellationToken cancellationToken) =>

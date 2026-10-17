@@ -1202,6 +1202,50 @@ a later story does not have to rediscover them.
   `content_edited`); 409 if the kind already has a current draft. It needs no verified profile,
   because compliance (US4) holds the listing to the MLS's rules, but a known limit is enforced.
 
+## R36. US4 compliance: decisions made while building it (2026-10-17)
+
+- **⚠ UNREVIEWED Fair Housing lexicon.** `Libs.Compliance/Lexicon/fair-housing.v1.json` was
+  authored from the federal protected classes and California's additions (FEHA) without
+  counsel's review, and says `reviewed: false`. Explicit preferences or exclusions are blocking;
+  context-dependent phrases (a place of worship as a landmark, "exclusive", "safe neighborhood",
+  "family-friendly neighborhood") are warnings. Like R4, the rules, severities and rewrites need
+  counsel's or CRMLS compliance staff's review before Story 4 is relied on.
+- **No judge model is a warning, not a block.** Blocking every listing while no
+  `compliance.judge` model is enabled would contradict SC-010 (complete and publish by hand in a
+  total AI outage). The lexicon and every deterministic check still run, and the listing carries
+  a warning `fair_housing.judge_unavailable`, acknowledgeable with a reason. The same applies
+  when the budget is spent or the answer is unusable.
+- **The registry's temperature was never sent.** `AiService` dispatched with `ResponseFormat`
+  only, so the judge's `temperature: 0` was recorded and dropped. Fixed in `AiService`, and
+  `ComplianceDeterminismTests` checks the value reaching the provider (FR-024).
+- **Runs.** `POST /compliance` creates a pipeline run of the `compliance` step, over the listing
+  or one item (`compliance_target_type/id`, 0017). Analysis and regeneration runs end with the
+  same step. An edit, a one-click rewrite, a photo override or an order change re-checks the
+  edited item in the request (FR-025).
+- **Findings are stored as a difference.** Identity is rule, layer, span, phrase and reason
+  (`rule_id`, 0017). A matching finding is kept as it is, so an acknowledgement survives a check
+  of unchanged words. One no longer found is `resolved`, a new one is raised and audited
+  (`finding_raised`), and a superseded draft's or deleted photo's findings go `stale`. Writes
+  for a listing are serialised on its row.
+- **Merge.** A judge finding overlapping a lexicon finding is dropped; the lexicon's stands. A
+  judge phrase not found in the text is dropped.
+- **Fail closed.** An absent, unverified or incomplete profile is one blocking listing finding
+  `mls.profile_incomplete` naming the missing values, and no per-item MLS rule runs against a
+  guessed value. An altered photo with no profile, or with no approved label (CRMLS until T161),
+  is blocking.
+- **Advertising disclosure (FR-021)** in Slice A checks the listing: the brokerage's name and
+  license number and the agent's license number must be on record. California requires a
+  licensee's license number on advertising. Whether other states require both numbers is
+  unverified.
+- **Photo content flags** from analysis (people, documents, house numbers, plates, branding) and
+  signs of prior alteration are warnings (Story 2 scenarios 4, 5).
+- **Reasons are English** by design (R15). The UI localises the severity, layer and actions.
+- **Hand-written content creation** no longer uses a serializable transaction: two creates on
+  different listings could fail each other, and the unique (listing, kind, variant, version)
+  constraint already decides a real race.
+- **Endpoints live in the host** (`Api/Endpoints/ComplianceEndpoints.cs`), not
+  `Libs.Compliance/Endpoints` as tasks.md says, for the reason in R20.
+
 ## Open items carried to Slice B (recorded, not resolved)
 
 - **CRMLS API surface**: whether RESO Web API Add/Edit is exposed to vendors or only a proprietary

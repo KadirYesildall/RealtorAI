@@ -233,3 +233,15 @@ values (
     true
 )
 on conflict do nothing;
+
+-- compliance.judge v1 (US4, T129): the context-sensitive Fair Housing layer, dispatched at
+-- temperature 0 (FR-024). Phrases it names are located in the text by the caller.
+insert into public.prompt_versions (task_key, version, prompt_hash, output_schema, active)
+values (
+    'compliance.judge',
+    1,
+    '9aaeae224db2c3edda37440db2ca338ceaaacfb75d8bcf078da69932fd6607bc',
+    '{}'::jsonb,
+    true
+)
+on conflict do nothing;

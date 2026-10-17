@@ -203,6 +203,7 @@ internal sealed class EfContentStore : IContentStore
         await context.SaveChangesAsync(cancellationToken);
 
         var supersededIds = current.Select(draft => draft.Id).ToList();
+        await Api.Compliance.ComplianceService.MarkStaleAsync(context, ContentRepresentation.DraftTarget, supersededIds, cancellationToken);
         var revoked = await context.Approvals
             .Where(approval => approval.ListingId == run.ListingId && supersededIds.Contains(approval.TargetId) && approval.RevokedAt == null)
             .ToListAsync(cancellationToken);

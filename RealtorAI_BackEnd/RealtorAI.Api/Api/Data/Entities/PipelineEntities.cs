@@ -21,6 +21,11 @@ public sealed class PipelineRun
 
     /// <summary>The one kind a regeneration is for (0016); null for an analysis run, which generates every kind.</summary>
     public ContentKind? ContentKind { get; set; }
+
+    /// <summary>The one item a compliance run checks (0017); null with its id for the whole listing.</summary>
+    public string? ComplianceTargetType { get; set; }
+
+    public Guid? ComplianceTargetId { get; set; }
     public DateTimeOffset StartedAt { get; set; }
     public DateTimeOffset? FinishedAt { get; set; }
 }

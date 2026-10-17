@@ -1,0 +1,178 @@
+{
+  "version": "fair-housing.v1",
+  "reviewed": false,
+  "note": "UNREVIEWED. Authored from the federal Fair Housing Act's protected classes and California's additions (FEHA) without counsel's review (research R36). Explicit preferences and exclusions are blocking; phrases whose meaning depends on context are warnings. Review every rule, its severity and its rewrite with counsel or the MLS's compliance staff, then set reviewed to true in a reviewed change.",
+  "rules": [
+    {
+      "id": "fair_housing.familial_status.perfect_for_families",
+      "pattern": "(?:perfect|ideal|great) for (?:young |growing |small |large )?famil(?:y|ies)",
+      "protectedClass": "familial_status",
+      "jurisdiction": "federal",
+      "severity": "blocking",
+      "explanation": "Says who the home suits by family status, which states a preference based on familial status.",
+      "rewrite": "Room to grow"
+    },
+    {
+      "id": "fair_housing.familial_status.no_children",
+      "pattern": "no (?:children|kids|minors)",
+      "protectedClass": "familial_status",
+      "jurisdiction": "federal",
+      "severity": "blocking",
+      "explanation": "Excludes households with children, a limitation based on familial status.",
+      "rewrite": "All are welcome"
+    },
+    {
+      "id": "fair_housing.familial_status.adults_only",
+      "pattern": "adults?[- ]only",
+      "protectedClass": "familial_status",
+      "jurisdiction": "federal",
+      "severity": "blocking",
+      "explanation": "Limits occupancy to adults, a limitation based on familial status.",
+      "rewrite": "open to all"
+    },
+    {
+      "id": "fair_housing.familial_status.mature_couple",
+      "pattern": "(?:perfect|ideal|great) for (?:a )?(?:mature|older|retired) (?:couple|couples|adults?|persons?)",
+      "protectedClass": "familial_status",
+      "jurisdiction": "federal",
+      "severity": "blocking",
+      "explanation": "Describes the household the home is for by age and family make-up.",
+      "rewrite": "A quiet, comfortable home"
+    },
+    {
+      "id": "fair_housing.familial_status.family_friendly",
+      "pattern": "family[- ]friendly (?:neighborhood|community|area|street)",
+      "protectedClass": "familial_status",
+      "jurisdiction": "federal",
+      "severity": "warning",
+      "explanation": "Characterises the neighborhood by family status; describe the amenities instead.",
+      "rewrite": "neighborhood with parks nearby"
+    },
+    {
+      "id": "fair_housing.religion.religious_community",
+      "pattern": "(?:christian|catholic|protestant|jewish|muslim|islamic|hindu|buddhist|mormon) (?:community|neighborhood|home|family|families|area|building)",
+      "protectedClass": "religion",
+      "jurisdiction": "federal",
+      "severity": "blocking",
+      "explanation": "Characterises the home or its surroundings by religion, which states a preference based on religion.",
+      "rewrite": "community"
+    },
+    {
+      "id": "fair_housing.religion.distance_to_worship",
+      "pattern": "(?:walking distance|walk|steps|close|near|minutes) (?:to|from) (?:the |a )?(?:church(?:es)?|synagogues?|mosques?|temples?|chapels?|cathedrals?)",
+      "protectedClass": "religion",
+      "jurisdiction": "federal",
+      "severity": "warning",
+      "explanation": "Naming a place of worship can read as a preference based on religion; a neutral landmark is safer.",
+      "rewrite": "Walking distance to local landmarks"
+    },
+    {
+      "id": "fair_housing.race.exclusive_neighborhood",
+      "pattern": "exclusive (?:neighborhood|community|area|enclave|street)",
+      "protectedClass": "race",
+      "jurisdiction": "federal",
+      "severity": "warning",
+      "explanation": "\"Exclusive\" can imply that some people are excluded; describe the setting instead.",
+      "rewrite": "well-established neighborhood"
+    },
+    {
+      "id": "fair_housing.race.coded_safety",
+      "pattern": "(?:safe|crime[- ]free|good) (?:neighborhood|area|part of town)",
+      "protectedClass": "race",
+      "jurisdiction": "federal",
+      "severity": "warning",
+      "explanation": "Characterising an area as safe or good is a common proxy for its residents; describe the property and amenities instead.",
+      "rewrite": "established neighborhood"
+    },
+    {
+      "id": "fair_housing.race.racial_area",
+      "pattern": "(?:white|black|hispanic|latino|latina|asian|caucasian|african[- ]american) (?:neighborhood|community|area|families|neighbors)",
+      "protectedClass": "race",
+      "jurisdiction": "federal",
+      "severity": "blocking",
+      "explanation": "Characterises the area by race or ethnicity.",
+      "rewrite": "residential neighborhood"
+    },
+    {
+      "id": "fair_housing.national_origin.language_only",
+      "pattern": "english[- ]speak(?:ers|ing)(?: people| tenants| buyers)? only|english only",
+      "protectedClass": "national_origin",
+      "jurisdiction": "federal",
+      "severity": "blocking",
+      "explanation": "A language requirement is a limitation based on national origin.",
+      "rewrite": "All are welcome"
+    },
+    {
+      "id": "fair_housing.sex.single_sex",
+      "pattern": "(?:perfect|ideal|great) for (?:a |the )?(?:bachelor|bachelorette|single (?:man|woman|men|women)|career (?:man|woman))s?|bachelor pad",
+      "protectedClass": "sex",
+      "jurisdiction": "federal",
+      "severity": "blocking",
+      "explanation": "Describes the occupant by sex, which states a preference based on sex.",
+      "rewrite": "Great for anyone"
+    },
+    {
+      "id": "fair_housing.disability.not_suitable",
+      "pattern": "not (?:suitable|suited|ideal) for (?:wheelchairs?|the disabled|disabled (?:people|persons|buyers)|the handicapped|handicapped (?:people|persons))|no (?:wheelchairs|handicapped|disabled)",
+      "protectedClass": "disability",
+      "jurisdiction": "federal",
+      "severity": "blocking",
+      "explanation": "Excludes people with disabilities; describe the physical features instead.",
+      "rewrite": "Includes stairs"
+    },
+    {
+      "id": "fair_housing.disability.able_bodied",
+      "pattern": "able[- ]bodied|physically fit",
+      "protectedClass": "disability",
+      "jurisdiction": "federal",
+      "severity": "blocking",
+      "explanation": "Requires a physical ability of the occupant, a limitation based on disability.",
+      "rewrite": "able"
+    },
+    {
+      "id": "fair_housing.source_of_income.section_8",
+      "pattern": "no section ?8",
+      "protectedClass": "source_of_income",
+      "jurisdiction": "CA",
+      "severity": "blocking",
+      "explanation": "California protects source of income, including housing assistance; refusing it is a limitation on a protected class.",
+      "rewrite": "All lawful sources of income considered"
+    },
+    {
+      "id": "fair_housing.source_of_income.vouchers",
+      "pattern": "no (?:housing )?(?:vouchers|assistance)",
+      "protectedClass": "source_of_income",
+      "jurisdiction": "CA",
+      "severity": "blocking",
+      "explanation": "California protects source of income, including housing vouchers.",
+      "rewrite": "All lawful sources of income considered"
+    },
+    {
+      "id": "fair_housing.marital_status.married_only",
+      "pattern": "married (?:couples?|people|persons) only|(?:no|not for) (?:singles|unmarried (?:couples|people))",
+      "protectedClass": "marital_status",
+      "jurisdiction": "CA",
+      "severity": "blocking",
+      "explanation": "California protects marital status; limiting occupancy by it is unlawful.",
+      "rewrite": "All are welcome"
+    },
+    {
+      "id": "fair_housing.sexual_orientation.couple_type",
+      "pattern": "(?:straight|gay|lesbian|heterosexual|homosexual) (?:couples?|men|women|tenants|buyers|households?)",
+      "protectedClass": "sexual_orientation",
+      "jurisdiction": "CA",
+      "severity": "blocking",
+      "explanation": "California protects sexual orientation; describing the intended occupant by it states a preference.",
+      "rewrite": "household"
+    },
+    {
+      "id": "fair_housing.military_or_veteran_status.no_military",
+      "pattern": "no (?:military|veterans?|service members)",
+      "protectedClass": "military_or_veteran_status",
+      "jurisdiction": "CA",
+      "severity": "blocking",
+      "explanation": "California protects military and veteran status.",
+      "rewrite": "All are welcome"
+    }
+  ]
+}

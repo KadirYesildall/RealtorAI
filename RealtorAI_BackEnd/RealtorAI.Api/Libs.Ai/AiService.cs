@@ -244,6 +244,26 @@ public sealed partial class AiService : IAiService
         };
     }
 
+    /// <summary>
+    /// The temperature the registry entry records, sent to the provider. FR-024 rests on it: the
+    /// compliance judge is configured at 0, and a value recorded but never sent would leave the
+    /// provider at its default and the findings no longer reproducible. Absent, or not a number,
+    /// the provider's default applies.
+    /// </summary>
+    internal static float? Temperature(ModelRegistryEntry entry)
+    {
+        try
+        {
+            return JsonNode.Parse(entry.Parameters)?["temperature"] is JsonValue value && value.TryGetValue<double>(out var temperature)
+                ? (float)temperature
+                : null;
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            return null;
+        }
+    }
+
     private async Task<AiResult> DispatchAsync(
         AiRequest request,
         ModelRegistryEntry entry,
@@ -271,7 +291,7 @@ public sealed partial class AiService : IAiService
                     var response = await breaker.ExecuteAsync(
                         async innerToken => await client.GetResponseAsync(
                             messages,
-                            new ChatOptions { ResponseFormat = ChatResponseFormat.Json },
+                            new ChatOptions { ResponseFormat = ChatResponseFormat.Json, Temperature = Temperature(entry) },
                             innerToken),
                         token);
 

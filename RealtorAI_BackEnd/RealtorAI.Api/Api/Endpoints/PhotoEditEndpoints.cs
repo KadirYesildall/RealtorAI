@@ -85,6 +85,7 @@ internal static class PhotoEditEndpoints
         IResourceAuthorizer authorizer,
         IAuditWriter audit,
         IPhotoStorage storage,
+        Api.Compliance.ComplianceService compliance,
         CancellationToken cancellationToken)
     {
         if (user.GetAgentId() is not { } agentId)
@@ -206,6 +207,10 @@ internal static class PhotoEditEndpoints
         }
 
         await transaction.CommitAsync(cancellationToken);
+
+        // FR-025: the edited photo is re-checked at once — an alteration declaration is what
+        // the integrity check reads.
+        await compliance.CheckPhotosAsync(listingId, agentId, photoId, cancellationToken);
 
         return TypedResults.Ok(await ListingRepresentation.LoadPhotoAsync(context, storage, photoId, cancellationToken));
     }
@@ -353,6 +358,7 @@ internal static class PhotoEditEndpoints
         AppDbContext context,
         IResourceAuthorizer authorizer,
         IAuditWriter audit,
+        Api.Compliance.ComplianceService compliance,
         CancellationToken cancellationToken)
     {
         if (user.GetAgentId() is not { } agentId)
@@ -432,6 +438,9 @@ internal static class PhotoEditEndpoints
         await context.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
 
+        // An order change moves an altered photo's original nearer or further: every photo is re-checked.
+        await compliance.CheckPhotosAsync(listingId, agentId, null, cancellationToken);
+
         return TypedResults.Ok(after);
     }
 
@@ -478,6 +487,7 @@ internal static class PhotoEditEndpoints
         // The row goes; the original's bytes stay in the write-once bucket (FR-001), reclaimed
         // only by the retention purge (FR-065). The cover pointer clears itself (on delete set null).
         await context.Database.ExecuteSqlAsync($"delete from public.photos where id = {photoId}", cancellationToken);
+        await Api.Compliance.ComplianceService.MarkStaleAsync(context, PhotoTarget, [photoId], cancellationToken);
         await ReturnApprovedListingToReviewAsync(context, listingId, cancellationToken);
 
         await audit.WriteAsync(

@@ -547,6 +547,7 @@ only hints to re-read it (FR-053).
 | `started_by` | `uuid` → `profiles.id` | Every AI call of the run is audited as theirs. |
 | `tone`, `variant_count` | `tone`, `int` (2–3) | Carried for content generation (US3). |
 | `content_kind` | `content_kind` | 0016. The one kind a regeneration run is for; NULL for an analysis run, which generates every kind. |
+| `compliance_target_type`, `compliance_target_id` | `text`, `uuid` | 0017. The one item a compliance run checks; both NULL for the whole listing. |
 | `started_at`, `finished_at` | `timestamptz` | |
 
 **Constraint**: at most one unfinished run per listing (partial unique index) — starting again
@@ -555,7 +556,7 @@ returns that run.
 ### `pipeline_step_states` / `pipeline_photo_states`
 
 Per-run state of each step (`normalize`, `technical_quality`, `embeddings`, `photo_analysis`,
-`cover_and_order`, `content_generation`, and later `compliance`) and each photo, in the
+`cover_and_order`, `content_generation`, `compliance`) and each photo, in the
 contract's spellings, with a failure reason required when failed (or skipped, for a step).
 
 **RLS**: enabled with no policy and no privilege — API only, like `photo_embeddings`.

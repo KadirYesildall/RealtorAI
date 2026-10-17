@@ -39,6 +39,9 @@ internal static class PipelineSetup
 
         services.AddScoped<IPipelineStore, EfPipelineStore>();
         services.AddScoped<IContentStore, EfContentStore>();
+        services.AddSingleton(new Api.Compliance.ComplianceOptions(Required<int>(configuration, "Pipeline:Compliance:EstimatedTokensPerJudgeCall")));
+        services.AddScoped<Api.Compliance.ComplianceService>();
+        services.AddScoped<IComplianceRunner>(provider => provider.GetRequiredService<Api.Compliance.ComplianceService>());
         services.AddScoped<PipelineReporter>();
 
         // Registered in execution order; the runner orders them by step regardless.
@@ -48,6 +51,7 @@ internal static class PipelineSetup
         services.AddScoped<IPipelineStep, PhotoAnalysisStep>();
         services.AddScoped<IPipelineStep, CoverAndOrderStep>();
         services.AddScoped<IPipelineStep, ContentGenerationStep>();
+        services.AddScoped<IPipelineStep, ComplianceStep>();
 
         services.AddScoped<PipelineRunner>();
 

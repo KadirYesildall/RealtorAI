@@ -265,15 +265,15 @@ Per [plan.md](./plan.md) "Project Structure" — the repo's two mandated top-lev
 
 ### Implementation for User Story 4
 
-- [ ] T127 [US4] Author the versioned Fair Housing lexicon rule files in `Libs.Compliance/Lexicon/fair-housing.v1.json` (phrase/regex, protected class, severity, explanation, rewrite)
-- [ ] T128 [US4] Implement the deterministic lexicon matcher in `Libs.Compliance/LexiconMatcher.cs`
-- [ ] T129 [US4] Author prompt `prompts/compliance.judge/v1.md` + `v1.schema.json` and wire the judge at temperature 0 in `Libs.Compliance/JudgeChecker.cs`
-- [ ] T130 [US4] Implement finding merge/dedupe across lexicon and judge with `source` attribution in `Libs.Compliance/FindingMerger.cs` (FR-017)
-- [ ] T131 [P] [US4] Implement the risky-claim checker in `Libs.Compliance/RiskyClaimChecker.cs`
-- [ ] T132 [US4] Implement the CRMLS rule engine in `Libs.Compliance/MlsRuleEngine.cs` — **raises a blocking "rule profile incomplete" finding on any missing value** (research R2)
-- [ ] T133 [US4] Implement the AB 723 photo-integrity checker in `Libs.Compliance/PhotoIntegrityChecker.cs` (FR-020)
-- [ ] T134 [P] [US4] Implement the advertising-disclosure checker in `Libs.Compliance/DisclosureChecker.cs` (FR-021)
-- [ ] T135 [US4] Implement compliance endpoints with edit-scoped re-runs in `Libs.Compliance/Endpoints/ComplianceEndpoints.cs` (FR-025)
+- [X] T127 [US4] Author the versioned Fair Housing lexicon rule files in `Libs.Compliance/Lexicon/fair-housing.v1.json` (phrase/regex, protected class, severity, explanation, rewrite)
+- [X] T128 [US4] Implement the deterministic lexicon matcher in `Libs.Compliance/LexiconMatcher.cs`
+- [X] T129 [US4] Author prompt `prompts/compliance.judge/v1.md` + `v1.schema.json` and wire the judge at temperature 0 in `Libs.Compliance/JudgeChecker.cs`
+- [X] T130 [US4] Implement finding merge/dedupe across lexicon and judge with `source` attribution in `Libs.Compliance/FindingMerger.cs` (FR-017)
+- [X] T131 [P] [US4] Implement the risky-claim checker in `Libs.Compliance/RiskyClaimChecker.cs`
+- [X] T132 [US4] Implement the CRMLS rule engine in `Libs.Compliance/MlsRuleEngine.cs` — **raises a blocking "rule profile incomplete" finding on any missing value** (research R2)
+- [X] T133 [US4] Implement the AB 723 photo-integrity checker in `Libs.Compliance/PhotoIntegrityChecker.cs` (FR-020)
+- [X] T134 [P] [US4] Implement the advertising-disclosure checker in `Libs.Compliance/DisclosureChecker.cs` (FR-021)
+- [X] T135 [US4] Implement compliance endpoints with edit-scoped re-runs in `Libs.Compliance/Endpoints/ComplianceEndpoints.cs` (FR-025)
 - [ ] T136 [P] [US4] Build the compliance panel with jump-to-span and one-click rewrite in `RealtorAI_FrontEnd/components/compliance/FindingList.tsx`
 - [ ] T137 [P] [US4] Build the acknowledge-warning dialog in `RealtorAI_FrontEnd/components/compliance/AcknowledgeWarningDialog.tsx`, with severity distinguishable **without relying on colour alone**, WCAG AA in both themes, and EN/TR keys
 
