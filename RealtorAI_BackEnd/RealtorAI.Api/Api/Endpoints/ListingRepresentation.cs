@@ -54,9 +54,9 @@ internal sealed record ListingDto(
 /// <c>missingRequiredFieldKeys</c> is a contract addition (research R33): FR-008 requires the
 /// public-record fields to be "visibly marked as required" while they are empty, and an empty
 /// field has no row — so no <c>ListingField</c> to carry <c>requiredBeforeApproval</c> — until
-/// someone enters it. <c>contentDrafts</c>, <c>findings</c> and <c>approvalBlockers</c> join this
-/// shape with the stories that produce them (US3–US5); until then nothing can create a draft or
-/// a finding, and an empty list would claim a check had run.
+/// someone enters it. <c>contentDrafts</c>, <c>findings</c>, <c>outputs</c> and
+/// <c>approvalBlockers</c> make it the review screen's one read (T146, FR-027): every output the
+/// agent can approve, with the hash of exactly what is shown and what blocks it.
 /// </para>
 /// </summary>
 internal sealed record ListingDetailDto(
@@ -80,7 +80,11 @@ internal sealed record ListingDetailDto(
     IReadOnlyList<ListingFieldDto> Fields,
     IReadOnlyList<string> MissingRequiredFieldKeys,
     IReadOnlyList<PhotoDto> Photos,
-    IReadOnlyList<string> ApprovedDisclosureLabels);
+    IReadOnlyList<string> ApprovedDisclosureLabels,
+    IReadOnlyList<ContentDraftDto> ContentDrafts,
+    IReadOnlyList<ComplianceFindingDto> Findings,
+    IReadOnlyList<Api.Approvals.ApprovalOutputDto> Outputs,
+    IReadOnlyList<Api.Approvals.BlockerDto> ApprovalBlockers);
 
 /// <summary>The contract's <c>ListingField</c>.</summary>
 internal sealed record ListingFieldDto(
@@ -258,6 +262,18 @@ internal static class ListingRepresentation
         var present = fields.Select(field => field.ResoFieldKey).ToHashSet(StringComparer.Ordinal);
         var missing = requiredKeys.Where(key => !present.Contains(key)).Order(StringComparer.Ordinal).ToList();
 
+        var findings = (await context.ComplianceFindings.AsNoTracking()
+                .Where(finding => finding.ListingId == listing.Id && finding.Status != FindingStatus.Stale)
+                .ToListAsync(cancellationToken))
+            .OrderBy(finding => finding.Severity == FindingSeverity.Blocking ? 0 : 1)
+            .ThenBy(finding => finding.TargetType switch { "listing" => 0, "content_draft" => 1, _ => 2 })
+            .ThenBy(finding => finding.SpanStart ?? -1)
+            .Select(ComplianceEndpoints.ToDto)
+            .ToList();
+
+        // The listing's own output is last.
+        var outputs = await Api.Approvals.ApprovalService.OutputsAsync(context, listing.Id, cancellationToken);
+
         return new ListingDetailDto(
             listing.Id,
             FormatStatus(listing.Status),
@@ -279,7 +295,11 @@ internal static class ListingRepresentation
             fields.Select(field => ToDto(field, requiredKeys)).ToList(),
             missing,
             photos.Select(photo => ToDto(photo, urls.GetValueOrDefault(photo.Id), analyses.GetValueOrDefault(photo.Id))).ToList(),
-            profile is null ? [] : JsonSerializer.Deserialize<List<string>>(profile.DisclosureLabels) ?? []);
+            profile is null ? [] : JsonSerializer.Deserialize<List<string>>(profile.DisclosureLabels) ?? [],
+            await ContentRepresentation.LoadCurrentAsync(context, listing.Id, cancellationToken),
+            findings,
+            outputs,
+            outputs[^1].Blockers);
     }
 
     internal static PhotoDto ToDto(Photo photo, string? normalizedUrl, PhotoAnalysis? analysis) => new(

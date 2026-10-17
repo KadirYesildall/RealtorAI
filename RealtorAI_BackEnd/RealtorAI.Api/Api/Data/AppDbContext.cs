@@ -82,6 +82,7 @@ public class AppDbContext : DbContext
     public DbSet<ContentDraft> ContentDrafts => Set<ContentDraft>();
 
     public DbSet<ComplianceFinding> ComplianceFindings => Set<ComplianceFinding>();
+    public DbSet<ComplianceCheck> ComplianceChecks => Set<ComplianceCheck>();
 
     public DbSet<Approval> Approvals => Set<Approval>();
 
@@ -148,6 +149,7 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<PhotoEmbedding>().ToTable("photo_embeddings");
         modelBuilder.Entity<ContentDraft>().ToTable("content_drafts");
         modelBuilder.Entity<ComplianceFinding>().ToTable("compliance_findings");
+        modelBuilder.Entity<ComplianceCheck>().ToTable("compliance_checks");
         modelBuilder.Entity<Approval>().ToTable("approvals");
         modelBuilder.Entity<AiModelRegistryEntry>().ToTable("ai_model_registry");
         modelBuilder.Entity<PromptVersion>().ToTable("prompt_versions");
@@ -163,6 +165,7 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<MlsRuleProfile>().HasKey(e => e.Id);
         modelBuilder.Entity<PipelineStepState>().HasKey(e => new { e.RunId, e.Step });
         modelBuilder.Entity<PipelinePhotoState>().HasKey(e => new { e.RunId, e.PhotoId });
+        modelBuilder.Entity<ComplianceCheck>().HasKey(e => new { e.TargetType, e.TargetId });
 
         // mls_rule_profiles.id is a human-readable text key ("crmls"), supplied by the
         // migration that records a verified rulebook. EF must not try to generate it.
@@ -270,6 +273,7 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<PipelineRun>().Property(e => e.StartedAt).HasDefaultValueSql(DatabaseClock);
         modelBuilder.Entity<PipelineStepState>().Property(e => e.UpdatedAt).HasDefaultValueSql(DatabaseClock);
         modelBuilder.Entity<PipelinePhotoState>().Property(e => e.UpdatedAt).HasDefaultValueSql(DatabaseClock);
+        modelBuilder.Entity<ComplianceCheck>().Property(e => e.CheckedAt).HasDefaultValueSql(DatabaseClock);
     }
 
     private static void ConfigureFixedWidthAndPrecision(ModelBuilder modelBuilder)

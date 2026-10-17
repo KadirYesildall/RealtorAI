@@ -1293,6 +1293,15 @@ export interface paths {
                 };
             };
             responses: {
+                /** @description The same content was already approved; the existing approval */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Approval"];
+                    };
+                };
                 /** @description Approval recorded */
                 201: {
                     headers: {
@@ -1303,14 +1312,25 @@ export interface paths {
                     };
                 };
                 403: components["responses"]["Forbidden"];
-                /** @description Approval blocked */
+                /**
+                 * @description Approval blocked. Problem details carry blockers (ApprovalBlocked). A hash mismatch is
+                 *     content_changed_since_review, and the attempt is audited as
+                 *     approval_rejected_hash_mismatch.
+                 */
                 409: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApprovalBlocked"];
+                        "application/problem+json": components["schemas"]["ApprovalBlocked"];
                     };
+                };
+                /** @description Unsupported channel or target type (photos are approved with the listing) */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
                 };
             };
         };
@@ -1592,7 +1612,9 @@ export interface paths {
             parameters: {
                 query?: {
                     action?: components["schemas"]["AuditAction"];
+                    /** @description The X-Next-Cursor header of the previous page. */
                     cursor?: string;
+                    limit?: number;
                 };
                 header?: never;
                 path: {
@@ -1602,7 +1624,7 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description Audit events, newest first */
+                /** @description Audit events, newest first. X-Next-Cursor is set when there is another page. */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -1912,8 +1934,14 @@ export interface components {
             contentDrafts?: components["schemas"]["ContentDraft"][];
             /** @description Present once compliance checks exist (US4). */
             findings?: components["schemas"]["ComplianceFinding"][];
-            /** @description Machine-readable reasons the approve action is disabled. */
-            approvalBlockers?: string[];
+            /**
+             * @description Every output the agent can approve (T146): the version of each content kind chosen
+             *     for publication, then the listing itself (its facts and photos), last. Each carries
+             *     the hash of exactly what is shown, to send back as reviewedContentHash.
+             */
+            outputs?: components["schemas"]["ApprovalOutput"][];
+            /** @description The listing output's blockers — why the listing cannot be approved yet. */
+            approvalBlockers?: components["schemas"]["ApprovalBlocker"][];
         };
         ListingField: {
             /** Format: uuid */
@@ -2096,28 +2124,53 @@ export interface components {
         Approval: {
             /** Format: uuid */
             id?: string;
+            /** @enum {string} */
+            targetType?: "listing" | "content_draft";
             /** Format: uuid */
             targetId?: string;
             channel?: string;
             contentHash?: string;
+            /** Format: uuid */
+            approvedBy?: string;
             /** Format: date-time */
             approvedAt?: string;
             /** Format: date-time */
             revokedAt?: string | null;
         };
+        ApprovalOutput: {
+            /** @enum {string} */
+            targetType?: "listing" | "content_draft";
+            /** Format: uuid */
+            targetId?: string;
+            /** @description The content kind for a draft; null for the listing. */
+            kind?: string | null;
+            /** @description SHA-256 of exactly what is shown (a draft's body; the listing's review rendering, research R37). */
+            contentHash?: string;
+            approved?: boolean;
+            /** Format: uuid */
+            approvalId?: string | null;
+            blockers?: components["schemas"]["ApprovalBlocker"][];
+        };
+        ApprovalBlocker: {
+            /** @enum {string} */
+            code?: "blocking_finding_open" | "unconfirmed_ai_fact" | "required_field_missing" | "membership_not_approved" | "rule_profile_incomplete" | "content_changed_since_review" | "compliance_not_run" | "content_not_approved" | "analysis_in_progress";
+            /** @description English; the UI states the code in the agent's language. */
+            detail?: string;
+            /**
+             * Format: uuid
+             * @description What to act on — a finding, a field or a draft.
+             */
+            targetId?: string | null;
+        };
         ApprovalBlocked: {
-            blockers?: {
-                /** @enum {string} */
-                code?: "blocking_finding_open" | "unconfirmed_ai_fact" | "required_field_missing" | "membership_not_approved" | "rule_profile_incomplete" | "content_changed_since_review";
-                detail?: string;
-                /** Format: uuid */
-                targetId?: string | null;
-            }[];
+            blockers?: components["schemas"]["ApprovalBlocker"][];
         };
         AuditEvent: {
             /** Format: uuid */
             id?: string;
             action?: components["schemas"]["AuditAction"];
+            /** Format: uuid */
+            listingId?: string | null;
             /** Format: uuid */
             actorId?: string | null;
             targetType?: string | null;

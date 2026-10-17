@@ -702,12 +702,21 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Approval' }
-        '409':
-          description: Approval blocked
+        '200':
+          description: The same content was already approved; the existing approval
           content:
             application/json:
+              schema: { $ref: '#/components/schemas/Approval' }
+        '409':
+          description: |
+            Approval blocked. Problem details carry blockers (ApprovalBlocked). A hash mismatch is
+            content_changed_since_review, and the attempt is audited as
+            approval_rejected_hash_mismatch.
+          content:
+            application/problem+json:
               schema: { $ref: '#/components/schemas/ApprovalBlocked' }
         '403': { $ref: '#/components/responses/Forbidden' }
+        '422': { description: Unsupported channel or target type (photos are approved with the listing), a malformed hash, or a target that is not an output of this listing }
 
   # ─────────────────────────────── Compliance ───────────────────────────────
   /api/listings/{listingId}/compliance:
@@ -837,10 +846,14 @@ paths:
           schema: { $ref: '#/components/schemas/AuditAction' }
         - name: cursor
           in: query
+          description: The X-Next-Cursor header of the previous page.
           schema: { type: string }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
       responses:
         '200':
-          description: Audit events, newest first
+          description: Audit events, newest first. X-Next-Cursor is set when there is another page.
           content:
             application/json:
               schema:
@@ -1180,10 +1193,17 @@ components:
               type: array
               description: Present once compliance checks exist (US4).
               items: { $ref: '#/components/schemas/ComplianceFinding' }
+            outputs:
+              type: array
+              description: |
+                Every output the agent can approve (T146): the version of each content kind chosen
+                for publication, then the listing itself (its facts and photos), last. Each carries
+                the hash of exactly what is shown, to send back as reviewedContentHash.
+              items: { $ref: '#/components/schemas/ApprovalOutput' }
             approvalBlockers:
               type: array
-              description: Machine-readable reasons the approve action is disabled.
-              items: { type: string }
+              description: The listing output's blockers — why the listing cannot be approved yet.
+              items: { $ref: '#/components/schemas/ApprovalBlocker' }
 
     ListingField:
       type: object
@@ -1400,32 +1420,56 @@ components:
       type: object
       properties:
         id: { type: string, format: uuid }
+        targetType: { type: string, enum: [listing, content_draft] }
         targetId: { type: string, format: uuid }
         channel: { type: string }
         contentHash: { type: string }
+        approvedBy: { type: string, format: uuid }
         approvedAt: { type: string, format: date-time }
         revokedAt: { type: string, format: date-time, nullable: true }
+    ApprovalOutput:
+      type: object
+      properties:
+        targetType: { type: string, enum: [listing, content_draft] }
+        targetId: { type: string, format: uuid }
+        kind:
+          type: string
+          nullable: true
+          description: The content kind for a draft; null for the listing.
+        contentHash:
+          type: string
+          description: SHA-256 of exactly what is shown (a draft's body; the listing's review rendering, research R37).
+        approved: { type: boolean }
+        approvalId: { type: string, format: uuid, nullable: true }
+        blockers: { type: array, items: { $ref: '#/components/schemas/ApprovalBlocker' } }
+    ApprovalBlocker:
+      type: object
+      properties:
+        code:
+          type: string
+          enum: [blocking_finding_open, unconfirmed_ai_fact, required_field_missing,
+                 membership_not_approved, rule_profile_incomplete,
+                 content_changed_since_review, compliance_not_run, content_not_approved,
+                 analysis_in_progress]
+        detail: { type: string, description: English; the UI states the code in the agent's language. }
+        targetId:
+          type: string
+          format: uuid
+          nullable: true
+          description: What to act on — a finding, a field or a draft.
     ApprovalBlocked:
       type: object
       properties:
         blockers:
           type: array
-          items:
-            type: object
-            properties:
-              code:
-                type: string
-                enum: [blocking_finding_open, unconfirmed_ai_fact, required_field_missing,
-                       membership_not_approved, rule_profile_incomplete,
-                       content_changed_since_review]
-              detail: { type: string }
-              targetId: { type: string, format: uuid, nullable: true }
+          items: { $ref: '#/components/schemas/ApprovalBlocker' }
 
     AuditEvent:
       type: object
       properties:
         id: { type: string, format: uuid }
         action: { $ref: '#/components/schemas/AuditAction' }
+        listingId: { type: string, format: uuid, nullable: true }
         actorId: { type: string, format: uuid, nullable: true }
         targetType: { type: string, nullable: true }
         targetId: { type: string, format: uuid, nullable: true }

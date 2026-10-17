@@ -1252,6 +1252,43 @@ a later story does not have to rediscover them.
 - **Endpoints live in the host** (`Api/Endpoints/ComplianceEndpoints.cs`), not
   `Libs.Compliance/Endpoints` as tasks.md says, for the reason in R20.
 
+## R37. US5 review and approval: decisions made while building it (2026-10-17)
+
+- **Outputs.** What can be approved for the `mls` channel is the version of each content kind
+  chosen for publication, and the listing itself — its facts and photos — approved last, once
+  the copy it carries is. Photos are approved with the listing (422 for a `photo` target).
+- **The listing's hash** is SHA-256 over a canonical rendering of what the review screen shows:
+  basic details, each field's value, provenance and confirmation, and each photo's order, cover,
+  caption, overrides and alteration declaration. The agent's private notes are excluded; they
+  are never published. A draft's hash is its body's.
+- **Nothing unchecked is approvable.** A finding-free item and a never-checked item looked the
+  same, so each check now records the hash it read (`compliance_checks`, 0018); a blocker
+  `compliance_not_run` stands until a check of the current content exists. An edit re-checks a
+  draft; a change to the facts or photos needs a new listing check.
+- **Blockers added to the contract's list:** `compliance_not_run`, `content_not_approved` (the
+  listing before its copy, or with no description chosen) and `analysis_in_progress`.
+  `rule_profile_incomplete` blocks every output while the profile is unverified — so nothing can
+  be approved against CRMLS until T160, by design (R2). Open warnings do not block (FR-022/023
+  block only on blocking findings).
+- **The hash check is under a lock.** The approval transaction locks the listing row, and the
+  draft row for a draft, recomputes the hash, and records only on a match. A mismatch is audited
+  `approval_rejected_hash_mismatch` and committed on its own; nothing else is recorded.
+- **Listing approvals follow the listing.** A trigger revokes them whenever the listing leaves
+  `approved` (`listing_changed`), so no edit path can forget to. Draft approvals are revoked by
+  the edit, regeneration or rewrite that changes the words, as before.
+- **Audit trail.** Newest first, keyset-paged by `(created_at, id)` with `X-Next-Cursor`. The
+  brokerage trail holds only events about the brokerage or about approved members' listings
+  (FR-050). Listing creation itself is not an audited action in this release; the trail starts
+  with the first edit.
+- **A verified test-only MLS profile for local use.** `seed.sql` adds `LOCAL-TEST` ("not a real
+  MLS"), verified with fixture values, and Agent E whose brokerage targets it. It is the only
+  way to walk Stories 1–5 to an approved listing locally while CRMLS is unverified. It is never
+  created by a migration.
+- **The e2e walkthrough (T145) takes the manual path.** No model can be enabled on the local stack
+  until T159, so it walks Stories 1–5 by hand (SC-010). The AI steps with deterministic fixtures
+  are covered at the API, where the model is substituted (`AiEnabledApiFactory`).
+- **Endpoints live in the host**, not the modules tasks.md names, for the reason in R20.
+
 ## Open items carried to Slice B (recorded, not resolved)
 
 - **CRMLS API surface**: whether RESO Web API Add/Edit is exposed to vendors or only a proprietary

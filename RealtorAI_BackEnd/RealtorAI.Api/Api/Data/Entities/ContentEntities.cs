@@ -133,3 +133,16 @@ public sealed class Approval
     public DateTimeOffset? RevokedAt { get; set; }
     public string? RevokedReason { get; set; }
 }
+
+/// <summary>
+/// public.compliance_checks (0018) — the last compliance check of an item and the exact content
+/// it read, by hash. Approval requires a check of the content being approved (SC-011).
+/// </summary>
+public sealed class ComplianceCheck
+{
+    public Guid ListingId { get; set; }
+    public string TargetType { get; set; } = string.Empty;
+    public Guid TargetId { get; set; }
+    public string ContentHash { get; set; } = string.Empty;
+    public DateTimeOffset CheckedAt { get; set; }
+}

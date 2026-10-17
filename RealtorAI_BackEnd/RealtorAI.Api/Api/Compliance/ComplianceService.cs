@@ -83,6 +83,8 @@ internal sealed class ComplianceService : IComplianceRunner
     /// <summary>The whole listing: itself, every current draft, every photo.</summary>
     internal async Task CheckListingAsync(Guid listingId, Guid actorId, CancellationToken cancellationToken)
     {
+        // Taken before the checks read anything: the check vouches for this, and no later state.
+        var reviewHash = await Api.Approvals.ApprovalService.ReviewHashAsync(context, listingId, cancellationToken);
         var sources = await LoadAsync(listingId, cancellationToken);
         var judgeMissed = false;
         var results = new List<(string TargetType, Guid TargetId, IReadOnlyList<Finding> Findings)>();
@@ -112,7 +114,12 @@ internal sealed class ComplianceService : IComplianceRunner
 
         results.Add(("listing", listingId, listingFindings));
 
-        await StoreAsync(listingId, actorId, results, cancellationToken);
+        var checkedContent = sources.Drafts
+            .Select(draft => (ContentRepresentation.DraftTarget, draft.Id, Api.Approvals.ApprovalService.Hash(draft.Body)))
+            .Append(("listing", listingId, reviewHash))
+            .ToList();
+
+        await StoreAsync(listingId, actorId, results, checkedContent, cancellationToken);
     }
 
     /// <summary>One draft, after an edit or a rewrite (FR-025). A stale or missing draft has nothing to check.</summary>
@@ -127,7 +134,12 @@ internal sealed class ComplianceService : IComplianceRunner
 
         var (findings, _) = await CheckTextAsync(sources, draft, actorId, cancellationToken);
 
-        await StoreAsync(listingId, actorId, [(ContentRepresentation.DraftTarget, draft.Id, findings)], cancellationToken);
+        await StoreAsync(
+            listingId,
+            actorId,
+            [(ContentRepresentation.DraftTarget, draft.Id, findings)],
+            [(ContentRepresentation.DraftTarget, draft.Id, Api.Approvals.ApprovalService.Hash(draft.Body))],
+            cancellationToken);
     }
 
     /// <summary>One photo, or every photo when <paramref name="photoId"/> is null — an order change moves adjacency for all.</summary>
@@ -135,7 +147,7 @@ internal sealed class ComplianceService : IComplianceRunner
     {
         var sources = await LoadAsync(listingId, cancellationToken);
 
-        await StoreAsync(listingId, actorId, CheckPhotos(sources, photoId).ToList(), cancellationToken);
+        await StoreAsync(listingId, actorId, CheckPhotos(sources, photoId).ToList(), [], cancellationToken);
     }
 
     /// <summary>Marks every live finding of a target stale: the item is gone or superseded.</summary>
@@ -216,6 +228,7 @@ internal sealed class ComplianceService : IComplianceRunner
         Guid listingId,
         Guid actorId,
         IReadOnlyList<(string TargetType, Guid TargetId, IReadOnlyList<Finding> Findings)> results,
+        IReadOnlyList<(string TargetType, Guid TargetId, string ContentHash)> checkedContent,
         CancellationToken cancellationToken)
     {
         context.ChangeTracker.Clear();
@@ -300,6 +313,19 @@ internal sealed class ComplianceService : IComplianceRunner
             }
 
             await context.SaveChangesAsync(cancellationToken);
+        }
+
+        // What was checked, by hash: the approval gate requires a check of what it approves (SC-011).
+        foreach (var (targetType, targetId, contentHash) in checkedContent)
+        {
+            await context.Database.ExecuteSqlAsync(
+                $"""
+                insert into public.compliance_checks (listing_id, target_type, target_id, content_hash)
+                values ({listingId}, {targetType}, {targetId}, {contentHash})
+                on conflict (target_type, target_id) do update
+                set content_hash = excluded.content_hash, checked_at = timezone('utc', now())
+                """,
+                cancellationToken);
         }
 
         await transaction.CommitAsync(cancellationToken);

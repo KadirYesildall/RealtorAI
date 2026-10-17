@@ -122,6 +122,8 @@ public sealed class AuditAccessTests : IClassFixture<ApiFactory>
         await TestBrokerages.AddMemberAsync(pending, brokerage, "pending");
         var approvedListing = TestListings.IdOf(await TestListings.CreateAsync(factory, approved));
         var pendingListing = TestListings.IdOf(await TestListings.CreateAsync(factory, pending));
+        await EnterRequiredFactsAsync(factory, approved, approvedListing);
+        await EnterRequiredFactsAsync(factory, pending, pendingListing);
 
         using var client = factory.CreateClientFor(admin);
         var events = (await client.GetFromJsonAsync<JsonArray>(BrokerageAudit(brokerage)))!;

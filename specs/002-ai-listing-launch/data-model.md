@@ -553,6 +553,15 @@ only hints to re-read it (FR-053).
 **Constraint**: at most one unfinished run per listing (partial unique index) — starting again
 returns that run.
 
+### `compliance_checks` (0018)
+
+The last compliance check of each item and the SHA-256 of the exact content it read — a draft's
+body, or the listing's review hash. Approval requires a check of the content being approved
+(SC-011). Keyed by `(target_type, target_id)`. RLS enabled with no policy and no privilege.
+
+**Trigger** `listings_revoke_approvals_on_status_change`: when a listing leaves `approved`, its
+live listing-level approvals are revoked (`listing_changed`), whatever path moved it (FR-025).
+
 ### `pipeline_step_states` / `pipeline_photo_states`
 
 Per-run state of each step (`normalize`, `technical_quality`, `embeddings`, `photo_analysis`,

@@ -139,6 +139,8 @@ app.MapPhotoEditEndpoints();
 app.MapPipelineEndpoints();
 app.MapContentEndpoints();
 app.MapComplianceEndpoints();
+app.MapApprovalEndpoints();
+app.MapAuditEndpoints();
 app.MapPipelineHub();
 
 app.Run();

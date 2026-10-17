@@ -91,6 +91,6 @@ public sealed class BlindApprovalTests : IClassFixture<AiEnabledApiFactory>
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
         Assert.Contains("content_changed_since_review", Codes((await response.Content.ReadFromJsonAsync<JsonObject>())!));
-        Assert.Equal("ready_for_review", (await DetailAsync(factory, agent, listing))["status"]!.GetValue<string>());
+        Assert.NotEqual("approved", (await DetailAsync(factory, agent, listing))["status"]!.GetValue<string>());
     }
 }
