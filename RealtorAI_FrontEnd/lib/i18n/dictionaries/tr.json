@@ -381,6 +381,71 @@
         "unexpected": "Bir şeyler ters gitti. Lütfen tekrar deneyin."
       }
     },
+    "content": {
+      "title": "İlan içeriği",
+      "body": "İlanınızın bilgilerinden hazırlanır ya da sizin tarafınızdan yazılır. Onaylamadığınız bir bilgiye dayanan cümleler vurgulanır ve bilgiyi onaylayana ya da cümleyi çıkarana kadar ilan yayımlanamaz.",
+      "tone": "Üslup",
+      "toneHint": "İçerik bir sonraki üretimde bu üslupla hazırlanır. Seçiminiz her taslakla birlikte kaydedilir.",
+      "tones": {
+        "professional": "Profesyonel",
+        "warm": "Samimi",
+        "luxury": "Lüks",
+        "concise": "Kısa ve öz"
+      },
+      "kinds": {
+        "public_remarks": "Açıklama",
+        "private_remarks": "Emlakçı notları",
+        "headline": "Başlık"
+      },
+      "generate": "{kind} oluştur",
+      "regenerate": "{kind} yeniden oluştur",
+      "write": "{kind} metnini kendiniz yazın",
+      "generating": "Hazırlanıyor…",
+      "generateFailed": "Bu içerik oluşturulamadı. Kendiniz yazın ya da yeniden deneyin.",
+      "empty": "Henüz bir şey yok. Oluşturun ya da kendiniz yazın.",
+      "chooseVersion": "Yayımlanacak sürümü seçin",
+      "version": "Sürüm {n}",
+      "bodyLabel": "{kind} metni",
+      "edit": "{kind} metnini düzenle",
+      "editVersion": "{version} düzenle",
+      "save": "Kaydet",
+      "cancel": "Vazgeç",
+      "count": "{count} karakter",
+      "countOfLimit": "{count} / {limit} karakter",
+      "claimNote": "onaylamadığınız bir bilgiye dayanıyor: {facts}",
+      "claimsSummary": "Vurgulanan {count} cümle onaylamadığınız bilgilere dayanıyor. Bu bilgileri ilan ayrıntılarında onaylayın ya da cümleleri çıkarın.",
+      "approvedNote": "Onaylandı. Düzenlerseniz onay geri çekilir ve ilan yeniden incelemeye döner.",
+      "conflict": "Bu içerik siz açtıktan sonra başka bir yerde değiştirildi.",
+      "loadLatest": "En son sürümü göster",
+      "unknownFact": "bir ilan bilgisi",
+      "manual": {
+        "noModel": "İçerik oluşturma şu anda kullanılamıyor. Aşağıda kendiniz yazabilirsiniz.",
+        "profileIncomplete": "Bu ilanın MLS'inin karakter sınırları henüz doğrulanmadı, bu yüzden bu sınırlara göre içerik oluşturulamıyor. Aşağıda kendiniz yazabilirsiniz.",
+        "budget": "Bu ilanın yapay zekâ bütçesi doldu. İçeriği aşağıda kendiniz yazabilirsiniz.",
+        "running": "Bu ilan şu anda analiz ediliyor. Analiz bitince içerik oluşturun."
+      },
+      "facts": {
+        "InteriorFeatures": "İç mekân özellikleri",
+        "Appliances": "Beyaz eşya",
+        "Flooring": "Zemin",
+        "ParkingFeatures": "Otopark",
+        "PoolFeatures": "Havuz",
+        "View": "Manzara",
+        "LivingArea": "Yaşam alanı",
+        "LotSizeSquareFeet": "Arsa büyüklüğü",
+        "YearBuilt": "Yapım yılı",
+        "TaxAnnualAmount": "Yıllık emlak vergisi"
+      },
+      "errors": {
+        "validation": "Bu kabul edilmedi. Metni kontrol edip yeniden deneyin.",
+        "overLimit": "MLS burada en fazla {limit} karaktere izin veriyor.",
+        "superseded": "Bu içeriğin daha yeni bir sürümü var. Düzenlemek için sayfayı yenileyin.",
+        "exists": "Bu içerik zaten var. Düzenlemek için sayfayı yenileyin.",
+        "forbidden": "Bu ilanın içeriğini değiştiremezsiniz.",
+        "notFound": "Bu içerik artık mevcut değil. Sayfayı yenileyin.",
+        "unexpected": "Bir sorun oluştu. Lütfen yeniden deneyin."
+      }
+    },
     "grid": {
       "label": "İlan fotoğrafları",
       "move": "{n}. fotoğrafı yeniden sırala",

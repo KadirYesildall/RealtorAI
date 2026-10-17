@@ -208,3 +208,26 @@ export function parseTags(text: string): string[] {
       return true;
     });
 }
+
+// ───────────────────────────── US3: listing content ─────────────────────────────
+
+/** The contract's `Tone`, in the order the switcher offers them (FR-013). */
+export const TONES = ["professional", "warm", "luxury", "concise"] as const;
+
+export type ToneValue = (typeof TONES)[number];
+
+/** The contract's `ContentKind`, in the order the review shows them. */
+export const CONTENT_KINDS = ["public_remarks", "private_remarks", "headline"] as const;
+
+export type ContentKindValue = (typeof CONTENT_KINDS)[number];
+
+/**
+ * Bounds what is sent; the MLS's own limit is the API's to enforce, from the rule profile. This
+ * ceiling is above any remarks limit and only stops an accidental paste of a document.
+ */
+export const MAX_CONTENT_LENGTH = 10_000;
+
+export const ContentBodySchema = z
+  .string()
+  .refine((value) => value.trim().length > 0, "contentEmpty")
+  .refine((value) => value.length <= MAX_CONTENT_LENGTH, "tooLong");

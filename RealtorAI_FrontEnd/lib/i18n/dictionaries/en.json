@@ -381,6 +381,71 @@
         "unexpected": "Something went wrong. Please try again."
       }
     },
+    "content": {
+      "title": "Listing content",
+      "body": "Drafted from your listing's facts, or written by you. Sentences that rest on a fact you haven't confirmed are highlighted, and the listing can't be published until you confirm the fact or remove the sentence.",
+      "tone": "Tone",
+      "toneHint": "Used the next time content is generated. Your choice is recorded with each draft.",
+      "tones": {
+        "professional": "Professional",
+        "warm": "Warm",
+        "luxury": "Luxury",
+        "concise": "Concise"
+      },
+      "kinds": {
+        "public_remarks": "Description",
+        "private_remarks": "Agent remarks",
+        "headline": "Headline"
+      },
+      "generate": "Generate {kind}",
+      "regenerate": "Generate {kind} again",
+      "write": "Write {kind} yourself",
+      "generating": "Drafting…",
+      "generateFailed": "This content couldn't be generated. Write it yourself, or try again.",
+      "empty": "Nothing here yet. Generate it, or write it yourself.",
+      "chooseVersion": "Choose the version to publish",
+      "version": "Version {n}",
+      "bodyLabel": "{kind} text",
+      "edit": "Edit {kind}",
+      "editVersion": "Edit {version}",
+      "save": "Save",
+      "cancel": "Cancel",
+      "count": "{count} characters",
+      "countOfLimit": "{count} of {limit} characters",
+      "claimNote": "rests on a fact you haven't confirmed: {facts}",
+      "claimsSummary": "{count} highlighted sentence(s) rest on facts you haven't confirmed. Confirm them in the listing's details, or edit the sentences out.",
+      "approvedNote": "Approved. Editing it withdraws the approval and returns the listing to review.",
+      "conflict": "This content was changed somewhere else since you opened it.",
+      "loadLatest": "Show the latest version",
+      "unknownFact": "a listing fact",
+      "manual": {
+        "noModel": "Generating content isn't available right now. Write it yourself below.",
+        "profileIncomplete": "This listing's MLS doesn't have verified character limits yet, so nothing can be generated to them. Write it yourself below.",
+        "budget": "This listing's AI budget is used up. Write the content yourself below.",
+        "running": "This listing is already being analyzed. Generate content once that finishes."
+      },
+      "facts": {
+        "InteriorFeatures": "Interior features",
+        "Appliances": "Appliances",
+        "Flooring": "Flooring",
+        "ParkingFeatures": "Parking",
+        "PoolFeatures": "Pool",
+        "View": "View",
+        "LivingArea": "Living area",
+        "LotSizeSquareFeet": "Lot size",
+        "YearBuilt": "Year built",
+        "TaxAnnualAmount": "Annual property tax"
+      },
+      "errors": {
+        "validation": "That wasn't accepted. Check the text and try again.",
+        "overLimit": "The MLS allows at most {limit} characters here.",
+        "superseded": "A newer version of this content exists. Reload the page to edit it.",
+        "exists": "This content already exists. Reload the page to edit it.",
+        "forbidden": "You can't change this listing's content.",
+        "notFound": "This content isn't available any more. Reload the page.",
+        "unexpected": "Something went wrong. Please try again."
+      }
+    },
     "grid": {
       "label": "Listing photos",
       "move": "Reorder photo {n}",

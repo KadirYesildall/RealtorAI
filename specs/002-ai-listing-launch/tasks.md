@@ -235,9 +235,9 @@ Per [plan.md](./plan.md) "Project Structure" — the repo's two mandated top-lev
 - [X] T110 [US3] Implement `GenerateListingContentAsync` with tone and variant count in `Libs.Ai/Tasks/ListingContentTask.cs`
 - [X] T111 [US3] Implement grounding: persist `supporting_field_ids` and compute unconfirmed-claim spans in `Modules.Content/GroundingService.cs` (FR-014)
 - [X] T112 [US3] Implement content endpoints (list, regenerate, edit/select) in `Modules.Content/Endpoints/ContentEndpoints.cs`
-- [ ] T113 [P] [US3] Build the variant picker and tone switcher in `RealtorAI_FrontEnd/components/listing/DescriptionVariantPicker.tsx`
-- [ ] T114 [P] [US3] Build unconfirmed-claim highlighting in `RealtorAI_FrontEnd/components/listing/ClaimHighlighter.tsx`
-- [ ] T115 [P] [US3] Add EN/TR keys for US3 and verify both themes
+- [X] T113 [P] [US3] Build the variant picker and tone switcher in `RealtorAI_FrontEnd/components/listing/DescriptionVariantPicker.tsx`
+- [X] T114 [P] [US3] Build unconfirmed-claim highlighting in `RealtorAI_FrontEnd/components/listing/ClaimHighlighter.tsx`
+- [X] T115 [P] [US3] Add EN/TR keys for US3 and verify both themes
 
 **Checkpoint**: US3 independently deliverable — MLS-ready content drafted and grounded
 

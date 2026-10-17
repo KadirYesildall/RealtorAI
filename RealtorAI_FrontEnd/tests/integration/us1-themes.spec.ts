@@ -2,7 +2,8 @@ import { test, expect, type Page } from "@playwright/test";
 import { png, randomColour } from "./helpers";
 
 /**
- * T083 — every US1 screen in both themes (constitution: dark mode is baseline, WCAG AA in both).
+ * T083 — every US1 screen in both themes (constitution: dark mode is baseline, WCAG AA in both),
+ * extended with the US2 photo screens and the US3 content card (T115).
  *
  * Two checks per screen and theme. A computed-contrast check over every text element that
  * renders, against the background actually painted behind it — the failure this catches is a
@@ -147,6 +148,15 @@ for (const theme of THEMES) {
       await page.getByRole("button", { name: "Declare alteration for photo 1" }).click();
       await check("altered-dialog", page.getByRole("dialog", { name: "Declare an alteration" }));
       await page.keyboard.press("Escape");
+
+      // ── US3: the content card, on the manual path, with a draft written by hand ──
+      await page.getByRole("button", { name: "Generate Headline", exact: true }).click();
+      await expect(page.getByText("Generating content isn't available right now")).toBeVisible();
+      await page.getByRole("button", { name: "Write Headline yourself" }).click();
+      await page.getByLabel("Headline text").fill("Light-filled townhouse near the park");
+      await page.getByRole("button", { name: "Save" }).click();
+      await expect(page.getByText("Light-filled townhouse near the park")).toBeVisible();
+      await check("listing-content", page.getByRole("region", { name: "Listing content" }));
 
       await page.goto("/dashboard/profile/complete");
       await check("profile-completion", page.getByRole("heading", { name: "Complete your profile" }));

@@ -110,3 +110,39 @@ export async function reorderPhotos(
 export async function deletePhoto(listingId: string, photoId: string): Promise<void> {
   await createServerApiClient().delete<void>(`${listingPath(listingId)}/photos/${encodeURIComponent(photoId)}`);
 }
+
+// ───────────────────────────── US3: listing content ─────────────────────────────
+
+export type ContentDraft = components["schemas"]["ContentDraft"];
+export type ContentKind = components["schemas"]["ContentKind"];
+export type Tone = components["schemas"]["Tone"];
+
+/** Every kind's newest version: the drafts the agent reviews (FR-013, FR-014). */
+export async function listContent(listingId: string): Promise<ContentDraft[]> {
+  return createServerApiClient().get<ContentDraft[]>(`${listingPath(listingId)}/content`);
+}
+
+/** The manual path (SC-010): the agent's own words as the kind's draft, no model involved. */
+export async function createContent(listingId: string, body: { kind: ContentKind; body: string; tone?: Tone }): Promise<ContentDraft> {
+  return createServerApiClient().post<ContentDraft>(`${listingPath(listingId)}/content`, body);
+}
+
+/**
+ * 202 with the run; 503 (no model) and 409 (unverified MLS limit, budget, a run in progress)
+ * arrive as ApiError with `reason`, each with the manual path open.
+ */
+export async function regenerateContent(listingId: string, kind: ContentKind, tone?: Tone): Promise<PipelineStatus> {
+  return createServerApiClient().post<PipelineStatus>(`${listingPath(listingId)}/content/regenerate`, { kind, ...(tone ? { tone } : {}) });
+}
+
+/** FR-066: refused with 409 and the current draft when `rowVersion` is no longer current. */
+export async function editContent(
+  listingId: string,
+  draftId: string,
+  body: { body?: string; selected?: boolean },
+  rowVersion: number
+): Promise<ContentDraft> {
+  return createServerApiClient().patch<ContentDraft>(`${listingPath(listingId)}/content/${encodeURIComponent(draftId)}`, body, {
+    ifMatch: rowVersion,
+  });
+}
