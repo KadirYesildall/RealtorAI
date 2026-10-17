@@ -120,6 +120,60 @@ internal sealed class FakeChatClientFactory : IChatClientFactory
         ["recommendationReason"] = "An interior room; an exterior view usually leads.",
     };
 
+    /// <summary>
+    /// The document returned for a <c>listing.content</c> call, given the request the API sent.
+    /// The default answers both modes with content grounded in the facts it was given.
+    /// </summary>
+    internal Func<JsonObject, JsonObject> ContentAnswer { get; set; } = DefaultContentAnswer;
+
+    /// <summary>
+    /// Structured mode: InteriorFeatures from the allowed values. Text mode: the requested number
+    /// of variants, each with an unsourced opening sentence and a sentence citing the
+    /// InteriorFeatures fact when one was provided.
+    /// </summary>
+    internal static JsonObject DefaultContentAnswer(JsonObject request)
+    {
+        if (request["mode"]!.GetValue<string>() == "structured")
+        {
+            return new JsonObject
+            {
+                ["structured"] = new JsonObject { ["InteriorFeatures"] = new JsonArray("VaultedCeilings", "WetBar") },
+                ["variants"] = new JsonArray(),
+            };
+        }
+
+        var feature = request["facts"]!.AsArray()
+            .FirstOrDefault(fact => fact!["key"]!.GetValue<string>() == "InteriorFeatures")?["fieldId"]?.GetValue<string>();
+        var count = request["variantCount"]!.GetValue<int>();
+        var kind = request["kind"]!.GetValue<string>();
+        var variants = new JsonArray();
+
+        for (var index = 0; index < count; index++)
+        {
+            var sentences = new JsonArray
+            {
+                new JsonObject
+                {
+                    ["text"] = kind == "headline" ? $"Light-filled home, version {index + 1}" : $"Welcome to a light-filled home, version {index + 1}.",
+                    ["supportingFieldIds"] = new JsonArray(),
+                },
+            };
+
+            if (feature is not null && kind != "headline")
+            {
+                sentences.Add(new JsonObject
+                {
+                    ["text"] = "Vaulted ceilings open up the living room.",
+                    ["supportingFieldIds"] = new JsonArray(feature),
+                });
+            }
+
+            variants.Add(new JsonObject { ["sentences"] = sentences });
+        }
+
+        return new JsonObject { ["variants"] = variants };
+    }
+
     public IChatClient Create(ModelRegistryEntry entry) => new Client(this);
 
     private sealed class Client(FakeChatClientFactory owner) : IChatClient
@@ -139,7 +193,16 @@ internal sealed class FakeChatClientFactory : IChatClientFactory
                 throw new HttpRequestException("The test provider is failing for this photo.");
             }
 
-            return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, owner.Answer(input).ToJsonString()))
+            // A listing.content request is the JSON object in the first user message, with a
+            // "mode"; anything else is a photo analysis.
+            var request = list.FirstOrDefault(message => message.Role == ChatRole.User)?.Text is { } first
+                && first.TrimStart().StartsWith('{')
+                ? JsonNode.Parse(first) as JsonObject
+                : null;
+
+            var answer = request?["mode"] is not null ? owner.ContentAnswer(request) : owner.Answer(input);
+
+            return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, answer.ToJsonString()))
             {
                 Usage = new UsageDetails { InputTokenCount = 900, OutputTokenCount = 120, TotalTokenCount = 1020 },
             });

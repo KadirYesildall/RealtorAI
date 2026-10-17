@@ -221,12 +221,12 @@ Per [plan.md](./plan.md) "Project Structure" — the repo's two mandated top-lev
 
 ### Tests for User Story 3 (write first, confirm failing)
 
-- [ ] T102 [P] [US3] Contract test `GET /api/listings/{id}/content` in `tests/contract/ContentListTests.cs`
-- [ ] T103 [P] [US3] Contract test `POST /content/regenerate` including **409 when the CRMLS rule profile is incomplete** in `tests/contract/ContentRegenerateTests.cs`
-- [ ] T104 [P] [US3] Contract test `PATCH /content/{draftId}` with `If-Match` and approval revocation in `tests/contract/ContentEditTests.cs`
-- [ ] T105 [P] [US3] Integration test: remarks respect the configured limit and **fail closed** when it is unset in `tests/integration/RemarksLimitTests.cs`
-- [ ] T106 [P] [US3] Integration test: generated content contains no measurement/tax/school/zoning claim lacking valid provenance in `tests/integration/GroundingTests.cs`
-- [ ] T107 [P] [US3] Unit tests for RESO enumerated-value validation in `tests/unit/ResoEnumerationTests.cs`
+- [X] T102 [P] [US3] Contract test `GET /api/listings/{id}/content` in `tests/contract/ContentListTests.cs`
+- [X] T103 [P] [US3] Contract test `POST /content/regenerate` including **409 when the CRMLS rule profile is incomplete** in `tests/contract/ContentRegenerateTests.cs`
+- [X] T104 [P] [US3] Contract test `PATCH /content/{draftId}` with `If-Match` and approval revocation in `tests/contract/ContentEditTests.cs`
+- [X] T105 [P] [US3] Integration test: remarks respect the configured limit and **fail closed** when it is unset in `tests/integration/RemarksLimitTests.cs`
+- [X] T106 [P] [US3] Integration test: generated content contains no measurement/tax/school/zoning claim lacking valid provenance in `tests/integration/GroundingTests.cs`
+- [X] T107 [P] [US3] Unit tests for RESO enumerated-value validation in `tests/unit/ResoEnumerationTests.cs`
 
 ### Implementation for User Story 3
 
