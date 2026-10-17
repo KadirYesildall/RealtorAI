@@ -444,6 +444,68 @@
         "forbidden": "Bu ilanın içeriğini değiştiremezsiniz.",
         "notFound": "Bu içerik artık mevcut değil. Sayfayı yenileyin.",
         "unexpected": "Bir sorun oluştu. Lütfen yeniden deneyin."
+      },
+      "findingNote": "uyumluluk kontrolünce işaretlendi"
+    },
+    "compliance": {
+      "title": "Uyumluluk incelemesi",
+      "body": "İlanın metinlerini ve fotoğraflarını Adil Konut kurallarına, riskli iddialara, MLS kurallarına ve fotoğraf beyanı gerekliliklerine göre kontrol eder. Engelleyici bulgular ilan onaylanmadan önce düzeltilmelidir; uyarılar gerekçe yazılarak kabul edilebilir.",
+      "run": "Uyumluluğu kontrol et",
+      "runAgain": "Uyumluluğu yeniden kontrol et",
+      "running": "Kontrol ediliyor…",
+      "summary": "İncelenecek {blocking} engelleyici, {warnings} uyarı.",
+      "allClear": "Açık bulgu yok. Her bulgu düzeltildi ya da kabul edildi.",
+      "listLabel": "Bulgular",
+      "severity": {
+        "blocking": "Engelleyici",
+        "warning": "Uyarı"
+      },
+      "checkTypes": {
+        "fair_housing": "Adil Konut",
+        "risky_claim": "Riskli iddia",
+        "mls_rule": "MLS kuralı",
+        "photo_integrity": "Fotoğraf bütünlüğü",
+        "advertising_disclosure": "Reklam beyanı"
+      },
+      "sources": {
+        "lexicon": "İfade listesi",
+        "judge": "Bağlamsal inceleme",
+        "deterministic": "Kural kontrolü"
+      },
+      "status": {
+        "open": "Açık",
+        "resolved": "Çözüldü",
+        "acknowledged": "Kabul edildi",
+        "stale": "Geçersiz"
+      },
+      "targets": {
+        "listing": "İlan",
+        "content": "İçerik",
+        "version": "{kind}, sürüm {n}",
+        "photo": "Fotoğraf {n}"
+      },
+      "suggested": "Öneri:",
+      "blockingNote": "Engelleyici bulgular göz ardı edilemez. Kontrol artık bulmayacak şekilde içeriği değiştirin.",
+      "show": "Metinde göster",
+      "applyFix": "Önerilen ifadeyi kullan",
+      "acknowledgeButton": "Kabul et",
+      "acknowledge": {
+        "title": "Uyarıyı kabul et",
+        "body": "Bu uyarının neden değişiklik gerektirmediğini yazın. Gerekçeniz adınız ve saatle birlikte denetim kaydında tutulur.",
+        "reason": "Gerekçe",
+        "reasonHint": "En az {min} karakter.",
+        "submit": "Uyarıyı kabul et",
+        "cancel": "Vazgeç"
+      },
+      "errors": {
+        "running": "Bu ilan şu anda kontrol ediliyor ya da analiz ediliyor. Bitince yeniden deneyin.",
+        "changed": "Bu içerik kontrol yapıldıktan sonra değişti. Uyumluluğu yeniden kontrol edin.",
+        "noFix": "Bu bulgu için uygulanacak bir ifade yok. İçeriği kendiniz düzenleyin.",
+        "blocking": "Engelleyici bulgular kabul edilemez.",
+        "reasonTooShort": "En az 10 karakterlik bir gerekçe yazın.",
+        "forbidden": "Bu ilanın uyumluluk incelemesini değiştiremezsiniz.",
+        "notFound": "Bu bulgu artık mevcut değil. Sayfayı yenileyin.",
+        "unexpected": "Bir sorun oluştu. Lütfen yeniden deneyin."
       }
     },
     "grid": {

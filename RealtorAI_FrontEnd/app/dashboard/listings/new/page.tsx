@@ -6,7 +6,7 @@ import { getAuthenticatedProfile } from "@/lib/supabase/getProfile";
 import { getDictionary, defaultLocale, isLocale, type Dictionary } from "@/lib/i18n/getDictionary";
 import { ApiError } from "@/lib/api/client";
 import { getOwnMembership } from "@/lib/api/brokerage";
-import { getListing, getPipeline, listContent, type ListingDetail } from "@/lib/api/listings";
+import { getListing, getPipeline, listContent, listFindings, type ListingDetail } from "@/lib/api/listings";
 import { cn } from "@/lib/utils/cn";
 import { Alert } from "@/components/ui/Alert";
 import { Card } from "@/components/ui/Card";
@@ -77,11 +77,15 @@ export default async function NewListingPage({ searchParams }: PageProps<"/dashb
     );
   }
 
-  const [pipeline, content] = await Promise.all([getPipeline(id).catch(() => null), listContent(id).catch(() => [])]);
+  const [pipeline, content, findings] = await Promise.all([
+    getPipeline(id).catch(() => null),
+    listContent(id).catch(() => []),
+    listFindings(id).catch(() => []),
+  ]);
 
   return (
     <WizardShell dict={t} step="photos" address={listing.addressLine1}>
-      <ListingDraftEditor listing={listing} pipeline={pipeline} content={content} dict={t} />
+      <ListingDraftEditor listing={listing} pipeline={pipeline} content={content} findings={findings} dict={t} />
     </WizardShell>
   );
 }

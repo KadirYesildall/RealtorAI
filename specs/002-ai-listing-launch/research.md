@@ -1233,6 +1233,12 @@ a later story does not have to rediscover them.
   `mls.profile_incomplete` naming the missing values, and no per-item MLS rule runs against a
   guessed value. An altered photo with no profile, or with no approved label (CRMLS until T161),
   is blocking.
+  The remarks detectors (phone, email, URL, agent and brokerage names) run on an unverified
+  profile too: which are on comes from FR-019 itself, as 0010 records, not from CRMLS's numbers.
+  Lengths, counts and resolutions do not.
+- **The panel** lists open and acknowledged findings (resolved ones are dealt with), states
+  severity in words with a distinct icon, and offers "show in text" (a DOM event the content card
+  answers by marking the span), the one-click rewrite, and acknowledgement for open warnings only.
 - **Advertising disclosure (FR-021)** in Slice A checks the listing: the brokerage's name and
   license number and the agent's license number must be on record. California requires a
   licensee's license number on advertising. Whether other states require both numbers is

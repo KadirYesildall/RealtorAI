@@ -3,7 +3,8 @@ import { png, randomColour } from "./helpers";
 
 /**
  * T083 — every US1 screen in both themes (constitution: dark mode is baseline, WCAG AA in both),
- * extended with the US2 photo screens and the US3 content card (T115).
+ * extended with the US2 photo screens, the US3 content card (T115) and the US4 compliance review
+ * and acknowledge dialog (T137).
  *
  * Two checks per screen and theme. A computed-contrast check over every text element that
  * renders, against the background actually painted behind it — the failure this catches is a
@@ -157,6 +158,19 @@ for (const theme of THEMES) {
       await page.getByRole("button", { name: "Save" }).click();
       await expect(page.getByText("Light-filled townhouse near the park")).toBeVisible();
       await check("listing-content", page.getByRole("region", { name: "Listing content" }));
+
+      // ── US4: the compliance review with findings, and the acknowledge dialog ──
+      await page.getByRole("button", { name: "Edit Headline" }).click();
+      await page.getByLabel("Headline text").fill("Walking distance to church, perfect for young families");
+      await page.getByRole("button", { name: "Save" }).click();
+      const review = page.getByRole("region", { name: "Compliance review" });
+      await review.getByRole("button", { name: "Check compliance" }).click();
+      await expect(review.getByRole("list", { name: "Findings" }).getByRole("listitem").first()).toBeVisible({ timeout: 20_000 });
+      await check("compliance-review", review.getByRole("list", { name: "Findings" }));
+
+      await review.getByRole("listitem").filter({ hasText: "Walking distance to church" }).getByRole("button", { name: "Acknowledge" }).click();
+      await check("acknowledge-dialog", page.getByRole("dialog", { name: "Acknowledge a warning" }));
+      await page.keyboard.press("Escape");
 
       await page.goto("/dashboard/profile/complete");
       await check("profile-completion", page.getByRole("heading", { name: "Complete your profile" }));

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useId, useState, useTransition } from "react";
+import { useCallback, useEffect, useId, useRef, useState, useTransition } from "react";
 import { createContentAction, editContentAction, regenerateContentAction, type RegenerateResult } from "@/app/actions/content";
 import { pipelineStatusAction } from "@/app/actions/photos";
 import type { ContentDraft, ContentKind, ListingField, PipelineStatus, Tone } from "@/lib/api/listings";
@@ -15,7 +15,8 @@ import { Card } from "@/components/ui/Card";
 import { FormField } from "@/components/ui/FormField";
 import { Select } from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
-import { ClaimHighlighter } from "@/components/listing/ClaimHighlighter";
+import { ClaimHighlighter, type Focus } from "@/components/listing/ClaimHighlighter";
+import { FOCUS_SPAN_EVENT, type FocusSpan } from "@/lib/compliance/focus";
 
 type ContentDict = Dictionary["listings"]["content"];
 
@@ -327,11 +328,30 @@ function DraftCard({
   const radioId = useId();
   const [editing, setEditing] = useState(false);
   const [conflict, setConflict] = useState<ContentDraft | null>(null);
+  // Held with the words it was taken from: once they change, the offsets point elsewhere.
+  const [focus, setFocus] = useState<(Focus & { body: string }) | null>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  // "Show in text" from the compliance panel: mark the span here, if the finding is this draft's.
+  useEffect(() => {
+    const show = (event: Event) => {
+      const detail = (event as CustomEvent<FocusSpan>).detail;
+      if (detail.draftId !== draft.id) return;
+
+      setEditing(false);
+      setFocus({ start: detail.start, end: detail.end, body: draft.body ?? "" });
+      cardRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    };
+
+    window.addEventListener(FOCUS_SPAN_EVENT, show);
+    return () => window.removeEventListener(FOCUS_SPAN_EVENT, show);
+  }, [draft.id, draft.body]);
   const claims = draft.unconfirmedClaims ?? [];
   const body = draft.body ?? "";
 
   return (
     <div
+      ref={cardRef}
       className={cn(
         "space-y-3 rounded-[var(--radius-md)] border p-4",
         draft.selected ? "border-[var(--color-accent)] bg-[var(--color-surface-elevated)]" : "border-[var(--color-border)]"
@@ -399,7 +419,14 @@ function DraftCard({
         />
       ) : (
         <>
-          <ClaimHighlighter body={body} claims={claims} factLabel={factLabel} note={dict.claimNote} />
+          <ClaimHighlighter
+            body={body}
+            claims={claims}
+            factLabel={factLabel}
+            note={dict.claimNote}
+            focus={focus?.body === body ? focus : null}
+            focusNote={dict.findingNote}
+          />
           <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-[var(--color-text-muted)]">
             <span>
               {draft.characterLimit

@@ -228,3 +228,23 @@ export function GoogleIcon(props: IconProps) {
     </svg>
   );
 }
+
+/** A stop sign: blocking. Paired with the word, so severity never rests on colour alone. */
+export function BlockIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M8.3 3.5h7.4l4.8 4.8v7.4l-4.8 4.8H8.3l-4.8-4.8V8.3Z" />
+      <path d="M8 12h8" />
+    </Icon>
+  );
+}
+
+/** A warning triangle. Paired with the word, so severity never rests on colour alone. */
+export function WarningIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M12 4 21 19.5H3Z" />
+      <path d="M12 10v4.5M12 17.2v.3" />
+    </Icon>
+  );
+}

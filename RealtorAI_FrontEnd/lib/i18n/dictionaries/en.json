@@ -444,6 +444,68 @@
         "forbidden": "You can't change this listing's content.",
         "notFound": "This content isn't available any more. Reload the page.",
         "unexpected": "Something went wrong. Please try again."
+      },
+      "findingNote": "flagged by the compliance check"
+    },
+    "compliance": {
+      "title": "Compliance review",
+      "body": "Checks the listing's copy and photos against Fair Housing rules, risky claims, the MLS's rules and the photo-disclosure requirements. Blocking findings must be fixed before the listing can be approved; warnings can be acknowledged with a reason.",
+      "run": "Check compliance",
+      "runAgain": "Check compliance again",
+      "running": "Checking…",
+      "summary": "{blocking} blocking, {warnings} warnings to review.",
+      "allClear": "Nothing open. Every finding has been fixed or acknowledged.",
+      "listLabel": "Findings",
+      "severity": {
+        "blocking": "Blocking",
+        "warning": "Warning"
+      },
+      "checkTypes": {
+        "fair_housing": "Fair Housing",
+        "risky_claim": "Risky claim",
+        "mls_rule": "MLS rule",
+        "photo_integrity": "Photo integrity",
+        "advertising_disclosure": "Advertising disclosure"
+      },
+      "sources": {
+        "lexicon": "Phrase list",
+        "judge": "Contextual review",
+        "deterministic": "Rule check"
+      },
+      "status": {
+        "open": "Open",
+        "resolved": "Resolved",
+        "acknowledged": "Acknowledged",
+        "stale": "Superseded"
+      },
+      "targets": {
+        "listing": "The listing",
+        "content": "Content",
+        "version": "{kind}, version {n}",
+        "photo": "Photo {n}"
+      },
+      "suggested": "Suggested:",
+      "blockingNote": "Blocking findings can't be dismissed. Change the content so the check no longer finds it.",
+      "show": "Show in text",
+      "applyFix": "Use the suggested wording",
+      "acknowledgeButton": "Acknowledge",
+      "acknowledge": {
+        "title": "Acknowledge a warning",
+        "body": "Say why this warning doesn't need a change. Your reason is kept in the audit trail with your name and the time.",
+        "reason": "Reason",
+        "reasonHint": "At least {min} characters.",
+        "submit": "Acknowledge warning",
+        "cancel": "Cancel"
+      },
+      "errors": {
+        "running": "This listing is already being checked or analyzed. Try again when that finishes.",
+        "changed": "This content changed since the check ran. Check compliance again.",
+        "noFix": "This finding has no wording to apply. Edit the content yourself.",
+        "blocking": "Blocking findings can't be acknowledged.",
+        "reasonTooShort": "Give a reason of at least 10 characters.",
+        "forbidden": "You can't change this listing's compliance review.",
+        "notFound": "This finding isn't available any more. Reload the page.",
+        "unexpected": "Something went wrong. Please try again."
       }
     },
     "grid": {

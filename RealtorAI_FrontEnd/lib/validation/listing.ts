@@ -231,3 +231,14 @@ export const ContentBodySchema = z
   .string()
   .refine((value) => value.trim().length > 0, "contentEmpty")
   .refine((value) => value.length <= MAX_CONTENT_LENGTH, "tooLong");
+
+// ───────────────────────────── US4: compliance ─────────────────────────────
+
+/** FR-023: an acknowledgement says why, in at least this many characters. */
+export const MIN_ACKNOWLEDGE_REASON = 10;
+
+export const AcknowledgeReasonSchema = z
+  .string()
+  .transform((value) => value.trim())
+  .refine((value) => value.length >= MIN_ACKNOWLEDGE_REASON, "reasonTooShort")
+  .refine((value) => value.length <= 1000, "tooLong");

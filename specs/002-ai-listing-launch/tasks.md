@@ -274,8 +274,8 @@ Per [plan.md](./plan.md) "Project Structure" — the repo's two mandated top-lev
 - [X] T133 [US4] Implement the AB 723 photo-integrity checker in `Libs.Compliance/PhotoIntegrityChecker.cs` (FR-020)
 - [X] T134 [P] [US4] Implement the advertising-disclosure checker in `Libs.Compliance/DisclosureChecker.cs` (FR-021)
 - [X] T135 [US4] Implement compliance endpoints with edit-scoped re-runs in `Libs.Compliance/Endpoints/ComplianceEndpoints.cs` (FR-025)
-- [ ] T136 [P] [US4] Build the compliance panel with jump-to-span and one-click rewrite in `RealtorAI_FrontEnd/components/compliance/FindingList.tsx`
-- [ ] T137 [P] [US4] Build the acknowledge-warning dialog in `RealtorAI_FrontEnd/components/compliance/AcknowledgeWarningDialog.tsx`, with severity distinguishable **without relying on colour alone**, WCAG AA in both themes, and EN/TR keys
+- [X] T136 [P] [US4] Build the compliance panel with jump-to-span and one-click rewrite in `RealtorAI_FrontEnd/components/compliance/FindingList.tsx`
+- [X] T137 [P] [US4] Build the acknowledge-warning dialog in `RealtorAI_FrontEnd/components/compliance/AcknowledgeWarningDialog.tsx`, with severity distinguishable **without relying on colour alone**, WCAG AA in both themes, and EN/TR keys
 
 **Checkpoint**: US4 independently deliverable — nothing unsafe can be approved
 

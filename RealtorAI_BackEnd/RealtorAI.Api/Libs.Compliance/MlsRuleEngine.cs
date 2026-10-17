@@ -34,8 +34,9 @@ public sealed record MlsRules(
 /// <para>
 /// <b>Fails closed.</b> With no profile, an unverified one, or a verified one missing any value,
 /// the listing carries one blocking <c>mls.profile_incomplete</c> finding naming what is
-/// missing, and no rule is checked against a guessed value. The per-item checks then add nothing
-/// of their own, because there is no verified number to compare against.
+/// missing, and no rule is checked against a guessed value: no length, count or resolution is
+/// compared against a number nobody verified. The remarks detectors still run, because which are
+/// on comes from the specification (FR-019), not the MLS's numbers.
 /// </para>
 /// </summary>
 public static partial class MlsRuleEngine
@@ -131,7 +132,7 @@ public static partial class MlsRuleEngine
         ArgumentNullException.ThrowIfNull(text);
         ArgumentNullException.ThrowIfNull(names);
 
-        if (Incomplete(rules) is not null)
+        if (rules is null)
         {
             return [];
         }
@@ -139,12 +140,14 @@ public static partial class MlsRuleEngine
         var findings = new List<Finding>();
         var limit = kind switch
         {
-            "public_remarks" => rules!.PublicRemarksMaxChars,
-            "private_remarks" => rules!.PrivateRemarksMaxChars,
+            "public_remarks" => rules.PublicRemarksMaxChars,
+            "private_remarks" => rules.PrivateRemarksMaxChars,
             _ => null,
         };
 
-        if (limit is { } max && text.Length > max)
+        // A limit is a number someone must have verified; with none, the listing's fail-closed
+        // finding stands instead.
+        if (Incomplete(rules) is null && limit is { } max && text.Length > max)
         {
             findings.Add(new Finding(
                 "mls.remarks_too_long",
@@ -162,7 +165,9 @@ public static partial class MlsRuleEngine
 
         var detected = new List<Finding>();
 
-        foreach (var detector in rules!.ForbiddenInPublicRemarks)
+        // The detectors run on an unverified profile too: which ones are on comes from the
+        // specification itself (FR-019), not from the MLS's numeric rulebook (0010).
+        foreach (var detector in rules.ForbiddenInPublicRemarks)
         {
             var (patterns, reason) = detector.Detector switch
             {

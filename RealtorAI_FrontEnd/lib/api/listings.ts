@@ -146,3 +146,29 @@ export async function editContent(
     ifMatch: rowVersion,
   });
 }
+
+// ───────────────────────────── US4: compliance ─────────────────────────────
+
+export type ComplianceFinding = components["schemas"]["ComplianceFinding"];
+
+/** Every finding but those of superseded items, blocking first (FR-017). */
+export async function listFindings(listingId: string): Promise<ComplianceFinding[]> {
+  return createServerApiClient().get<ComplianceFinding[]>(`${listingPath(listingId)}/compliance`);
+}
+
+/** 202 with the run; 409 when a run is already in progress. */
+export async function runCompliance(listingId: string): Promise<PipelineStatus> {
+  return createServerApiClient().post<PipelineStatus>(`${listingPath(listingId)}/compliance`, {});
+}
+
+/** The one-click rewrite: the edited draft, already re-checked (FR-025). */
+export async function applyFix(listingId: string, findingId: string): Promise<ContentDraft> {
+  return createServerApiClient().post<ContentDraft>(`${listingPath(listingId)}/compliance/${encodeURIComponent(findingId)}/apply-fix`);
+}
+
+/** FR-023: a warning only, with a reason; a blocking finding is refused with 422 (FR-022). */
+export async function acknowledgeFinding(listingId: string, findingId: string, reason: string): Promise<ComplianceFinding> {
+  return createServerApiClient().post<ComplianceFinding>(`${listingPath(listingId)}/compliance/${encodeURIComponent(findingId)}/acknowledge`, {
+    reason,
+  });
+}

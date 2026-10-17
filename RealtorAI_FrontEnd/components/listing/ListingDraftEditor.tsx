@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { autosaveListingAction, type BasicsField } from "@/app/actions/listing";
-import type { ContentDraft, Listing, ListingDetail, PipelineStatus } from "@/lib/api/listings";
+import type { ComplianceFinding, ContentDraft, Listing, ListingDetail, PipelineStatus } from "@/lib/api/listings";
 import type { Dictionary } from "@/lib/i18n/getDictionary";
 import { format } from "@/lib/i18n/format";
 import { ListingBasicsSchema, PUBLIC_RECORD_FIELDS, type ListingBasicsInput } from "@/lib/validation/listing";
@@ -10,6 +10,7 @@ import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { ListingBasicsFields, type BasicsFormValues } from "@/components/listing/ListingBasicsFields";
+import { FindingList } from "@/components/compliance/FindingList";
 import { DescriptionVariantPicker } from "@/components/listing/DescriptionVariantPicker";
 import { PhotoGrid } from "@/components/listing/PhotoGrid";
 import { PhotoUploader } from "@/components/listing/PhotoUploader";
@@ -39,7 +40,8 @@ function toFormValues(listing: Pick<Listing, keyof BasicsFormValues>): BasicsFor
 
 /**
  * T080 steps 1–3 for a draft that exists: the basics (autosaved), the photos, the content
- * (Story 3), and what is still needed before publishing (Story 1 scenarios 1–6).
+ * (Story 3), the compliance review (Story 4), and what is still needed before publishing
+ * (Story 1 scenarios 1–6).
  *
  * <b>Autosave.</b> An edit is saved after a short pause, or when the field loses focus, with the
  * row version last saved. Saves never overlap: a change made while one is in flight is saved
@@ -50,11 +52,13 @@ export function ListingDraftEditor({
   listing,
   pipeline,
   content,
+  findings,
   dict,
 }: {
   listing: ListingDetail;
   pipeline: PipelineStatus | null;
   content: ContentDraft[];
+  findings: ComplianceFinding[];
   dict: Dictionary["listings"];
 }) {
   const listingId = listing.id ?? "";
@@ -224,6 +228,15 @@ export function ListingDraftEditor({
       <PipelineProgress listingId={listingId} initialStatus={pipeline} photoCount={photoCount} dict={dict} />
 
       <DescriptionVariantPicker listingId={listingId} drafts={content} fields={listing.fields ?? []} dict={dict} />
+
+      <FindingList
+        listingId={listingId}
+        findings={findings}
+        drafts={content}
+        photos={listing.photos ?? []}
+        pipeline={pipeline}
+        dict={dict}
+      />
 
       <Card id="progress">
         <h2 className="text-lg font-semibold text-[var(--color-text)]">{dict.progress.title}</h2>

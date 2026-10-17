@@ -162,6 +162,16 @@ public sealed class MlsRuleProfileTests
         Assert.Empty(MlsRuleEngine.CheckRemarks("private_remarks", "Call Casey Agent at (949) 555-0123.", Complete(), Names));
     }
 
+    /// <summary>On an unverified profile the length is not checked, but contact details still are.</summary>
+    [Fact]
+    public void Remarks_OnAnUnverifiedProfile_RunTheDetectorsButNotTheLimit()
+    {
+        var unverified = Complete() with { Verified = false };
+
+        Assert.Empty(MlsRuleEngine.CheckRemarks("public_remarks", new string('a', 5000), unverified, Names));
+        Assert.Equal("mls.forbidden.phone_number", Assert.Single(MlsRuleEngine.CheckRemarks("public_remarks", "Call (949) 555-0123.", unverified, Names)).RuleId);
+    }
+
     [Fact]
     public void Remarks_WithNoProfile_LeaveItToTheListingFinding()
     {
