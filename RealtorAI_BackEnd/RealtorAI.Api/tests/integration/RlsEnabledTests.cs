@@ -44,6 +44,7 @@ public sealed class RlsEnabledTests
         "pipeline_runs",
         "pipeline_step_states",
         "pipeline_photo_states",
+        "compliance_checks",
     };
 
     [Theory]
@@ -88,6 +89,10 @@ public sealed class RlsEnabledTests
     /// read (FR-063); no client reads it directly.
     /// </para>
     /// <para>
+    /// <c>compliance_checks</c> (0018): which content each check read, consulted by the approval
+    /// gate in the API; no client reads it directly.
+    /// </para>
+    /// <para>
     /// RLS enabled with no policy and no grant means the authenticated role cannot touch these
     /// tables at all — denying everything is the intent here, not an omission.
     /// </para>
@@ -103,6 +108,7 @@ public sealed class RlsEnabledTests
         "pipeline_runs",
         "pipeline_step_states",
         "pipeline_photo_states",
+        "compliance_checks",
     ];
 
     public static TheoryData<string> DeliberatelyPolicylessTables { get; } = new(PolicylessTables);

@@ -289,14 +289,14 @@ Per [plan.md](./plan.md) "Project Structure" — the repo's two mandated top-lev
 
 ### Tests for User Story 5 (write first, confirm failing)
 
-- [ ] T138 [P] [US5] Contract test `GET /api/listings/{id}` detail aggregate with `approvalBlockers` in `tests/contract/ListingDetailTests.cs`
-- [ ] T139 [P] [US5] Contract test `POST /approvals` success path recording approver, timestamp, and hash in `tests/contract/ApprovalTests.cs`
-- [ ] T140 [P] [US5] Contract test `POST /approvals` 409 blockers including `content_changed_since_review` in `tests/contract/ApprovalBlockedTests.cs`
-- [ ] T141 [P] [US5] Contract test audit-trail authorization (owner yes; broker admin only when owner membership is approved) in `tests/contract/AuditAccessTests.cs`
-- [ ] T142 [P] [US5] Integration test: editing an approved item revokes approval and re-runs compliance **on that item only** in `tests/integration/ReapprovalTests.cs`
-- [ ] T143 [P] [US5] Integration test: blind-approval guard — a stale review screen cannot approve (SC-011) in `tests/integration/BlindApprovalTests.cs`
-- [ ] T144 [P] [US5] Integration test: concurrent edit returns 409 with current state and loses no edit (SC-012) in `tests/integration/ConcurrentEditTests.cs`
-- [ ] T145 [P] [US5] E2E test: full Stories 1–5 walkthrough with the AI layer stubbed by deterministic fixtures in `RealtorAI_FrontEnd/tests/integration/review-and-approve.spec.ts`
+- [X] T138 [P] [US5] Contract test `GET /api/listings/{id}` detail aggregate with `approvalBlockers` in `tests/contract/ListingDetailTests.cs`
+- [X] T139 [P] [US5] Contract test `POST /approvals` success path recording approver, timestamp, and hash in `tests/contract/ApprovalTests.cs`
+- [X] T140 [P] [US5] Contract test `POST /approvals` 409 blockers including `content_changed_since_review` in `tests/contract/ApprovalBlockedTests.cs`
+- [X] T141 [P] [US5] Contract test audit-trail authorization (owner yes; broker admin only when owner membership is approved) in `tests/contract/AuditAccessTests.cs`
+- [X] T142 [P] [US5] Integration test: editing an approved item revokes approval and re-runs compliance **on that item only** in `tests/integration/ReapprovalTests.cs`
+- [X] T143 [P] [US5] Integration test: blind-approval guard — a stale review screen cannot approve (SC-011) in `tests/integration/BlindApprovalTests.cs`
+- [X] T144 [P] [US5] Integration test: concurrent edit returns 409 with current state and loses no edit (SC-012) in `tests/integration/ConcurrentEditTests.cs`
+- [X] T145 [P] [US5] E2E test: full Stories 1–5 walkthrough with the AI layer stubbed by deterministic fixtures in `RealtorAI_FrontEnd/tests/integration/review-and-approve.spec.ts`
 
 ### Implementation for User Story 5
 
