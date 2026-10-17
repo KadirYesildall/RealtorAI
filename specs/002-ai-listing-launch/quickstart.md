@@ -1,6 +1,6 @@
 # Quickstart & Validation Guide: AI Listing Launch — Slice A
 
-**Feature**: [002-ai-listing-launch](./spec.md) | **Plan**: [plan.md](./plan.md) | **Date**: 2026-10-12
+**Feature**: [002-ai-listing-launch](./spec.md) | **Plan**: [plan.md](./plan.md) | **Date**: 2026-10-12 | **Refreshed against the running stack**: 2026-10-17 (T167)
 
 This is a run-and-validate guide. Schema details live in [data-model.md](./data-model.md), the API
 surface in [contracts/api.openapi.yaml](./contracts/api.openapi.yaml), and the sidecar boundary in
@@ -37,8 +37,10 @@ docker ps
 cd RealtorAI_BackEnd
 npx --yes supabase@latest start
 
-# 3. Apply this feature's migrations (0002–0011)
-npx --yes supabase@latest db reset   # destructive: rebuilds from all migrations + seed
+# 3. Apply this feature's migrations (0002–0019). On a stack that already holds data, apply only
+#    the new ones; `db reset` is destructive and rebuilds from every migration plus the seed.
+npx --yes supabase@latest migration up --local
+# npx --yes supabase@latest db reset
 
 # 4. Vision sidecar (separate terminal)
 docker compose -f RealtorAI_BackEnd/vision-sidecar/compose.yaml up
@@ -47,9 +49,13 @@ docker compose -f RealtorAI_BackEnd/vision-sidecar/compose.yaml up
 #    `npx supabase status` (SECRET_KEY) in this variable; the key never goes in a settings file.
 $env:SUPABASE_SECRET_KEY = "<SECRET_KEY from supabase status>"
 dotnet run --project RealtorAI_BackEnd/RealtorAI.Api/Api --launch-profile http   # http://localhost:5185
+#    The test suites read the same variable; in Git Bash:
+#    export SUPABASE_SECRET_KEY="$(npx --yes supabase@latest status -o env --workdir RealtorAI_BackEnd | grep '^SECRET_KEY=' | cut -d= -f2- | tr -d '"')"
 
 # 6. Frontend (separate terminal). .env.local needs, besides the Supabase values:
-#      API_BASE_URL=http://localhost:5185     (server-only; the browser never calls the API)
+#      API_BASE_URL=http://localhost:5185              (server-only, for Server Actions)
+#      NEXT_PUBLIC_API_BASE_URL=http://localhost:5185  (the pipeline hub's address — the one API
+#                                                       path the browser calls; a URL, not a secret)
 cd RealtorAI_FrontEnd
 npm run dev
 ```
@@ -64,9 +70,9 @@ single source of Postgres, Auth, and Storage; Compose covers only the sidecar. R
 
 ### Confirmed local endpoints
 
-**Verified against the running stack on 2026-10-13**, not merely read from config: the Supabase
-containers were up, the database was queried directly, and the API and sidecar were started and
-probed. Re-confirm after any CLI upgrade.
+**Verified against the running stack on 2026-10-13 and refreshed from `supabase status` on
+2026-10-17** (T167), not merely read from config. Re-confirm after any CLI upgrade. The CLI reports
+`supabase_imgproxy` and `supabase_pooler` as stopped; neither is used.
 
 | Service | Address |
 |---|---|
@@ -75,13 +81,20 @@ probed. Re-confirm after any CLI upgrade.
 | Shadow DB (db diff) | `54320` |
 | Connection pooler | `54329` (disabled by default in config) |
 | Supabase Studio | `http://127.0.0.1:54323` |
-| Inbucket (mail capture) | `http://127.0.0.1:54324` |
-| .NET API | `http://localhost:5080` |
+| Mailpit (mail capture; `INBUCKET_URL` is deprecated) | `http://127.0.0.1:54324` |
+| Storage API | `http://127.0.0.1:54321/storage/v1` (S3 protocol at `/storage/v1/s3`) |
+| .NET API | `http://localhost:5185` (launch profile `http`; `https` adds `7129`) |
+| SignalR pipeline hub | `http://localhost:5185/hubs/pipeline` |
 | Next.js | `http://localhost:3000` |
 | Vision sidecar | `http://127.0.0.1:8099` (internal-only in deployment) — **verified**: `/health` → 200 `{"status":"ok","model_loaded":false}` |
 | Supabase OIDC issuer | `http://127.0.0.1:54321/auth/v1` — **verified**; JWKS at `/.well-known/jwks.json` serves an **ES256** key, so asymmetric signing is already the default and `signing_keys_path` does **not** need enabling |
 
 Storage note: `file_size_limit = "50MiB"` per bucket, and `storage.s3_protocol` is enabled.
+
+Keys: `supabase status` prints a publishable key (`sb_publishable_…`) and a secret key
+(`sb_secret_…`). These are the CLI's fixed local-development defaults, valid only against the local
+stack; the secret key is what the API and the tests use for Storage. Legacy `ANON_KEY` /
+`SERVICE_ROLE_KEY` JWTs are printed too and are what `.env.local`'s Supabase values hold.
 
 ### SQL client inspection (DBeaver)
 
@@ -175,6 +188,12 @@ enforced and the migration is wrong.
 - **Agent A** — approved `broker_admin` of that brokerage, completed profile (CA license).
 - **Agent B** — `pending` membership, completed profile. Used to prove FR-061.
 - **Agent C** — approved `agent` of a *different* brokerage. Used to prove cross-brokerage denial.
+- **Agent D** — the platform administrator (FR-064), `platform.admin@example.com`.
+- **Agent E** — approved `broker_admin` of "Lakeside Test Realty", whose target MLS is
+  **`LOCAL-TEST`**: a verified, test-only rule profile ("not a real MLS") with fixture values. It
+  is the only way to walk Stories 1–5 to an *approved* listing locally while CRMLS is unverified
+  ([R37](./research.md)). Every seeded password is `password123`.
+- **`ops.retention_settings`** — original-photo retention, 3 years by default (FR-065, 0019).
 - **CRMLS rule profile** row with numeric limits **deliberately left NULL** — the engine must fail
   closed until real published values are entered
   ([research R2](./research.md#r2-crmls-rule-profile-for-slice-a)).
@@ -189,7 +208,10 @@ enforced and the migration is wrong.
 
 ## 4. End-to-end validation walkthrough (Stories 1–5)
 
-Run as **Agent A** at `http://localhost:3000` unless stated otherwise.
+Run as **Agent A** at `http://localhost:3000` unless stated otherwise. To reach an **approved**
+listing, run Stories 1–5 as **Agent E** (LOCAL-TEST profile): against CRMLS every output carries
+`rule_profile_incomplete` until T160. The review screen is `/dashboard/listings/{id}` (the
+listings index's **Review** link); its audit trail is one link away.
 
 ### Story 1 — Draft from photos and basics
 
@@ -325,8 +347,10 @@ where severity = 'blocking' limit 1;   -- expect: check constraint violation
     `GET /api/listings/{id}/audit` **still returns its full trail** (FR-049 preserved). Deleting
     again → `204` (idempotent).
 32. **Retention**: confirm the originals are still present in storage after deletion and that no
-    application role can remove them; the 3-year purge is an out-of-band job, not reachable from
-    the API (FR-065).
+    application role can remove them. The purge is the out-of-band job in
+    `RealtorAI_BackEnd/ops/retention-purge/` (see its README): grant `retention_purger` a login,
+    then `dotnet run --project RealtorAI_BackEnd/ops/retention-purge -- --dry-run` lists what is
+    eligible; without `--dry-run` it purges and audits `originals_purged` (FR-065, R38).
 
 ### Constitution checks
 
@@ -351,8 +375,11 @@ dotnet test RealtorAI_BackEnd/RealtorAI.Api --filter Category=Prohibitions
 
 # Frontend
 cd RealtorAI_FrontEnd
-npm test            # Vitest contract tests
-npm run test:e2e    # Playwright Stories 1–5, AI stubbed with deterministic fixtures
+npm test            # Vitest: Server Actions, i18n parity, route boundaries
+npm run test:e2e    # Playwright: Stories 1–5 on the manual path, accessibility, themes, timing
+# No model can be enabled locally until T159, so the e2e suite takes the manual path (SC-010);
+# the AI steps with deterministic fixtures are covered at the API (AiEnabledApiFactory). SC-005's
+# timing test skips with that reason until a photo.analysis model is enabled.
 
 # Sidecar
 pytest RealtorAI_BackEnd/vision-sidecar
@@ -425,6 +452,9 @@ Build and local validation work today; these block **production enablement**, no
 8. **Retention period confirmed by counsel** — the 3-year original-photo retention (FR-065) is a
    sensible default tied to California broker record-keeping, but its legally required value is
    confirmed as part of the AB 723 review, not settled here.
-9. **Privileged purge job credential provisioned** — the FR-065 retention job needs its own
-   identity with delete rights on the originals bucket, which the application identity must never
-   hold. Until it exists, originals simply accumulate (safe, but unbounded).
+9. **Purge credential provisioned** — the FR-065 job exists (T154) and runs as `retention_purger`,
+   which 0019 creates without a login. Each environment grants it one out of band and schedules
+   the job. Until then, originals simply accumulate (safe, but unbounded).
+10. **The API connects as a role that owns nothing** — locally it connects as `postgres`, which
+    owns the `ops` objects and so could write a purge authorization itself; no database guard
+    binds an owner (R38).
