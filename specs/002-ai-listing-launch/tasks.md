@@ -325,7 +325,7 @@ Per [plan.md](./plan.md) "Project Structure" — the repo's two mandated top-lev
 - [ ] T161 [P] Record counsel's or CRMLS compliance staff's confirmation of AB 723 disclosure label text and placement in `specs/002-ai-listing-launch/research.md` R4, then seed the approved labels (research R4)
 - [X] T162 [P] Add OpenTelemetry spans across every pipeline step in `Pipeline/Steps/`
 - [X] T163 [P] Add `loading.tsx` and `error.tsx` to every new route segment under `RealtorAI_FrontEnd/app/dashboard/`
-- [ ] T164 [P] Add an automated accessibility suite (keyboard reach, accessible labels, WCAG AA contrast in both themes) covering every new screen, in `RealtorAI_FrontEnd/tests/integration/accessibility.spec.ts` — **reuse the existing accessible names the current e2e suite pins** so those tests keep passing
+- [X] T164 [P] Add an automated accessibility suite (keyboard reach, accessible labels, WCAG AA contrast in both themes) covering every new screen, in `RealtorAI_FrontEnd/tests/integration/accessibility.spec.ts` — **reuse the existing accessible names the current e2e suite pins** so those tests keep passing
 - [X] T165 [P] Add an i18n completeness test asserting en/tr key parity and no hardcoded user-facing strings, in `RealtorAI_FrontEnd/tests/contract/i18n-parity.test.ts`
 - [ ] T166 [P] Add the end-to-end performance validation for SC-001 (upload → approved under 15 min for a 30-photo listing) and SC-005 (analysis under 2 min p90) in `RealtorAI_FrontEnd/tests/integration/performance-slice-a.spec.ts`
 - [ ] T167 [P] Refresh `specs/002-ai-listing-launch/quickstart.md` with the **actual** values reported by `supabase start`
