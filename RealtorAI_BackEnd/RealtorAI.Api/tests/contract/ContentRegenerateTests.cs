@@ -41,9 +41,12 @@ public sealed class ContentRegenerateTests : IClassFixture<ApiFactory>, IClassFi
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
-    /// <summary>Accepted as a pipeline run of the one step, so progress reads like any other run.</summary>
+    /// <summary>
+    /// Accepted as a pipeline run of the content step and the compliance check of what it wrote
+    /// (FR-025), so progress reads like any other run.
+    /// </summary>
     [Fact]
-    public async Task Regenerate_IsAcceptedAsARunOfTheContentStepAlone()
+    public async Task Regenerate_IsAcceptedAsARunOfTheContentStepThenCompliance()
     {
         var (agent, listing) = await ListingOnMlsAsync(ai, "regen-accepted", await VerifiedMlsAsync());
 
@@ -52,7 +55,7 @@ public sealed class ContentRegenerateTests : IClassFixture<ApiFactory>, IClassFi
         Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
 
         var status = (await response.Content.ReadFromJsonAsync<JsonObject>())!;
-        Assert.Equal(["content_generation"], status["steps"]!.AsArray().Select(step => step!["name"]!.GetValue<string>()));
+        Assert.Equal(["content_generation", "compliance"], status["steps"]!.AsArray().Select(step => step!["name"]!.GetValue<string>()));
 
         var finished = await PipelineTesting.WaitForCompletionAsync(ai, agent, listing);
         Assert.Equal("done", PipelineTesting.StepState(finished, "content_generation"));

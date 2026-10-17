@@ -251,17 +251,17 @@ Per [plan.md](./plan.md) "Project Structure" — the repo's two mandated top-lev
 
 ### Tests for User Story 4 (write first, confirm failing)
 
-- [ ] T116 [P] [US4] Contract test `POST /api/listings/{id}/compliance` in `tests/contract/ComplianceRunTests.cs`
-- [ ] T117 [P] [US4] Contract test `GET /compliance` with severity/status filters in `tests/contract/ComplianceListTests.cs`
-- [ ] T118 [P] [US4] Contract test `POST /compliance/{findingId}/apply-fix` in `tests/contract/ApplyFixTests.cs`
-- [ ] T119 [P] [US4] Contract test acknowledge returning **422 for a blocking finding** in `tests/contract/AcknowledgeTests.cs`
-- [ ] T120 [P] [US4] Golden unit tests for the Fair Housing lexicon (federal + California classes) in `tests/unit/FairHousingLexiconTests.cs`
-- [ ] T121 [P] [US4] Unit tests for risky-claim detection (superlatives, guarantees, school claims, unverified measurements) in `tests/unit/RiskyClaimTests.cs`
-- [ ] T122 [P] [US4] Unit tests for the CRMLS rule profile checks including fail-closed behaviour in `tests/unit/MlsRuleProfileTests.cs`
-- [ ] T123 [P] [US4] Unit tests for AB 723 photo integrity, including that a non-staging alteration is **blocking** in `tests/unit/PhotoIntegrityTests.cs`
-- [ ] T124 [P] [US4] Integration test: determinism — identical input yields identical findings (FR-024) in `tests/integration/ComplianceDeterminismTests.cs`
-- [ ] T125 [P] [US4] Integration test: a blocking finding cannot be acknowledged at either the API or the database layer in `tests/integration/BlockingFindingTests.cs`
-- [ ] T126 [P] [US4] E2E test: seeded violations surface with spans and rewrites in `RealtorAI_FrontEnd/tests/integration/compliance-review.spec.ts`
+- [X] T116 [P] [US4] Contract test `POST /api/listings/{id}/compliance` in `tests/contract/ComplianceRunTests.cs`
+- [X] T117 [P] [US4] Contract test `GET /compliance` with severity/status filters in `tests/contract/ComplianceListTests.cs`
+- [X] T118 [P] [US4] Contract test `POST /compliance/{findingId}/apply-fix` in `tests/contract/ApplyFixTests.cs`
+- [X] T119 [P] [US4] Contract test acknowledge returning **422 for a blocking finding** in `tests/contract/AcknowledgeTests.cs`
+- [X] T120 [P] [US4] Golden unit tests for the Fair Housing lexicon (federal + California classes) in `tests/unit/FairHousingLexiconTests.cs`
+- [X] T121 [P] [US4] Unit tests for risky-claim detection (superlatives, guarantees, school claims, unverified measurements) in `tests/unit/RiskyClaimTests.cs`
+- [X] T122 [P] [US4] Unit tests for the CRMLS rule profile checks including fail-closed behaviour in `tests/unit/MlsRuleProfileTests.cs`
+- [X] T123 [P] [US4] Unit tests for AB 723 photo integrity, including that a non-staging alteration is **blocking** in `tests/unit/PhotoIntegrityTests.cs`
+- [X] T124 [P] [US4] Integration test: determinism — identical input yields identical findings (FR-024) in `tests/integration/ComplianceDeterminismTests.cs`
+- [X] T125 [P] [US4] Integration test: a blocking finding cannot be acknowledged at either the API or the database layer in `tests/integration/BlockingFindingTests.cs`
+- [X] T126 [P] [US4] E2E test: seeded violations surface with spans and rewrites in `RealtorAI_FrontEnd/tests/integration/compliance-review.spec.ts`
 
 ### Implementation for User Story 4
 

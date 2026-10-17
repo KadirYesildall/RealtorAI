@@ -100,6 +100,17 @@ internal sealed class FakeChatClientFactory : IChatClientFactory
 {
     internal ConcurrentBag<IReadOnlyList<ChatMessage>> Calls { get; } = [];
 
+    /// <summary>The temperature each call was dispatched with, keyed by its first user message (FR-024).</summary>
+    internal ConcurrentBag<(string Input, float? Temperature)> Temperatures { get; } = [];
+
+    /// <summary>
+    /// The document returned for a <c>compliance.judge</c> call, given the request the API sent.
+    /// The default finds nothing.
+    /// </summary>
+    internal Func<JsonObject, JsonObject> JudgeAnswer { get; set; } = DefaultJudgeAnswer;
+
+    internal static JsonObject DefaultJudgeAnswer(JsonObject request) => new() { ["findings"] = new JsonArray() };
+
     /// <summary>Photo ids whose analysis call fails at the provider.</summary>
     internal ConcurrentDictionary<Guid, bool> FailingPhotos { get; } = new();
 
@@ -185,6 +196,7 @@ internal sealed class FakeChatClientFactory : IChatClientFactory
         {
             var list = messages.ToList();
             owner.Calls.Add(list);
+            owner.Temperatures.Add((list.FirstOrDefault(message => message.Role == ChatRole.User)?.Text ?? string.Empty, options?.Temperature));
 
             var input = string.Join("\n", list.Where(message => message.Role == ChatRole.User).Select(message => message.Text));
 
@@ -194,13 +206,15 @@ internal sealed class FakeChatClientFactory : IChatClientFactory
             }
 
             // A listing.content request is the JSON object in the first user message, with a
-            // "mode"; anything else is a photo analysis.
+            // "mode"; a compliance.judge request has a "review"; anything else is a photo analysis.
             var request = list.FirstOrDefault(message => message.Role == ChatRole.User)?.Text is { } first
                 && first.TrimStart().StartsWith('{')
                 ? JsonNode.Parse(first) as JsonObject
                 : null;
 
-            var answer = request?["mode"] is not null ? owner.ContentAnswer(request) : owner.Answer(input);
+            var answer = request?["review"] is not null
+                ? owner.JudgeAnswer(request)
+                : request?["mode"] is not null ? owner.ContentAnswer(request) : owner.Answer(input);
 
             return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, answer.ToJsonString()))
             {
