@@ -118,7 +118,7 @@ public sealed class RemarksLimitTests : IClassFixture<AiEnabledApiFactory>
         var step = status["steps"]!.AsArray().Single(candidate => (string?)candidate!["name"] == "content_generation")!;
 
         Assert.Equal("skipped", step["state"]!.GetValue<string>());
-        Assert.Equal("mls_rule_profile_incomplete", step["failureReason"]!.GetValue<string>());
+        Assert.Contains("not verified", step["failureReason"]!.GetValue<string>(), StringComparison.Ordinal);
         Assert.Equal("done", StepState(status, "photo_analysis"));
         Assert.Equal(0L, await TestDatabase.ScalarAsync<long>("select count(*) from public.content_drafts where listing_id = $1", listing));
     }

@@ -5,7 +5,7 @@ namespace Api.Pipeline;
 
 /// <summary>
 /// Registers the analysis pipeline: its steps, their persistence, the vision sidecar, and the
-/// thresholds and estimates they run with (US2).
+/// thresholds and estimates they run with (US2, and content generation for US3).
 /// </summary>
 internal static class PipelineSetup
 {
@@ -23,6 +23,7 @@ internal static class PipelineSetup
             Required<double>(configuration, "Pipeline:Quality:NearDuplicateSimilarity")));
 
         services.AddSingleton(new PhotoAnalysisOptions(Required<int>(configuration, "Pipeline:Analysis:EstimatedTokensPerPhoto")));
+        services.AddSingleton(new ContentGenerationOptions(Required<int>(configuration, "Pipeline:Content:EstimatedTokensPerCall")));
 
         services.AddHttpClient<IVisionSidecar, HttpVisionSidecar>(client =>
         {
@@ -37,6 +38,7 @@ internal static class PipelineSetup
         });
 
         services.AddScoped<IPipelineStore, EfPipelineStore>();
+        services.AddScoped<IContentStore, EfContentStore>();
         services.AddScoped<PipelineReporter>();
 
         // Registered in execution order; the runner orders them by step regardless.
@@ -45,6 +47,7 @@ internal static class PipelineSetup
         services.AddScoped<IPipelineStep, EmbeddingsStep>();
         services.AddScoped<IPipelineStep, PhotoAnalysisStep>();
         services.AddScoped<IPipelineStep, CoverAndOrderStep>();
+        services.AddScoped<IPipelineStep, ContentGenerationStep>();
 
         services.AddScoped<PipelineRunner>();
 

@@ -1,0 +1,37 @@
+{
+  "dataDictionaryVersion": "2.0",
+  "verified": false,
+  "note": "UNVERIFIED. Transcribed without the published RESO Data Dictionary 2.0 to hand (research R35). Spellings are the legacy OData lookup names. Verify every value against the official dictionary before relying on it for MLS submission, then set verified to true in a reviewed change.",
+  "fields": {
+    "InteriorFeatures": [
+      "BeamedCeilings", "Bookcases", "BreakfastBar", "BuiltinFeatures", "CathedralCeilings",
+      "CeilingFans", "CrownMolding", "DoubleVanity", "DryBar", "EatInKitchen", "EntranceFoyer",
+      "HighCeilings", "KitchenIsland", "OpenFloorplan", "Pantry", "RecessedLighting", "SmartHome",
+      "SoakingTub", "StoneCounters", "TrayCeilings", "VaultedCeilings", "WalkInClosets",
+      "WalkInShower", "WetBar", "WiredForSound"
+    ],
+    "Appliances": [
+      "Cooktop", "Dishwasher", "Disposal", "DoubleOven", "Dryer", "Freezer", "IceMaker",
+      "Microwave", "Oven", "Range", "RangeHood", "Refrigerator", "StainlessSteelAppliances",
+      "TanklessWaterHeater", "TrashCompactor", "Washer", "WaterHeater", "WineRefrigerator"
+    ],
+    "Flooring": [
+      "Bamboo", "Brick", "Carpet", "Concrete", "Cork", "Hardwood", "Laminate", "Linoleum",
+      "Marble", "Slate", "Stone", "Tile", "Vinyl", "Wood"
+    ],
+    "ParkingFeatures": [
+      "Assigned", "Attached", "Carport", "CircularDriveway", "Covered", "Detached", "Driveway",
+      "Garage", "GarageDoorOpener", "Guest", "OffStreet", "OnStreet", "Oversized", "Tandem",
+      "Underground"
+    ],
+    "PoolFeatures": [
+      "AboveGround", "Fenced", "Fiberglass", "Gunite", "Heated", "InGround", "Indoor", "Infinity",
+      "Lap", "Outdoor", "SaltWater", "SolarHeat", "Vinyl", "Waterfall"
+    ],
+    "View": [
+      "Bay", "Beach", "Canal", "City", "CityLights", "Creek", "Garden", "GolfCourse", "Hills",
+      "Lake", "Mountains", "Neighborhood", "None", "Ocean", "Panoramic", "Park", "Pool", "River",
+      "Trees", "Valley", "Water", "Woods"
+    ]
+  }
+}

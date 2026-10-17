@@ -280,8 +280,8 @@ AB 723 legal review.
 | `variant_index` | `int` NOT NULL default 0 | 2–3 description variants (FR-013). |
 | `tone` | `tone` | |
 | `body` | `text` NOT NULL | |
-| `supporting_field_ids` | `jsonb` NOT NULL | Field ids backing each claim — powers FR-014 highlighting. |
-| `version` | `int` NOT NULL | |
+| `supporting_field_ids` | `jsonb` NOT NULL | One `{spanStart, spanEnd, fieldIds}` per sentence citing a fact (research R35) — powers FR-014 highlighting; the contract's flat list is derived from it. |
+| `version` | `int` NOT NULL | Generation set: each regeneration of a kind stores the next and marks the previous `stale`. Edits are counted by `row_version`. |
 | `status` | `content_status` NOT NULL default `draft` | |
 | `selected` | `boolean` NOT NULL default `false` | The chosen variant. |
 | `model_id`, `prompt_version`, `prompt_hash` | `text` | |
@@ -293,7 +293,8 @@ AB 723 legal review.
 
 **Grounding rule (FR-014)**: a draft cannot be approved while any id in `supporting_field_ids`
 points to a `listing_fields` row with provenance `ai_detected_from_photo`/`ai_suggested` and
-`confirmed = false`. Enforced in `Modules.Content` and covered by a contract test.
+`confirmed = false`. Enforced in `Modules.Content` and covered by a contract test. The spans are
+computed when the draft is read, so confirming a fact clears them without regenerating.
 
 **Index**: `(listing_id, kind)`.
 
@@ -545,6 +546,7 @@ only hints to re-read it (FR-053).
 | `listing_id` | `uuid` → `listings.id` (NO ACTION) | A listing is never hard-deleted (FR-067). |
 | `started_by` | `uuid` → `profiles.id` | Every AI call of the run is audited as theirs. |
 | `tone`, `variant_count` | `tone`, `int` (2–3) | Carried for content generation (US3). |
+| `content_kind` | `content_kind` | 0016. The one kind a regeneration run is for; NULL for an analysis run, which generates every kind. |
 | `started_at`, `finished_at` | `timestamptz` | |
 
 **Constraint**: at most one unfinished run per listing (partial unique index) — starting again
@@ -553,7 +555,7 @@ returns that run.
 ### `pipeline_step_states` / `pipeline_photo_states`
 
 Per-run state of each step (`normalize`, `technical_quality`, `embeddings`, `photo_analysis`,
-`cover_and_order`, and later `content_generation`, `compliance`) and each photo, in the
+`cover_and_order`, `content_generation`, and later `compliance`) and each photo, in the
 contract's spellings, with a failure reason required when failed (or skipped, for a step).
 
 **RLS**: enabled with no policy and no privilege — API only, like `photo_embeddings`.

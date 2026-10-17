@@ -29,7 +29,7 @@ internal sealed class EfPipelineStore : IPipelineStore
     private static readonly JsonSerializerOptions Web = new(JsonSerializerDefaults.Web);
 
     private static readonly Dictionary<string, RoomType> RoomTypes = Enum.GetValues<RoomType>()
-        .ToDictionary(Label, type => type, StringComparer.Ordinal);
+        .ToDictionary(Label<RoomType>, type => type, StringComparer.Ordinal);
 
     private readonly AppDbContext context;
     private readonly IAuditWriter audit;
@@ -80,7 +80,25 @@ internal sealed class EfPipelineStore : IPipelineStore
                 photo.Height))
             .ToListAsync(cancellationToken);
 
-        return new PipelineRunContext(run.Id, run.ListingId, run.StartedBy, photos, profile?.PhotoMinWidth, profile?.PhotoMinHeight);
+        var stepNames = await context.PipelineStepStates.AsNoTracking()
+            .Where(step => step.RunId == run.Id)
+            .OrderBy(step => step.Position)
+            .Select(step => step.Step)
+            .ToListAsync(cancellationToken);
+
+        var steps = Enum.GetValues<PipelineStep>().Where(step => stepNames.Contains(PipelineSpellings.Of(step))).ToList();
+
+        return new PipelineRunContext(
+            run.Id,
+            run.ListingId,
+            run.StartedBy,
+            photos,
+            profile?.PhotoMinWidth,
+            profile?.PhotoMinHeight,
+            steps,
+            run.ContentKind is { } kind ? Label(kind) : null,
+            run.Tone is { } tone ? Label(tone) : null,
+            run.VariantCount);
     }
 
     public Task SetStepStateAsync(Guid runId, PipelineStep pipelineStep, StepState state, string? reason, CancellationToken cancellationToken) =>
@@ -339,12 +357,9 @@ internal sealed class EfPipelineStore : IPipelineStore
         await transaction.CommitAsync(cancellationToken);
     }
 
-    private static string Label(RoomType type) =>
-        typeof(RoomType).GetField(type.ToString())!
-            .GetCustomAttributes(typeof(NpgsqlTypes.PgNameAttribute), inherit: false)
-            .Cast<NpgsqlTypes.PgNameAttribute>()
-            .Single()
-            .PgName;
+    private static string Label<TEnum>(TEnum value)
+        where TEnum : struct, Enum =>
+        Api.Endpoints.ListingRepresentation.PostgresLabel(value);
 
     private static bool ModelRecommendsCover(string? rawOutput) =>
         rawOutput is not null && JsonNode.Parse(rawOutput)?["coverRecommended"]?.GetValue<bool>() == true;

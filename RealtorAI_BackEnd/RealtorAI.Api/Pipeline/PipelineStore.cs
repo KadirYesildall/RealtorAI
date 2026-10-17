@@ -17,13 +17,21 @@ public sealed record PipelinePhoto(
 /// <summary>Everything a run needs to know about its listing, loaded once when it starts.</summary>
 /// <param name="StartedBy">The agent whose action started the run; every AI call is audited as theirs.</param>
 /// <param name="MinWidth">The MLS rule profile's minimum, or null when it has none verified.</param>
+/// <param name="Steps">The steps this run consists of: every step for an analysis run, one for a regeneration.</param>
+/// <param name="ContentKind">The one kind a regeneration is for; null for an analysis run, which generates every kind.</param>
+/// <param name="Tone">The tone asked for, in the contract's spelling; null for the brokerage's default.</param>
+/// <param name="VariantCount">The public-remarks alternatives asked for; null for the default.</param>
 public sealed record PipelineRunContext(
     Guid RunId,
     Guid ListingId,
     Guid StartedBy,
     IReadOnlyList<PipelinePhoto> Photos,
     int? MinWidth,
-    int? MinHeight);
+    int? MinHeight,
+    IReadOnlyList<PipelineStep> Steps,
+    string? ContentKind,
+    string? Tone,
+    int? VariantCount);
 
 /// <summary>A schema-validated <c>photo.analysis</c> result and where it came from (VIII.5).</summary>
 public sealed record PhotoAnalysisOutcome(
@@ -55,6 +63,11 @@ public enum RunOutcome
 
     /// <summary>Every analysis failed: the listing goes back to a draft to finish by hand (SC-010).</summary>
     TotalFailure,
+
+    /// <summary>
+    /// The run analysed no photos — a regeneration — so the listing's status is not its to move.
+    /// </summary>
+    Unchanged,
 }
 
 /// <summary>

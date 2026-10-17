@@ -8,7 +8,7 @@ namespace Pipeline;
 /// T095 — runs one pipeline run, step by step, as a background job (FR-053, research R12).
 ///
 /// <para>
-/// <b>Order.</b> The steps run in their declared order, each over the listing as the previous
+/// <b>Order.</b> The run's steps run in their declared order, each over the listing as the previous
 /// left it: the run's photos are re-read before every step, so a copy the normalize step just
 /// produced is what the quality step measures.
 /// </para>
@@ -55,9 +55,27 @@ public sealed partial class PipelineRunner
     [AutomaticRetry(Attempts = 0)]
     public async Task RunAsync(Guid runId, CancellationToken cancellationToken)
     {
+        var first = await store.LoadRunAsync(runId, cancellationToken);
+
+        if (first is null)
+        {
+            LogRunMissing(logger, runId);
+            return;
+        }
+
+        // A run is the steps it was queued with: all of them for analysis, one for a regeneration.
+        var queued = steps.Where(step => first.Steps.Contains(step.Kind)).ToList();
+        var analyses = first.Steps.Contains(PipelineStep.PhotoAnalysis);
         var analysed = false;
 
-        foreach (var step in steps)
+        if (queued.Count == 0)
+        {
+            // Nothing this host can run: finish it, so the listing is not held by an empty run.
+            await store.FinishRunAsync(runId, RunOutcome.Unchanged, cancellationToken);
+            return;
+        }
+
+        foreach (var step in queued)
         {
             // Re-read for every step: each works on the listing as the previous step left it.
             var run = await store.LoadRunAsync(runId, cancellationToken);
@@ -91,9 +109,10 @@ public sealed partial class PipelineRunner
 
             // The listing moves on before the last step reports, so anyone who sees every step
             // settled also sees the listing's final status — never "all done, still analysing".
-            if (ReferenceEquals(step, steps[^1]))
+            if (ReferenceEquals(step, queued[^1]))
             {
-                await store.FinishRunAsync(runId, analysed ? RunOutcome.Analysed : RunOutcome.TotalFailure, cancellationToken);
+                var finished = !analyses ? RunOutcome.Unchanged : analysed ? RunOutcome.Analysed : RunOutcome.TotalFailure;
+                await store.FinishRunAsync(runId, finished, cancellationToken);
             }
 
             await reporter.StepAsync(run, step.Kind, outcome.State, outcome.Reason, cancellationToken);

@@ -53,7 +53,7 @@ public sealed class PipelineStartTests : IClassFixture<ApiFactory>, IClassFixtur
         Assert.Equal("analyzing", status["listingStatus"]!.GetValue<string>());
         Assert.True(status["manualCompletionAvailable"]!.GetValue<bool>());
         Assert.Equal(
-            ["normalize", "technical_quality", "embeddings", "photo_analysis", "cover_and_order"],
+            ["normalize", "technical_quality", "embeddings", "photo_analysis", "cover_and_order", "content_generation"],
             status["steps"]!.AsArray().Select(step => step!["name"]!.GetValue<string>()));
         Assert.Equal(
             photos.Order(),

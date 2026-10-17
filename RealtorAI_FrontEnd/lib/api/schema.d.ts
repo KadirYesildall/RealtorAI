@@ -1068,26 +1068,47 @@ export interface paths {
                 };
             };
             responses: {
-                /** @description Generation enqueued */
+                /**
+                 * @description Generation enqueued as a pipeline run of the content_generation step alone; progress
+                 *     reads through GET /pipeline (research R35).
+                 */
                 202: {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": components["schemas"]["PipelineStatus"];
+                    };
                 };
-                /** @description MLS rule profile incomplete */
+                403: components["responses"]["Forbidden"];
+                /**
+                 * @description Refused before anything is queued. Problem details carry manualCompletionAvailable
+                 *     true and a reason: mls_rule_profile_incomplete (no target MLS, an unverified
+                 *     profile, or no limit for the kind), budget_exceeded, or pipeline_running.
+                 */
                 409: {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/problem+json": components["schemas"]["Problem"];
+                    };
                 };
-                /** @description No enabled model; continue manually */
-                503: {
+                /** @description Unknown kind or tone */
+                422: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content?: never;
+                };
+                /** @description No enabled model for listing.content; continue manually. Problem details carry manualCompletionAvailable true and reason no_model. */
+                503: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["Problem"];
+                    };
                 };
             };
         };
@@ -1116,7 +1137,10 @@ export interface paths {
         /**
          * Edit a draft inline, or select a variant
          * @description Editing an approved draft returns it to `draft`, revokes its approval, and re-runs
-         *     compliance on that item only (FR-025). Before/after values are audited.
+         *     compliance on that item only (FR-025). Before/after values are audited. Selecting a
+         *     variant unselects the others of its kind. An edit or a selection change returns an
+         *     approved listing to review. Claims follow the words: a cited sentence still present word
+         *     for word keeps its citation, a rewritten one loses it.
          */
         patch: {
             parameters: {
@@ -1140,15 +1164,46 @@ export interface paths {
                 };
             };
             responses: {
-                /** @description Updated */
+                /** @description Updated, approval revoked if previously approved */
                 200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ContentDraft"];
+                    };
+                };
+                403: components["responses"]["Forbidden"];
+                /** @description No such draft on this listing */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content?: never;
                 };
-                403: components["responses"]["Forbidden"];
-                409: components["responses"]["VersionConflict"];
+                /** @description A stale If-Match (VersionConflict, with current), or a superseded (stale) draft. */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["Problem"];
+                    };
+                };
+                /** @description Nothing to change */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description If-Match is required */
+                428: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
             };
         };
         trace?: never;
@@ -1856,6 +1911,7 @@ export interface components {
             variantIndex?: number;
             tone?: components["schemas"]["Tone"];
             body?: string;
+            /** @description Generation set; each regeneration of a kind is the next. Edits are counted by rowVersion. */
             version?: number;
             /** @enum {string} */
             status?: "draft" | "approved" | "stale";

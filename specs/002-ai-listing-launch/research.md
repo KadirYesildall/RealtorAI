@@ -1147,6 +1147,56 @@ a later story does not have to rediscover them.
   the Story 2 e2e walks the manual path; per-photo streaming is verified over a real hub
   connection in `PipelineStatusTests`.
 
+## R35. US3 content generation: decisions made while building it (2026-10-17)
+
+- **Regeneration is a pipeline run of one step.** `POST /content/regenerate {kind, tone?}`
+  creates a `pipeline_runs` row with `content_kind` set (0016) and a single `content_generation`
+  step row; the runner executes only the steps a run was queued with. Progress reads through
+  `GET /pipeline` like any run, and the one-unfinished-run-per-listing index applies (409
+  `pipeline_running`). A full analysis run ends with the same step for every kind.
+- **Refused before queuing, each naming the manual path.** 503 `no_model` when no
+  `listing.content` model is enabled; 409 `mls_rule_profile_incomplete` when the listing has no
+  target MLS, its profile is unverified, or it has no limit for the kind (research R2 — CRMLS
+  today); 409 `budget_exceeded`. Inside an analysis run the same conditions skip the step with
+  the reason, and the photo steps are unaffected.
+- **Limits.** Public and private remarks use the profile's verified limits. The headline is not
+  an MLS field and has a fixed 100-character limit, but still needs a verified profile. The
+  model is told the limit; every variant is then measured, and one over it is discarded. When
+  none survives, the kind fails and the current drafts stay (FR-015).
+- **Variants.** Public remarks: 2–3 (default 3), none selected — choosing is the agent's.
+  Private remarks and headline: one each, selected on arrival.
+- **Grounding is a check, not an instruction** (`Modules.Content.GroundingService`). The model
+  cites `listing_fields` ids per sentence. A sentence is removed if it cites an unknown or
+  malformed id, or if it makes a measurement, tax, school, association or zoning claim without
+  citing a field of that kind entered by the agent or from a public record. Every figure in such
+  a sentence must be the value of a cited field or a basic detail. Recognition is deliberately
+  broad. Removals are counted in the `content_generated` audit event.
+- **Claims are stored as spans.** `supporting_field_ids` holds `{spanStart, spanEnd, fieldIds}`
+  per citing sentence; the contract's flat `supportingFieldIds` and the `unconfirmedClaims` are
+  derived when read, against the facts as they are now. After an edit, a claim survives only if
+  its sentence is still present word for word; a rewritten sentence is the agent's own words.
+- **Versions supersede.** Each generation is the kind's next `version`; the previous drafts go
+  `stale` and unselected, an approval of any of them is revoked (`superseded_by_regeneration`),
+  and an approved listing returns to review — in one transaction.
+- **Edits** require `If-Match` (428/409 with `current`). Editing an approved draft returns it to
+  `draft`, revokes its approval (`content_edited`), and returns an approved listing to review;
+  so does changing the selection. Over the limit is 422; a stale draft is 409.
+- **Structured fields** (analysis runs only): the model proposes values for the six enumerated
+  fields; values outside the RESO lookups, narrowed or extended by the profile's
+  `enumerated_field_lookups` (`{field: {only?, extra?}}`), are dropped. What remains is stored as
+  unconfirmed `ai_detected_from_photo`, never over an agent-entered, public-record or confirmed
+  value. The lookups are enforced on AI output only, not on agent entries.
+- **⚠ UNVERIFIED RESO seed.** `Libs.Reso/Lookups/dd-2.0-slice-a.json` (DD 2.0, legacy OData
+  spellings) was transcribed without the published dictionary to hand and says `verified: false`.
+  Verification is folded into T160; no MLS submission (Slice B) may rely on it until then.
+- **Cache.** The run id is part of every `listing.content` input, so a regeneration is never
+  answered from the response cache.
+- **Private remarks** carry bracketed placeholders (`[Showing instructions]`, `[Access]`) for
+  what only the agent knows (Story 3 scenario 5). Blocking approval on an unresolved placeholder
+  belongs to the compliance checks (US4).
+- **Endpoints live in the host** (`Api/Endpoints/ContentEndpoints.cs`), not `Modules.Content`
+  as tasks.md says, for the reason in R20.
+
 ## Open items carried to Slice B (recorded, not resolved)
 
 - **CRMLS API surface**: whether RESO Web API Add/Edit is exposed to vendors or only a proprietary

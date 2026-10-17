@@ -230,11 +230,11 @@ Per [plan.md](./plan.md) "Project Structure" — the repo's two mandated top-lev
 
 ### Implementation for User Story 3
 
-- [ ] T108 [US3] Implement RESO field keys, enumerations, and the CRMLS lookup mapping for the eight Slice A fields in `Libs.Reso/` (research R3)
-- [ ] T109 [US3] Author prompt `prompts/listing.content/v1.md` and `v1.schema.json` requiring per-claim supporting field ids
-- [ ] T110 [US3] Implement `GenerateListingContentAsync` with tone and variant count in `Libs.Ai/Tasks/ListingContentTask.cs`
-- [ ] T111 [US3] Implement grounding: persist `supporting_field_ids` and compute unconfirmed-claim spans in `Modules.Content/GroundingService.cs` (FR-014)
-- [ ] T112 [US3] Implement content endpoints (list, regenerate, edit/select) in `Modules.Content/Endpoints/ContentEndpoints.cs`
+- [X] T108 [US3] Implement RESO field keys, enumerations, and the CRMLS lookup mapping for the eight Slice A fields in `Libs.Reso/` (research R3)
+- [X] T109 [US3] Author prompt `prompts/listing.content/v1.md` and `v1.schema.json` requiring per-claim supporting field ids
+- [X] T110 [US3] Implement `GenerateListingContentAsync` with tone and variant count in `Libs.Ai/Tasks/ListingContentTask.cs`
+- [X] T111 [US3] Implement grounding: persist `supporting_field_ids` and compute unconfirmed-claim spans in `Modules.Content/GroundingService.cs` (FR-014)
+- [X] T112 [US3] Implement content endpoints (list, regenerate, edit/select) in `Modules.Content/Endpoints/ContentEndpoints.cs`
 - [ ] T113 [P] [US3] Build the variant picker and tone switcher in `RealtorAI_FrontEnd/components/listing/DescriptionVariantPicker.tsx`
 - [ ] T114 [P] [US3] Build unconfirmed-claim highlighting in `RealtorAI_FrontEnd/components/listing/ClaimHighlighter.tsx`
 - [ ] T115 [P] [US3] Add EN/TR keys for US3 and verify both themes
@@ -321,7 +321,7 @@ Per [plan.md](./plan.md) "Project Structure" — the repo's two mandated top-lev
 - [ ] T157 [P] Build the labeled text evaluation set and assert Fair Housing recall ≥95% with ≤10% false positives (SC-003) in `RealtorAI.Api/tools/AiEval/ComplianceEval.cs`
 - [ ] T158 [P] Add schema-validity rate, p90 latency (<2 min for 30 photos, SC-005), and cost-per-listing metrics to `RealtorAI.Api/tools/AiEval/`
 - [ ] T159 Write the model-enablement runbook in `specs/002-ai-listing-launch/quickstart.md` §6 and flip registry entries to `enabled` **only after** Hub verification and a passing eval (research R1, VIII.4)
-- [ ] T160 [P] Populate the CRMLS rule profile with **verified published values** via a new migration in `RealtorAI_BackEnd/supabase/migrations/` (research R2)
+- [ ] T160 [P] Populate the CRMLS rule profile with **verified published values** via a new migration in `RealtorAI_BackEnd/supabase/migrations/` (research R2) — and verify the unverified RESO lookup seed `Libs.Reso/Lookups/dd-2.0-slice-a.json` against the official Data Dictionary, then set its `verified` flag (research R35)
 - [ ] T161 [P] Record counsel's or CRMLS compliance staff's confirmation of AB 723 disclosure label text and placement in `specs/002-ai-listing-launch/research.md` R4, then seed the approved labels (research R4)
 - [ ] T162 [P] Add OpenTelemetry spans across every pipeline step in `Pipeline/Steps/`
 - [ ] T163 [P] Add `loading.tsx` and `error.tsx` to every new route segment under `RealtorAI_FrontEnd/app/dashboard/`

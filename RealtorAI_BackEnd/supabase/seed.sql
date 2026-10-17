@@ -221,3 +221,15 @@ values (
     true
 )
 on conflict do nothing;
+
+-- listing.content v1 (US3, T109): structured RESO fields and listing copy, every sentence citing
+-- the listing_field ids it rests on, so grounding can check a claim rather than trust it.
+insert into public.prompt_versions (task_key, version, prompt_hash, output_schema, active)
+values (
+    'listing.content',
+    1,
+    '854d67c4d28806cd9112c46e6646eeb684e95d091e713e586637ac9ce969f765',
+    '{}'::jsonb,
+    true
+)
+on conflict do nothing;

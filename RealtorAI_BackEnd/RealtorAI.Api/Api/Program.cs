@@ -137,6 +137,7 @@ app.MapListingFieldEndpoints();
 app.MapPhotoEndpoints();
 app.MapPhotoEditEndpoints();
 app.MapPipelineEndpoints();
+app.MapContentEndpoints();
 app.MapPipelineHub();
 
 app.Run();

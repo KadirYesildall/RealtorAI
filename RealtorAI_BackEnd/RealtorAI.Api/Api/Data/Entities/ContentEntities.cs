@@ -25,10 +25,17 @@ public sealed class ContentDraft : IVersionedEntity
     public Tone? Tone { get; set; }
     public string Body { get; set; } = string.Empty;
 
-    /// <summary>jsonb array of listing_field ids — see the type remarks.</summary>
+    /// <summary>
+    /// jsonb array of claims, <c>{ spanStart, spanEnd, fieldIds }</c> per sentence citing a fact
+    /// (<c>Modules.Content.ClaimStorage</c>, research R35) — see the type remarks.
+    /// </summary>
     public string SupportingFieldIds { get; set; } = "[]";
 
-    /// <summary>Monotonic edit counter, distinct from <c>RowVersion</c>, which guards writes.</summary>
+    /// <summary>
+    /// The generation set this draft belongs to: each regeneration of a kind stores the next one
+    /// and leaves the previous as <c>stale</c> (research R35). Edits are counted by
+    /// <c>RowVersion</c>, which guards writes.
+    /// </summary>
     public int Version { get; set; } = 1;
 
     public ContentStatus Status { get; set; }

@@ -582,9 +582,28 @@ paths:
                 kind: { $ref: '#/components/schemas/ContentKind' }
                 tone: { $ref: '#/components/schemas/Tone' }
       responses:
-        '202': { description: Generation enqueued }
-        '409': { description: MLS rule profile incomplete, or AI budget exceeded }
-        '503': { description: No enabled model; continue manually }
+        '202':
+          description: |
+            Generation enqueued as a pipeline run of the content_generation step alone; progress
+            reads through GET /pipeline (research R35).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PipelineStatus' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409':
+          description: |
+            Refused before anything is queued. Problem details carry manualCompletionAvailable
+            true and a reason: mls_rule_profile_incomplete (no target MLS, an unverified
+            profile, or no limit for the kind), budget_exceeded, or pipeline_running.
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+        '422': { description: Unknown kind or tone }
+        '503':
+          description: No enabled model for listing.content; continue manually. Problem details carry manualCompletionAvailable true and reason no_model.
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
 
   /api/listings/{listingId}/content/{draftId}:
     parameters:
@@ -598,7 +617,10 @@ paths:
       summary: Edit a draft inline, or select a variant
       description: |
         Editing an approved draft returns it to `draft`, revokes its approval, and re-runs
-        compliance on that item only (FR-025). Before/after values are audited.
+        compliance on that item only (FR-025). Before/after values are audited. Selecting a
+        variant unselects the others of its kind. An edit or a selection change returns an
+        approved listing to review. Claims follow the words: a cited sentence still present word
+        for word keeps its citation, a rewritten one loses it.
       x-authorization: Listing owner only.
       parameters: [{ $ref: '#/components/parameters/IfMatch' }]
       requestBody:
@@ -611,9 +633,20 @@ paths:
                 body: { type: string }
                 selected: { type: boolean }
       responses:
-        '200': { description: Updated, approval revoked if previously approved }
+        '200':
+          description: Updated, approval revoked if previously approved
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ContentDraft' }
         '403': { $ref: '#/components/responses/Forbidden' }
-        '409': { $ref: '#/components/responses/VersionConflict' }
+        '404': { description: No such draft on this listing }
+        '409':
+          description: A stale If-Match (VersionConflict, with current), or a superseded (stale) draft.
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+        '422': { description: Nothing to change, an empty body, or a body over the MLS limit }
+        '428': { description: If-Match is required }
 
   /api/listings/{listingId}/approvals:
     parameters: [{ $ref: '#/components/parameters/ListingId' }]
@@ -1240,7 +1273,9 @@ components:
         variantIndex: { type: integer }
         tone: { $ref: '#/components/schemas/Tone' }
         body: { type: string }
-        version: { type: integer }
+        version:
+          type: integer
+          description: Generation set; each regeneration of a kind is the next. Edits are counted by rowVersion.
         status: { type: string, enum: [draft, approved, stale] }
         selected: { type: boolean }
         supportingFieldIds: { type: array, items: { type: string, format: uuid } }

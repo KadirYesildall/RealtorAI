@@ -4,7 +4,8 @@ namespace Api.Data.Entities;
 // no-navigation decision that applies across this folder.
 
 /// <summary>
-/// public.pipeline_runs — one analysis run of a listing. At most one is unfinished per listing
+/// public.pipeline_runs — one run of a listing's pipeline: an analysis, or a regeneration of one
+/// kind of copy. At most one is unfinished per listing
 /// (a partial unique index), which is what makes starting the pipeline idempotent.
 /// </summary>
 public sealed class PipelineRun
@@ -17,6 +18,9 @@ public sealed class PipelineRun
 
     public Tone? Tone { get; set; }
     public int? VariantCount { get; set; }
+
+    /// <summary>The one kind a regeneration is for (0016); null for an analysis run, which generates every kind.</summary>
+    public ContentKind? ContentKind { get; set; }
     public DateTimeOffset StartedAt { get; set; }
     public DateTimeOffset? FinishedAt { get; set; }
 }

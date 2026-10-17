@@ -6,4 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!-- The versioned lookup seed (research R3, R35); loaded by ResoLookups. -->
+    <EmbeddedResource Include="Lookups\dd-2.0-slice-a.json" LogicalName="Libs.Reso.Lookups.dd-2.0-slice-a.json" />
+  </ItemGroup>
+
 </Project>

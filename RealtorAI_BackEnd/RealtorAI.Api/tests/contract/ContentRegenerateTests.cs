@@ -173,7 +173,7 @@ public sealed class ContentRegenerateTests : IClassFixture<ApiFactory>, IClassFi
             """
             select count(*) from public.audit_events
             where listing_id = $1 and action = 'ai_call' and model_id = 'test/writer-model'
-              and prompt_version = 'listing.content/v1' and prompt_hash ~ '^[0-9a-f]{64}$'
+              and prompt_version = '1' and prompt_hash ~ '^[0-9a-f]{64}$'
             """,
             listing) >= 1);
         Assert.Equal(1L, await TestDatabase.ScalarAsync<long>(
@@ -183,7 +183,7 @@ public sealed class ContentRegenerateTests : IClassFixture<ApiFactory>, IClassFi
             """
             select count(*) from public.content_drafts
             where listing_id = $1
-              and (model_id is distinct from 'test/writer-model' or prompt_version is distinct from 'listing.content/v1' or prompt_hash is null)
+              and (model_id is distinct from 'test/writer-model' or prompt_version is distinct from '1' or prompt_hash is null)
             """,
             listing));
     }
