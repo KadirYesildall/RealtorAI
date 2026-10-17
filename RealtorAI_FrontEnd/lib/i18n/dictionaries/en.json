@@ -339,7 +339,9 @@
       "yearFormat": "Enter a four-digit year.",
       "measurementFormat": "Enter a number of zero or more.",
       "archiveFailed": "Couldn't archive this listing. Please try again.",
-      "loadFailed": "We couldn't load your listings right now. Please try again."
+      "loadFailed": "We couldn't load your listings right now. Please try again.",
+      "loadListingFailed": "We couldn't load this listing right now. Please try again.",
+      "loadAuditFailed": "We couldn't load this audit trail right now. Please try again."
     },
     "analysis": {
       "title": "Photo analysis",

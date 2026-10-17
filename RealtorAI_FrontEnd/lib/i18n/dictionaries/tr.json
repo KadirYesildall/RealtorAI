@@ -339,7 +339,9 @@
       "yearFormat": "Dört haneli bir yıl girin.",
       "measurementFormat": "Sıfır ya da daha büyük bir sayı girin.",
       "archiveFailed": "Bu ilan arşivlenemedi. Lütfen tekrar deneyin.",
-      "loadFailed": "İlanlarınızı şu anda yükleyemedik. Lütfen tekrar deneyin."
+      "loadFailed": "İlanlarınızı şu anda yükleyemedik. Lütfen tekrar deneyin.",
+      "loadListingFailed": "Bu ilanı şu anda yükleyemedik. Lütfen tekrar deneyin.",
+      "loadAuditFailed": "Bu denetim kaydını şu anda yükleyemedik. Lütfen tekrar deneyin."
     },
     "analysis": {
       "title": "Fotoğraf analizi",
