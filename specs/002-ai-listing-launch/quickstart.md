@@ -439,20 +439,27 @@ Shipped suites and their sets (`--task all` prints `suite: present` or `suite: n
 |---|---|---|---|---|
 | photo.analysis | `PhotoEval` (T156) | `photo.analysis/rooms-v1.json` — 131 photos, 12 room types, fetched | AI research agents | **no** |
 | compliance.judge | `ComplianceEval` (T157) | `compliance.judge/fair-housing-v1.json` — 137 violations, 135 compliant, committed | AI assistant | **no** |
-| listing.content | *(none)* | — | — | — |
+| listing.content | `ListingContentEval` (T158) | `listing.content/listings-v1.json` — 12 fictional listings, inputs only, committed | not labelled | **no** |
 | photo.embedding | *(none)* | — | — | — |
 
 The compliance suite measures the whole Fair Housing check — lexicon then judge, merged as
 `ComplianceService` merges them — because SC-003 is stated for the check (FR-017), not for the
 judge alone; the verdict is still recorded against the judge's registry row (research R39).
 
+The content suite runs each listing as a pipeline run generates its content — one structured
+call, then one text call per content kind — and measures schema validity and tokens per listing
+over those calls. It writes only to the **verified** limits of the listing's MLS rule profile, read
+from the database, because production generates nothing without them. Until the CRMLS profile is
+verified (T160) it calls no model and reports both metrics unmeasured (research R39).
+
 **Reviewing a set (sign-off).** A set's manifest carries a `review` block, and only a person flips
-it. Both shipped sets were drafted by AI and are unreviewed, so every run on them is **Incomplete**
+it. All three shipped sets were drafted by AI and are unreviewed, so every run on them is **Incomplete**
 until that happens:
 
 | Set | Who may review | What they must check before signing off |
 |---|---|---|
 | `rooms-v1` | Someone who can judge listing photos (the product owner or a listing agent) | Every photo after `--fetch-eval-sets`, confirming or changing its label — most of all the `ambiguous` items and `primary_bedroom` vs `bedroom`; whether ambiguous items stay scored, are relabelled or removed; each license against its source page, including that the Commons public-domain tags (not the literal PDM 1.0 mark) are acceptable |
+| `listings-v1` | The product owner or a listing agent | That the twelve inputs look like what agents actually enter — fact counts, photo counts, length of agent notes — since tokens per listing depends on input size; and that no item carries an address or personal detail |
 | `fair-housing-v1` | Counsel or CRMLS compliance staff — someone qualified in Fair Housing advertising | Every label and its citation, most of all places of worship as landmarks, neighborhood characterisations, "empty nesters", the service-animal refusal, and the senior-housing exemptions (Civ. Code 51.3 may add to the federal exemption) |
 
 Signing off is a reviewed code change, never a local edit: in one pull request, set
@@ -460,7 +467,7 @@ Signing off is a reviewed code change, never a local edit: in one pull request, 
 loader rejects it otherwise), `"itemsSha256"` (the `items sha256` the harness prints for the set on
 any run, dry or not — the hash of the items exactly as reviewed) and `"notes"` (what was checked and
 any decision taken), and change the
-`ShippedSet_IsUnreviewed` test in `tests/unit/AiEvalPhotoTests.cs` or `AiEvalComplianceTests.cs`
+`ShippedSet_IsUnreviewed` test in `tests/unit/AiEvalPhotoTests.cs`, `AiEvalComplianceTests.cs` or `AiEvalContentTests.cs`
 to assert the recorded review. Any change to an item — a relabel, a removal, a replaced photo — is a
 new version of the set (`rooms-v2.json`, `fair-housing-v2.json`) that needs its own review, not an
 edit under a review already given. The loader enforces this: if the items no longer hash to
@@ -475,7 +482,8 @@ and writes nothing:
 |---|---|---|
 | Provider credentials: `ASPNETCORE_ENVIRONMENT` and the token variable named by `Ai:HuggingFace:ApiKeyEnvVar` (`HF_TOKEN`) | the API host's configuration (above) | set per machine |
 | The photo set fetched and verified (photo.analysis only) | `--fetch-eval-sets` | done once per cache |
-| The task's evaluation set reviewed | the procedure above | **not done** for either set |
+| The task's evaluation set reviewed | the procedure above | **not done** for any set |
+| A verified MLS rule profile (listing.content only) | T160 | **not done** — the content suite calls no model |
 | A JSON-schema validity threshold | a product-owner decision recorded in research R27 | **not set** — no chat model can pass |
 | A registry entry with a commercial license recorded | the admin API (VIII.4) | per model |
 

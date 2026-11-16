@@ -99,14 +99,17 @@ internal sealed class SuiteRun
 /// The suites the harness can run, keyed by task.
 ///
 /// <para>
-/// Two suites ship, each with its labelled evaluation set: photo analysis (<see cref="PhotoEval"/>,
-/// T156) and Fair Housing judging (<see cref="ComplianceEval"/>, T157). Both report the call-level
+/// Three suites ship, each with its evaluation set: photo analysis (<see cref="PhotoEval"/>,
+/// T156), Fair Housing judging (<see cref="ComplianceEval"/>, T157) and listing content
+/// (<see cref="ListingContentEval"/>, T158), whose set holds inputs only because neither of its
+/// metrics judges the copy. All three report the call-level
 /// metrics — schema validity, latency and per-listing consumption (T158) — through
 /// <see cref="EvalModelInvoker"/> and <see cref="CallMetrics"/> rather than as a suite of their
 /// own, because those metrics describe the same calls the accuracy metrics are measured on.
 /// </para>
 /// <para>
-/// <c>listing.content</c> and <c>photo.embedding</c> have no suite yet. A task with no suite here
+/// <c>photo.embedding</c> has no suite, because the specification defines no acceptance metric for
+/// it (research R27). A task with no suite here
 /// produces no measurements, so <see cref="EvalVerdict"/> reports it incomplete and the harness
 /// records nothing — the absence of a suite can never become a pass. Registering a suite does not
 /// make it passable either: until its set's manifest is marked reviewed, every run is
@@ -135,6 +138,10 @@ internal static class EvalSuites
     }
 
     /// <summary>The suites shipped with the harness.</summary>
-    internal static IReadOnlyDictionary<string, IEvalSuite> Registered { get; } =
-        Build([new PhotoEval(), new ComplianceEval()]);
+    /// <param name="connectionString">
+    /// The harness's database connection, which the content suite reads the MLS rule profile
+    /// through. Null when the harness only lists criteria; no suite touches it until it runs.
+    /// </param>
+    internal static IReadOnlyDictionary<string, IEvalSuite> Shipped(string? connectionString) =>
+        Build([new PhotoEval(), new ComplianceEval(), new ListingContentEval(connectionString)]);
 }

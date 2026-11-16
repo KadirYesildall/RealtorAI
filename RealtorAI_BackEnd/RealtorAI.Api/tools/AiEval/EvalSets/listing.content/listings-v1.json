@@ -1,0 +1,335 @@
+{
+  "format": 1,
+  "id": "content-listings",
+  "task": "listing.content",
+  "version": 1,
+  "description": "Twelve fictional California listings, as content generation receives them: basic details, the facts the copy may cite, and what the photos showed. Each is run through a full pipeline content step (structured RESO fields, then every content kind to the MLS's verified limit) to measure the JSON-schema validity rate (FR-015) and tokens per listing (SC-006). There are no labels: neither metric judges what the copy says.",
+  "provenance": {
+    "source": "Authored for this set by an AI assistant (Claude) on 2026-11-16 at the product owner's request. Every listing is fictional; none was copied or adapted from a real listing.",
+    "rights": "Original text written for this repository; no third-party listing content is included.",
+    "labelledBy": "Not labelled: the set holds inputs only, and both metrics it serves are measured on the shape and size of the model's answers.",
+    "labellingMethod": "Inputs were written to span what an agent's listing can look like when content is generated: property types from single-family to condominium and cabin, price points from entry to luxury, from sparse facts with few photos to rich facts with many, agent notes present and absent, and both agent-entered and public-record provenance. No street address, seller, agent or other personal detail appears, because production never sends one (VIII.4.c).",
+    "createdOn": "2026-11-16"
+  },
+  "review": {
+    "reviewed": false,
+    "reviewer": null,
+    "reviewedAt": null,
+    "notes": "Drafted by an AI assistant and NOT reviewed. Before marking reviewed, someone who knows the brokerage's listings should confirm that these inputs are representative of what agents actually enter (fact counts, photo counts, notes length), since tokens per listing depends on input size, and that no item carries an address or personal detail."
+  },
+  "items": [
+    {
+      "id": "lc-01",
+      "targetMlsId": "CRMLS",
+      "city": "Sacramento",
+      "state": "CA",
+      "propertyType": "SingleFamilyResidence",
+      "listPrice": 489000,
+      "bedrooms": 3,
+      "bathrooms": 2,
+      "agentNotes": "Single-story ranch on a corner lot. New roof in 2022. Seller is leaving the washer and dryer.",
+      "facts": [
+        { "key": "LivingArea", "value": 1412, "provenance": "public_record", "confirmed": true },
+        { "key": "YearBuilt", "value": 1961, "provenance": "public_record", "confirmed": true },
+        { "key": "LotSizeSquareFeet", "value": 7405, "provenance": "public_record", "confirmed": true },
+        { "key": "GarageSpaces", "value": 2, "provenance": "agent_entered", "confirmed": true }
+      ],
+      "photos": [
+        { "roomType": "exterior_front", "features": ["single story", "corner lot", "lawn"] },
+        { "roomType": "living_room", "features": ["fireplace", "large window", "carpet"] },
+        { "roomType": "kitchen", "features": ["white cabinets", "gas range", "breakfast bar"] },
+        { "roomType": "primary_bedroom", "features": ["ceiling fan", "double closet"] },
+        { "roomType": "bedroom", "features": ["carpet", "window"] },
+        { "roomType": "bathroom", "features": ["tub shower combination", "single vanity"] },
+        { "roomType": "backyard", "features": ["covered patio", "fenced yard", "mature tree"] },
+        { "roomType": "garage", "features": ["two car", "attached"] }
+      ]
+    },
+    {
+      "id": "lc-02",
+      "targetMlsId": "CRMLS",
+      "city": "San Diego",
+      "state": "CA",
+      "propertyType": "Condominium",
+      "listPrice": 615000,
+      "bedrooms": 2,
+      "bathrooms": 2,
+      "agentNotes": null,
+      "facts": [
+        { "key": "LivingArea", "value": 1048, "provenance": "public_record", "confirmed": true },
+        { "key": "YearBuilt", "value": 2006, "provenance": "public_record", "confirmed": true },
+        { "key": "AssociationFee", "value": 512, "provenance": "agent_entered", "confirmed": true }
+      ],
+      "photos": [
+        { "roomType": "living_room", "features": ["open floor plan", "sliding glass door", "laminate flooring"] },
+        { "roomType": "kitchen", "features": ["quartz counters", "stainless appliances"] },
+        { "roomType": "primary_bedroom", "features": ["walk-in closet", "ceiling fan"] },
+        { "roomType": "bathroom", "features": ["double vanity", "walk-in shower"] },
+        { "roomType": "view", "features": ["city skyline", "balcony"] }
+      ]
+    },
+    {
+      "id": "lc-03",
+      "targetMlsId": "CRMLS",
+      "city": "Pasadena",
+      "state": "CA",
+      "propertyType": "SingleFamilyResidence",
+      "listPrice": 1895000,
+      "bedrooms": 4,
+      "bathrooms": 3.5,
+      "agentNotes": "1920s Craftsman, fully permitted remodel in 2019. Original built-ins in the dining room were kept. Detached two-car garage with a finished studio above. Owned solar, 24 panels.",
+      "facts": [
+        { "key": "LivingArea", "value": 2680, "provenance": "public_record", "confirmed": true },
+        { "key": "YearBuilt", "value": 1923, "provenance": "public_record", "confirmed": true },
+        { "key": "LotSizeSquareFeet", "value": 9750, "provenance": "public_record", "confirmed": true },
+        { "key": "GarageSpaces", "value": 2, "provenance": "agent_entered", "confirmed": true },
+        { "key": "Stories", "value": 2, "provenance": "agent_entered", "confirmed": true },
+        { "key": "ArchitecturalStyle", "value": ["Craftsman"], "provenance": "agent_entered", "confirmed": true }
+      ],
+      "photos": [
+        { "roomType": "exterior_front", "features": ["covered porch", "tapered columns", "landscaped front yard"] },
+        { "roomType": "living_room", "features": ["fireplace", "hardwood floors", "built-in bookcases"] },
+        { "roomType": "other", "features": ["dining room", "built-in buffet", "wainscoting"] },
+        { "roomType": "kitchen", "features": ["center island", "farmhouse sink", "range hood"] },
+        { "roomType": "primary_bedroom", "features": ["sitting area", "hardwood floors"] },
+        { "roomType": "bathroom", "features": ["soaking tub", "double vanity", "tile floor"] },
+        { "roomType": "bedroom", "features": ["window seat"] },
+        { "roomType": "bedroom", "features": ["hardwood floors", "closet"] },
+        { "roomType": "bathroom", "features": ["pedestal sink", "subway tile"] },
+        { "roomType": "backyard", "features": ["patio", "fruit trees", "lawn"] },
+        { "roomType": "garage", "features": ["detached", "studio above"] },
+        { "roomType": "exterior_front", "features": ["solar panels", "street view"] }
+      ]
+    },
+    {
+      "id": "lc-04",
+      "targetMlsId": "CRMLS",
+      "city": "Riverside",
+      "state": "CA",
+      "propertyType": "Townhouse",
+      "listPrice": 459900,
+      "bedrooms": 3,
+      "bathrooms": 2.5,
+      "agentNotes": "End unit. Community pool and spa.",
+      "facts": [
+        { "key": "LivingArea", "value": 1520, "provenance": "public_record", "confirmed": true },
+        { "key": "YearBuilt", "value": 1989, "provenance": "public_record", "confirmed": true },
+        { "key": "AssociationFee", "value": 295, "provenance": "agent_entered", "confirmed": true },
+        { "key": "Stories", "value": 2, "provenance": "agent_entered", "confirmed": true }
+      ],
+      "photos": [
+        { "roomType": "exterior_front", "features": ["end unit", "attached garage"] },
+        { "roomType": "living_room", "features": ["vaulted ceiling", "fireplace"] },
+        { "roomType": "kitchen", "features": ["tile counters", "pantry"] },
+        { "roomType": "primary_bedroom", "features": ["mirrored closet doors"] },
+        { "roomType": "bathroom", "features": ["shower over tub"] },
+        { "roomType": "pool", "features": ["community pool", "spa", "lounge chairs"] }
+      ]
+    },
+    {
+      "id": "lc-05",
+      "targetMlsId": "CRMLS",
+      "city": "Big Bear Lake",
+      "state": "CA",
+      "propertyType": "Cabin",
+      "listPrice": 529000,
+      "bedrooms": 2,
+      "bathrooms": 1,
+      "agentNotes": "Sold furnished. Wood-burning stove.",
+      "facts": [
+        { "key": "LivingArea", "value": 980, "provenance": "public_record", "confirmed": true },
+        { "key": "YearBuilt", "value": 1958, "provenance": "public_record", "confirmed": true },
+        { "key": "LotSizeSquareFeet", "value": 6100, "provenance": "public_record", "confirmed": true }
+      ],
+      "photos": [
+        { "roomType": "exterior_front", "features": ["pine trees", "wood siding", "deck"] },
+        { "roomType": "living_room", "features": ["wood stove", "knotty pine walls", "beamed ceiling"] },
+        { "roomType": "kitchen", "features": ["compact kitchen", "wood cabinets"] },
+        { "roomType": "bedroom", "features": ["sloped ceiling"] },
+        { "roomType": "view", "features": ["mountain view", "forest"] }
+      ]
+    },
+    {
+      "id": "lc-06",
+      "targetMlsId": "CRMLS",
+      "city": "Irvine",
+      "state": "CA",
+      "propertyType": "SingleFamilyResidence",
+      "listPrice": 1450000,
+      "bedrooms": 4,
+      "bathrooms": 3,
+      "agentNotes": "Downstairs bedroom and full bath. Upgraded flooring throughout.",
+      "facts": [
+        { "key": "LivingArea", "value": 2210, "provenance": "public_record", "confirmed": true },
+        { "key": "YearBuilt", "value": 2014, "provenance": "public_record", "confirmed": true },
+        { "key": "LotSizeSquareFeet", "value": 4300, "provenance": "public_record", "confirmed": true },
+        { "key": "GarageSpaces", "value": 2, "provenance": "agent_entered", "confirmed": true },
+        { "key": "AssociationFee", "value": 180, "provenance": "agent_entered", "confirmed": true },
+        { "key": "Stories", "value": 2, "provenance": "agent_entered", "confirmed": true }
+      ],
+      "photos": [
+        { "roomType": "exterior_front", "features": ["two story", "tile roof", "drought-tolerant landscaping"] },
+        { "roomType": "living_room", "features": ["open concept", "recessed lighting", "luxury vinyl plank"] },
+        { "roomType": "kitchen", "features": ["large island", "white quartz", "built-in refrigerator"] },
+        { "roomType": "primary_bedroom", "features": ["tray ceiling", "walk-in closet"] },
+        { "roomType": "bathroom", "features": ["freestanding tub", "frameless glass shower"] },
+        { "roomType": "bedroom", "features": ["ground floor"] },
+        { "roomType": "backyard", "features": ["artificial turf", "built-in barbecue"] }
+      ]
+    },
+    {
+      "id": "lc-07",
+      "targetMlsId": "CRMLS",
+      "city": "Bakersfield",
+      "state": "CA",
+      "propertyType": "SingleFamilyResidence",
+      "listPrice": 345000,
+      "bedrooms": 3,
+      "bathrooms": 2,
+      "agentNotes": null,
+      "facts": [
+        { "key": "LivingArea", "value": 1260, "provenance": "public_record", "confirmed": true },
+        { "key": "YearBuilt", "value": 1978, "provenance": "public_record", "confirmed": true }
+      ],
+      "photos": [
+        { "roomType": "exterior_front", "features": ["stucco", "two car garage"] },
+        { "roomType": "kitchen", "features": ["laminate counters"] },
+        { "roomType": "living_room", "features": ["ceiling fan"] }
+      ]
+    },
+    {
+      "id": "lc-08",
+      "targetMlsId": "CRMLS",
+      "city": "Palm Springs",
+      "state": "CA",
+      "propertyType": "SingleFamilyResidence",
+      "listPrice": 1275000,
+      "bedrooms": 3,
+      "bathrooms": 2,
+      "agentNotes": "Mid-century post-and-beam. Pool resurfaced in 2023. Clerestory windows.",
+      "facts": [
+        { "key": "LivingArea", "value": 1780, "provenance": "public_record", "confirmed": true },
+        { "key": "YearBuilt", "value": 1962, "provenance": "public_record", "confirmed": true },
+        { "key": "LotSizeSquareFeet", "value": 10454, "provenance": "public_record", "confirmed": true },
+        { "key": "ArchitecturalStyle", "value": ["MidCenturyModern"], "provenance": "agent_entered", "confirmed": true },
+        { "key": "PoolPrivateYN", "value": true, "provenance": "agent_entered", "confirmed": true }
+      ],
+      "photos": [
+        { "roomType": "exterior_front", "features": ["flat roof", "breeze block", "desert landscaping"] },
+        { "roomType": "living_room", "features": ["clerestory windows", "terrazzo floor", "floor-to-ceiling glass"] },
+        { "roomType": "kitchen", "features": ["walnut cabinets", "pass-through"] },
+        { "roomType": "primary_bedroom", "features": ["sliding door to pool"] },
+        { "roomType": "bathroom", "features": ["vintage tile", "skylight"] },
+        { "roomType": "pool", "features": ["private pool", "diving board", "patio"] },
+        { "roomType": "view", "features": ["mountain view", "palm trees"] },
+        { "roomType": "backyard", "features": ["citrus trees", "fire pit"] }
+      ]
+    },
+    {
+      "id": "lc-09",
+      "targetMlsId": "CRMLS",
+      "city": "Oakland",
+      "state": "CA",
+      "propertyType": "Duplex",
+      "listPrice": 1095000,
+      "bedrooms": 4,
+      "bathrooms": 2,
+      "agentNotes": "Two units, each 2 bed / 1 bath, separately metered. Upper unit delivered vacant.",
+      "facts": [
+        { "key": "LivingArea", "value": 2120, "provenance": "public_record", "confirmed": true },
+        { "key": "YearBuilt", "value": 1915, "provenance": "public_record", "confirmed": true },
+        { "key": "NumberOfUnitsTotal", "value": 2, "provenance": "agent_entered", "confirmed": true }
+      ],
+      "photos": [
+        { "roomType": "exterior_front", "features": ["two story", "bay windows", "front steps"] },
+        { "roomType": "living_room", "features": ["bay window", "hardwood floors", "crown molding"] },
+        { "roomType": "kitchen", "features": ["gas range", "window over sink"] },
+        { "roomType": "bedroom", "features": ["closet", "hardwood floors"] },
+        { "roomType": "bathroom", "features": ["clawfoot tub"] },
+        { "roomType": "backyard", "features": ["shared yard", "raised garden beds"] }
+      ]
+    },
+    {
+      "id": "lc-10",
+      "targetMlsId": "CRMLS",
+      "city": "Santa Barbara",
+      "state": "CA",
+      "propertyType": "SingleFamilyResidence",
+      "listPrice": 4250000,
+      "bedrooms": 5,
+      "bathrooms": 5.5,
+      "agentNotes": "Spanish Colonial on just over an acre. Guest house with kitchenette. Ocean and island views from the main level. Gated drive. Generator.",
+      "facts": [
+        { "key": "LivingArea", "value": 4860, "provenance": "public_record", "confirmed": true },
+        { "key": "YearBuilt", "value": 1998, "provenance": "public_record", "confirmed": true },
+        { "key": "LotSizeSquareFeet", "value": 45302, "provenance": "public_record", "confirmed": true },
+        { "key": "GarageSpaces", "value": 3, "provenance": "agent_entered", "confirmed": true },
+        { "key": "Stories", "value": 2, "provenance": "agent_entered", "confirmed": true },
+        { "key": "ArchitecturalStyle", "value": ["SpanishMediterranean"], "provenance": "agent_entered", "confirmed": true },
+        { "key": "PoolPrivateYN", "value": true, "provenance": "agent_entered", "confirmed": true }
+      ],
+      "photos": [
+        { "roomType": "exterior_front", "features": ["red tile roof", "arched entry", "gated drive"] },
+        { "roomType": "view", "features": ["ocean view", "islands on horizon"] },
+        { "roomType": "living_room", "features": ["beamed ceiling", "fireplace", "French doors"] },
+        { "roomType": "kitchen", "features": ["professional range", "two islands", "walk-in pantry"] },
+        { "roomType": "other", "features": ["formal dining room", "chandelier"] },
+        { "roomType": "primary_bedroom", "features": ["fireplace", "private balcony", "ocean view"] },
+        { "roomType": "bathroom", "features": ["steam shower", "soaking tub", "marble"] },
+        { "roomType": "bedroom", "features": ["en suite"] },
+        { "roomType": "bedroom", "features": ["garden view"] },
+        { "roomType": "bedroom", "features": ["built-in desk"] },
+        { "roomType": "pool", "features": ["infinity edge", "spa", "loggia"] },
+        { "roomType": "backyard", "features": ["terraced gardens", "olive trees", "outdoor kitchen"] },
+        { "roomType": "other", "features": ["guest house", "kitchenette"] },
+        { "roomType": "garage", "features": ["three car", "storage"] }
+      ]
+    },
+    {
+      "id": "lc-11",
+      "targetMlsId": "CRMLS",
+      "city": "Fresno",
+      "state": "CA",
+      "propertyType": "ManufacturedOnLand",
+      "listPrice": 239000,
+      "bedrooms": 2,
+      "bathrooms": 2,
+      "agentNotes": "Permanent foundation. Large lot with RV parking.",
+      "facts": [
+        { "key": "LivingArea", "value": 1150, "provenance": "agent_entered", "confirmed": true },
+        { "key": "YearBuilt", "value": 2001, "provenance": "public_record", "confirmed": true },
+        { "key": "LotSizeSquareFeet", "value": 13068, "provenance": "public_record", "confirmed": true }
+      ],
+      "photos": [
+        { "roomType": "exterior_front", "features": ["covered carport", "gravel drive"] },
+        { "roomType": "living_room", "features": ["vaulted ceiling"] },
+        { "roomType": "kitchen", "features": ["island", "electric range"] },
+        { "roomType": "backyard", "features": ["RV parking", "shed"] }
+      ]
+    },
+    {
+      "id": "lc-12",
+      "targetMlsId": "CRMLS",
+      "city": "Long Beach",
+      "state": "CA",
+      "propertyType": "Condominium",
+      "listPrice": 399000,
+      "bedrooms": 1,
+      "bathrooms": 1,
+      "agentNotes": "Assigned parking space. Laundry on each floor.",
+      "facts": [
+        { "key": "LivingArea", "value": 702, "provenance": "public_record", "confirmed": true },
+        { "key": "YearBuilt", "value": 1972, "provenance": "public_record", "confirmed": true },
+        { "key": "AssociationFee", "value": 389, "provenance": "agent_entered", "confirmed": true }
+      ],
+      "photos": [
+        { "roomType": "living_room", "features": ["balcony access", "wall unit air conditioner"] },
+        { "roomType": "kitchen", "features": ["galley kitchen", "updated cabinets"] },
+        { "roomType": "bedroom", "features": ["double closet"] },
+        { "roomType": "bathroom", "features": ["tub shower combination"] },
+        { "roomType": "view", "features": ["harbor view"] },
+        { "roomType": "floor_plan", "features": ["one bedroom layout"] }
+      ]
+    }
+  ]
+}

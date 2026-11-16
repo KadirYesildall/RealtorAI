@@ -54,6 +54,13 @@
       a copy of it (ComplianceEval).
     -->
     <ProjectReference Include="..\..\Libs.Compliance\Libs.Compliance.csproj" />
+
+    <!--
+      Content generation's rules: the content kinds, their verified limits and variant counts, and
+      the RESO lookups the structured call chooses among. ListingContentEval generates as
+      ContentGenerationStep does by calling these rather than restating them.
+    -->
+    <ProjectReference Include="..\..\Modules.Content\Modules.Content.csproj" />
   </ItemGroup>
 
   <ItemGroup>

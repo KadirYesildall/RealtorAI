@@ -77,7 +77,7 @@ internal static class Program
 
             foreach (var task in tasks)
             {
-                Report.PrintCriteria(task, catalog.For(task), EvalSuites.Registered.ContainsKey(task));
+                Report.PrintCriteria(task, catalog.For(task), EvalSuites.Shipped(options.ConnectionString).ContainsKey(task));
             }
 
             return ExitPassed;
@@ -101,7 +101,7 @@ internal static class Program
 
         SuiteRun? run = null;
 
-        if (EvalSuites.Registered.TryGetValue(target.TaskKey, out var suite))
+        if (EvalSuites.Shipped(options.ConnectionString).TryGetValue(target.TaskKey, out var suite))
         {
             try
             {

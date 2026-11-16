@@ -1343,8 +1343,9 @@ call-level metrics on the same calls. `listing.content` and `photo.embedding` st
   CC BY 2.0/2.5/3.0/4.0 (77), CC0 1.0 (30), public domain (24). The public-domain items carry
   Commons status tags (PD-self, PD-user, PD-USGov-\*, PD-Highsmith, PD-old-70-expired,
   PD-anon-expired, PD-1923, PD-Australia, PD-Canada, HABS) rather than the literal PDM 1.0 mark; they
-  were kept because dropping them would leave 2 floor plans and 6 exterior fronts, and the reviewer
-  is asked to confirm the choice, since several are jurisdiction-dependent. `PhotoEval.IsAllowedLicense`
+  were kept because dropping them would leave 2 floor plans and 6 exterior fronts. **The product
+  owner approved keeping them on 2026-11-16.** The set's reviewer still checks each tag's
+  jurisdiction (PD-Australia, PD-Canada, PD-1923 and similar) as part of sign-off. `PhotoEval.IsAllowedLicense`
   enforces the allowed set. **The images are not committed**: each item names its source page, file
   URL, license and SHA-256, `aieval --fetch-eval-sets` downloads and verifies them into a cache
   outside the repository, and `ATTRIBUTION.md` gives TASL attribution for all 131. Labels are checked
@@ -1390,16 +1391,28 @@ call-level metrics on the same calls. `listing.content` and `photo.embedding` st
   with a printed reason, and tokens are withheld when usage was not reported — a withheld metric
   cannot pass. Evaluation calls bypass the circuit breaker, budget check and response cache, and
   never fail over to another model.
+- **The content suite (T158, `ListingContentEval`).** `listings-v1` holds 12 fictional California
+  listings — inputs only, because neither `listing.content` metric judges the copy. Each listing is
+  run as `ContentGenerationStep` runs it: one structured call, the permitted proposals added as
+  unconfirmed `ai_detected_from_photo` facts, then one text call per content kind with a verified
+  limit, in the default tone (`professional`) and the production variant count. Requests are built
+  by `ListingContentTask` itself (its request builders were made public for this, behaviour
+  unchanged), and a unit test runs the production step on the same listing and asserts the same
+  requests in the same order. Tokens per listing is the sum over those calls. **The limits come
+  only from the listing's MLS rule profile, read from the database**: production generates nothing
+  without verified limits (R2), and a limit chosen by the harness would measure calls production
+  never makes, since both request and answer length depend on it. So until the CRMLS profile is
+  verified (T160) the suite calls no model and reports both metrics unmeasured.
 - **Open items.**
-  1. Neither set is reviewed. `rooms-v1` needs someone who can judge listing photos;
+  1. No set is reviewed. `rooms-v1` needs someone who can judge listing photos;
      `fair-housing-v1` needs counsel or CRMLS compliance staff (and a check of Civ. Code 51.3 against
-     the senior-housing items).
+     the senior-housing items); `listings-v1` needs someone who knows what agents actually enter.
   2. The JSON-schema validity threshold is still unset (R27), so no chat model can pass.
-  3. No real model has been called by either suite; every run so far used fakes. No real accuracy
+  3. No real model has been called by any suite; every run so far used fakes. No real accuracy
      or latency has been measured, so T156 and T157's assertions remain open.
-  4. `listing.content` has no suite, so its schema-validity and tokens-per-listing metrics cannot be
-     measured, and `photo.embedding` has no acceptance metric (R27); this run does not settle the
-     provisional 0.97 near-duplicate threshold.
+  4. The content suite cannot run until the CRMLS profile is verified (T160). `photo.embedding` has
+     no acceptance metric (R27); this run does not settle the provisional 0.97 near-duplicate
+     threshold.
   5. `eval_result` does not yet record the evaluation set, its content hash, or the prompt version
      a verdict came from — the harness prints them, but storing them needs a v2 result format.
 

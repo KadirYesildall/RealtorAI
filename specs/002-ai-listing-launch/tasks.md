@@ -319,7 +319,7 @@ Per [plan.md](./plan.md) "Project Structure" — the repo's two mandated top-lev
 - [X] T155 [P] Integration test: the purge removes originals only past the retention window and no application role can delete them, in `tests/integration/RetentionPurgeTests.cs`
 - [ ] T156 [P] Build the labeled photo evaluation set and assert room classification ≥90% accepted (SC-002) in `RealtorAI.Api/tools/AiEval/PhotoEval.cs`
 - [ ] T157 [P] Build the labeled text evaluation set and assert Fair Housing recall ≥95% with ≤10% false positives (SC-003) in `RealtorAI.Api/tools/AiEval/ComplianceEval.cs`
-- [ ] T158 [P] Add schema-validity rate, p90 latency (<2 min for 30 photos, SC-005), and cost-per-listing metrics to `RealtorAI.Api/tools/AiEval/`
+- [X] T158 [P] Add schema-validity rate, p90 latency (<2 min for 30 photos, SC-005), and cost-per-listing metrics to `RealtorAI.Api/tools/AiEval/`
 - [ ] T159 Write the model-enablement runbook in `specs/002-ai-listing-launch/quickstart.md` §6 and flip registry entries to `enabled` **only after** Hub verification and a passing eval (research R1, VIII.4)
 - [ ] T160 [P] Populate the CRMLS rule profile with **verified published values** via a new migration in `RealtorAI_BackEnd/supabase/migrations/` (research R2) — and verify the unverified RESO lookup seed `Libs.Reso/Lookups/dd-2.0-slice-a.json` against the official Data Dictionary, then set its `verified` flag (research R35)
 - [ ] T161 [P] Record counsel's or CRMLS compliance staff's confirmation of AB 723 disclosure label text and placement in `specs/002-ai-listing-launch/research.md` R4, then seed the approved labels (research R4)

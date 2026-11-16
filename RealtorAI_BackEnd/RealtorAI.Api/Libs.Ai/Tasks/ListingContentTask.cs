@@ -96,14 +96,8 @@ public static class ListingContentTask
         ArgumentOutOfRangeException.ThrowIfLessThan(variantCount, 1);
         ArgumentOutOfRangeException.ThrowIfLessThan(maxCharacters, 1);
 
-        var request = Request(input, "text");
-        request["kind"] = kind;
-        request["tone"] = tone;
-        request["variantCount"] = variantCount;
-        request["maxCharacters"] = maxCharacters;
-
         var result = await ai.ExecuteAsync(
-            new AiRequest(AiTaskKey.ListingContent, input.ListingId, input.ActorId, request.ToJsonString(), ImageCount: 0, estimatedTokens),
+            new AiRequest(AiTaskKey.ListingContent, input.ListingId, input.ActorId, BuildTextInput(input, kind, tone, variantCount, maxCharacters), ImageCount: 0, estimatedTokens),
             cancellationToken);
 
         var variants = (result.Document["variants"]?.AsArray() ?? [])
@@ -129,20 +123,52 @@ public static class ListingContentTask
         ArgumentNullException.ThrowIfNull(input);
         ArgumentNullException.ThrowIfNull(allowedValues);
 
+        var result = await ai.ExecuteAsync(
+            new AiRequest(AiTaskKey.ListingContent, input.ListingId, input.ActorId, BuildStructuredInput(input, allowedValues), ImageCount: 0, estimatedTokens),
+            cancellationToken);
+
+        return new GeneratedStructure(ReadStructure(result.Document), result);
+    }
+
+    /// <summary>
+    /// The text-mode request, as sent. Public so the evaluation harness sends a model under
+    /// evaluation exactly what production sends, rather than a copy that could drift.
+    /// </summary>
+    public static string BuildTextInput(ListingContentInput input, string kind, string tone, int variantCount, int maxCharacters)
+    {
+        ArgumentNullException.ThrowIfNull(input);
+
+        var request = Request(input, "text");
+        request["kind"] = kind;
+        request["tone"] = tone;
+        request["variantCount"] = variantCount;
+        request["maxCharacters"] = maxCharacters;
+
+        return request.ToJsonString();
+    }
+
+    /// <summary>The structured-mode request, as sent. Public for the same reason as <see cref="BuildTextInput"/>.</summary>
+    public static string BuildStructuredInput(ListingContentInput input, IReadOnlyDictionary<string, IReadOnlyList<string>> allowedValues)
+    {
+        ArgumentNullException.ThrowIfNull(input);
+        ArgumentNullException.ThrowIfNull(allowedValues);
+
         var request = Request(input, "structured");
         request["allowedValues"] = JsonSerializer.SerializeToNode(allowedValues, Web);
 
-        var result = await ai.ExecuteAsync(
-            new AiRequest(AiTaskKey.ListingContent, input.ListingId, input.ActorId, request.ToJsonString(), ImageCount: 0, estimatedTokens),
-            cancellationToken);
+        return request.ToJsonString();
+    }
 
-        var values = (result.Document["structured"]?.AsObject() ?? [])
+    /// <summary>The proposed values of a validated structured-mode answer, per field.</summary>
+    public static IReadOnlyDictionary<string, IReadOnlyList<string>> ReadStructure(JsonNode document)
+    {
+        ArgumentNullException.ThrowIfNull(document);
+
+        return (document["structured"]?.AsObject() ?? [])
             .ToDictionary(
                 field => field.Key,
                 field => (IReadOnlyList<string>)field.Value!.AsArray().Select(value => value!.GetValue<string>()).ToList(),
                 StringComparer.Ordinal);
-
-        return new GeneratedStructure(values, result);
     }
 
     private static JsonObject Request(ListingContentInput input, string mode) => new()
