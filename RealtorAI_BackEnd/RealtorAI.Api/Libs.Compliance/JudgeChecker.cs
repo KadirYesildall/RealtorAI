@@ -39,15 +39,45 @@ public static partial class JudgeChecker
         ArgumentNullException.ThrowIfNull(ai);
         ArgumentNullException.ThrowIfNull(text);
 
-        var input = new JsonObject { ["review"] = "fair_housing", ["kind"] = kind, ["text"] = text };
-
         var result = await ai.ExecuteAsync(
-            new AiRequest(AiTaskKey.ComplianceJudge, listingId, actorId, input.ToJsonString(), ImageCount: 0, estimatedTokens),
+            new AiRequest(AiTaskKey.ComplianceJudge, listingId, actorId, BuildInput(kind, text), ImageCount: 0, estimatedTokens),
             cancellationToken);
+
+        return new JudgeOutcome(ReadFindings(text, result.Document), result);
+    }
+
+    /// <summary>
+    /// The user message of one judge call: which review, the <paramref name="kind"/> of copy (its
+    /// <c>content_kind</c> label, e.g. <c>public_remarks</c>) and the <paramref name="text"/>.
+    ///
+    /// <para>
+    /// Public, with <see cref="ReadFindings"/>, because two callers must send and read exactly
+    /// the same thing: this checker, and the evaluation harness measuring a judge model before it
+    /// is enabled (T157). A model measured on a differently worded request, or scored by a
+    /// different reading of its answer, would have been measured on a check production never runs.
+    /// </para>
+    /// </summary>
+    public static string BuildInput(string kind, string text)
+    {
+        ArgumentNullException.ThrowIfNull(text);
+
+        return new JsonObject { ["review"] = "fair_housing", ["kind"] = kind, ["text"] = text }.ToJsonString();
+    }
+
+    /// <summary>
+    /// Reads a schema-valid judge answer into findings located in <paramref name="text"/>: each
+    /// reported phrase is placed at its first unplaced occurrence, and one that is not in the text
+    /// is dropped.
+    /// </summary>
+    /// <param name="document">An answer that has passed the <c>compliance.judge</c> schema.</param>
+    public static IReadOnlyList<Finding> ReadFindings(string text, JsonNode document)
+    {
+        ArgumentNullException.ThrowIfNull(text);
+        ArgumentNullException.ThrowIfNull(document);
 
         var findings = new List<Finding>();
 
-        foreach (var node in result.Document["findings"]?.AsArray() ?? [])
+        foreach (var node in document["findings"]?.AsArray() ?? [])
         {
             var phrase = node!["phrase"]!.GetValue<string>();
             var start = Locate(text, phrase, findings);
@@ -71,7 +101,7 @@ public static partial class JudgeChecker
                 Spans.MatchCase(text.Substring(start, phrase.Length), node["rewrite"]!.GetValue<string>())));
         }
 
-        return new JudgeOutcome(findings, result);
+        return findings;
     }
 
     /// <summary>The first occurrence not already placed, ignoring case; -1 when there is none.</summary>

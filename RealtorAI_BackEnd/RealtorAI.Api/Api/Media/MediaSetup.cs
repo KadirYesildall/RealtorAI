@@ -20,9 +20,9 @@ internal static class MediaSetup
 
         // ───────────── Normalization ─────────────
         services.AddSingleton(new ImageNormalizer(new NormalizationOptions(
-            Required<int>(configuration, "Storage:NormalizedLongEdgePx"),
-            Required<int>(configuration, "Storage:NormalizedJpegQuality"),
-            Required<long>(configuration, "Storage:MaxSourcePixels"))));
+            Required<int>(configuration, NormalizationOptions.LongEdgePxKey),
+            Required<int>(configuration, NormalizationOptions.JpegQualityKey),
+            Required<long>(configuration, NormalizationOptions.MaxSourcePixelsKey))));
 
         // ───────────── Storage ─────────────
         //

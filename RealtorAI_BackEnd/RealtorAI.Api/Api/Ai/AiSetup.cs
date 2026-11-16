@@ -48,12 +48,11 @@ internal static class AiSetup
         // The base URL and the name of the environment variable holding the token come from
         // configuration. The token itself does not: only its variable name is written down, so
         // a credential never lands in a settings file or a container image layer.
-        var transport = new AiTransportOptions(
-            configuration["Ai:HuggingFace:RouterBaseUrl"]
-                ?? throw new InvalidOperationException(
-                    "Ai:HuggingFace:RouterBaseUrl is not configured. It is the default base URL "
-                    + "for providers whose registry entry declares no endpoint of its own."),
-            configuration["Ai:HuggingFace:ApiKeyEnvVar"] ?? "HF_TOKEN");
+        // The keys are defined on AiTransportOptions because the evaluation harness reads the
+        // same two values: a model is evaluated through the credential it would serve under.
+        var transport = AiTransportOptions.FromConfiguration(
+            configuration[AiTransportOptions.DefaultBaseUrlKey],
+            configuration[AiTransportOptions.ApiKeyEnvironmentVariableKey]);
 
         services.AddAiHttpClient(transport);
 
@@ -63,7 +62,9 @@ internal static class AiSetup
         // is what makes a recorded prompt hash meaningful (VIII.5) — a prompt that could be
         // reloaded mid-process could serve two different texts under one version number.
         services.AddSingleton<IPromptRegistry>(
-            PromptRegistry.Load(ResolvePromptsDirectory(configuration, environment)));
+            PromptRegistry.Load(PromptRegistry.ResolveDirectory(
+                configuration[PromptRegistry.PathConfigurationKey],
+                environment.ContentRootPath)));
 
         // ───────────── Stores ─────────────
         services.AddScoped<IModelRegistryStore, EfModelRegistryStore>();
@@ -92,58 +93,6 @@ internal static class AiSetup
         services.AddScoped<IAiService, AiService>();
 
         return services;
-    }
-
-    /// <summary>
-    /// Finds the prompts directory.
-    ///
-    /// <para>
-    /// Probing is necessary because the directory sits beside the host project rather than
-    /// inside it (plan.md puts <c>prompts/</c> as a sibling of <c>Api/</c>, shared with the
-    /// evaluation harness), while <see cref="IHostEnvironment.ContentRootPath"/> is the host
-    /// project directory under <c>dotnet run</c> and the output directory once published.
-    /// Hard-coding either one works in exactly one of those situations.
-    /// </para>
-    /// <para>
-    /// This was not theoretical: the first wiring resolved only
-    /// <c>{ContentRoot}/prompts</c> and the host refused to start, reporting the recorded
-    /// <c>photo.analysis v1</c> as missing. The drift check was right — from where it looked,
-    /// the file genuinely was not there.
-    /// </para>
-    /// </summary>
-    private static string ResolvePromptsDirectory(
-        IConfiguration configuration,
-        IHostEnvironment environment)
-    {
-        // An explicit setting wins, so a deployment with an unusual layout needs no code change.
-        if (configuration["Ai:PromptsPath"] is { Length: > 0 } configured)
-        {
-            return Path.IsPathRooted(configured)
-                ? configured
-                : Path.Combine(environment.ContentRootPath, configured);
-        }
-
-        string[] candidates =
-        [
-            // Published output, where the csproj copies them.
-            Path.Combine(environment.ContentRootPath, "prompts"),
-
-            // Development: beside the host project, as the plan lays it out.
-            Path.Combine(environment.ContentRootPath, "..", "prompts"),
-        ];
-
-        foreach (var candidate in candidates)
-        {
-            if (Directory.Exists(candidate))
-            {
-                return Path.GetFullPath(candidate);
-            }
-        }
-
-        // Returning the first candidate rather than throwing: an absent directory is a valid
-        // state when no prompt version has been recorded yet, and the startup verification
-        // reports it precisely when it actually matters — when a recorded version has no file.
-        return Path.GetFullPath(candidates[0]);
     }
 
     /// <summary>

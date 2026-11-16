@@ -52,5 +52,10 @@ test-results/
 playwright-report/
 *.tsbuildinfo
 
+# AI evaluation-set files fetched by `aieval --fetch-eval-sets` (third-party photos, never
+# committed; the manifest records source, license and SHA-256). The default cache is outside
+# the repository; this covers a cache placed inside it.
+.eval-cache/
+
 # Local ops credentials (retention purge job runs with its own identity)
 ops/**/*.local.json

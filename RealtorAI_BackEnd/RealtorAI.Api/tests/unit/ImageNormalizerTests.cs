@@ -148,6 +148,47 @@ public sealed class ImageNormalizerTests
         Assert.Equal("image/png", normalized.SourceMimeType);
     }
 
+    /// <summary>
+    /// A floor plan as CAD software or an SVG renderer exports it: dark lines on a transparent
+    /// background whose stored colour is black. JPEG has no alpha, so unless transparency is
+    /// composited onto white first, the stored black shows through and the whole copy — the
+    /// one stored and the one sent to the vision model — is a black frame.
+    /// </summary>
+    [Fact]
+    public void Normalize_FlattensTransparencyOntoWhite()
+    {
+        byte[] source;
+
+        using (var image = new MagickImage(new MagickColor("#00000000"), 800, 600))
+        {
+            image.Draw(new Drawables().FillColor(new MagickColor("#202020")).Rectangle(100, 100, 300, 120));
+            image.Format = MagickFormat.Png;
+            source = image.ToByteArray();
+        }
+
+        // Precondition: the fixture really is transparent, with black stored under the alpha.
+        using (var decoded = new MagickImage(source))
+        {
+            Assert.True(decoded.HasAlpha);
+            var corner = decoded.GetPixels().GetPixel(10, 10).ToColor()!;
+            Assert.Equal(0, corner.A);
+            Assert.Equal(0, corner.R);
+        }
+
+        var normalized = Normalizer.Normalize(source);
+
+        using var output = new MagickImage(normalized.Content);
+
+        Assert.False(output.HasAlpha);
+
+        var background = output.GetPixels().GetPixel(10, 10).ToColor()!;
+        Assert.True(background.R > 245 && background.G > 245 && background.B > 245, $"Background is {background}, expected white.");
+
+        // The drawing survives the flattening: the line is still dark.
+        var line = output.GetPixels().GetPixel(200, 110).ToColor()!;
+        Assert.True(line.R < 64, $"Line pixel is {line}, expected dark.");
+    }
+
     // ───────────────────────────── Orientation ─────────────────────────────
 
     /// <summary>

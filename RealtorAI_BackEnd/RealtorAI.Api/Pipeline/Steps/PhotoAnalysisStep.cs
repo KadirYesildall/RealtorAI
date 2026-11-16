@@ -1,5 +1,5 @@
-using System.Text.Json;
 using Libs.Ai;
+using Libs.Ai.Tasks;
 using Modules.Media;
 
 namespace Pipeline.Steps;
@@ -104,7 +104,7 @@ public sealed class PhotoAnalysisStep : IPipelineStep
                         AiTaskKey.PhotoAnalysis,
                         run.ListingId,
                         run.StartedBy,
-                        Input(photo.Id),
+                        PhotoAnalysisTask.BuildInput(photo.Id),
                         ImageCount: 1,
                         options.EstimatedTokensPerPhoto,
                         [new AiImage(normalized, "image/jpeg")]),
@@ -149,13 +149,6 @@ public sealed class PhotoAnalysisStep : IPipelineStep
         return StepOutcome.Failed(
             stopReason ?? "No photo could be analysed. Every photo can still be classified, captioned and ordered by hand.");
     }
-
-    /// <summary>
-    /// The text beside the image: which photo this is, and nothing else. The prompt states that
-    /// this text is a reference, not an instruction.
-    /// </summary>
-    private static string Input(Guid photoId) =>
-        JsonSerializer.Serialize(new { photoId, request = "Analyse the attached photograph." });
 
     private async Task FailAsync(PipelineRunContext run, Guid photoId, string reason, CancellationToken cancellationToken)
     {

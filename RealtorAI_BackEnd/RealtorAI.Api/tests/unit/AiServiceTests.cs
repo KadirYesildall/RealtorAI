@@ -1,5 +1,9 @@
 using System.Text.Json.Nodes;
 using Libs.Ai;
+using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging.Abstractions;
+using Polly;
+using Polly.Timeout;
 
 namespace RealtorAI.Tests.Unit;
 
@@ -390,6 +394,134 @@ public sealed class AiServiceTests
 
         await Assert.ThrowsAsync<ArgumentException>(
             () => registry.ResolveAsync("photo.colourise", default));
+    }
+
+    // ═════════════════════ Failover on a provider timeout ═════════════════════
+
+    /// <summary>
+    /// The exception the AI HTTP client's resilience pipeline throws when an attempt or the whole
+    /// call runs out of time. Produced by a real Polly timeout rather than constructed, so the
+    /// test pins the type the pipeline actually throws — which is not a
+    /// <see cref="TimeoutException"/>, and was therefore once missed by failover.
+    /// </summary>
+    private static async Task<Exception> ProviderTimeout()
+    {
+        var pipeline = new ResiliencePipelineBuilder()
+            .AddTimeout(TimeSpan.FromMilliseconds(20))
+            .Build();
+
+        return await Assert.ThrowsAsync<TimeoutRejectedException>(async () =>
+            await pipeline.ExecuteAsync(
+                async token => await Task.Delay(TimeSpan.FromMinutes(5), token),
+                CancellationToken.None));
+    }
+
+    private sealed class FixedPrompts : IPromptRegistry
+    {
+        private static readonly PromptDefinition Prompt =
+            new(AiTaskKey.PhotoAnalysis, 1, "You classify rooms.", Schema, "prompt-hash");
+
+        public PromptDefinition GetActive(string taskKey) => Prompt;
+
+        public PromptDefinition GetVersion(string taskKey, int version) => Prompt;
+
+        public IReadOnlyList<PromptDefinition> All() => [Prompt];
+
+        public Task VerifyAgainstRecordedHashesAsync(IPromptVersionStore store, CancellationToken cancellationToken) =>
+            Task.CompletedTask;
+    }
+
+    /// <summary>No budget limit and no cache, so every call reaches the chat clients.</summary>
+    private sealed class UnlimitedCostTracker : ICostTracker
+    {
+        public Task EnsureWithinBudgetAsync(Guid listingId, int estimatedTokens, int imageCount, CancellationToken cancellationToken) =>
+            Task.CompletedTask;
+
+        public Task RecordAsync(Guid listingId, string taskKey, string modelId, int tokensIn, int tokensOut, int imageCount, bool cacheHit, CancellationToken cancellationToken) =>
+            Task.CompletedTask;
+
+        public string? TryGetCachedResponse(string inputHash) => null;
+
+        public void CacheResponse(string inputHash, string response)
+        {
+        }
+
+        public string ComputeInputHash(string taskKey, string modelId, string promptHash, string input) =>
+            string.Join('|', taskKey, modelId, promptHash, input);
+    }
+
+    /// <summary>Answers per provider: an exception for one, a valid response for the rest.</summary>
+    private sealed class PerProviderClients(string failingProvider, Exception failure) : IChatClientFactory
+    {
+        internal List<string> Called { get; } = [];
+
+        public IChatClient Create(ModelRegistryEntry entry) => new Client(this, entry.Provider);
+
+        private sealed class Client(PerProviderClients owner, string provider) : IChatClient
+        {
+            public Task<ChatResponse> GetResponseAsync(
+                IEnumerable<ChatMessage> messages,
+                ChatOptions? options = null,
+                CancellationToken cancellationToken = default)
+            {
+                owner.Called.Add(provider);
+
+                return provider == owner.FailingProvider
+                    ? Task.FromException<ChatResponse>(owner.Failure)
+                    : Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, ValidResponse)));
+            }
+
+            public IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
+                IEnumerable<ChatMessage> messages,
+                ChatOptions? options = null,
+                CancellationToken cancellationToken = default) =>
+                throw new NotSupportedException("AiService never streams.");
+
+            public object? GetService(Type serviceType, object? serviceKey = null) => null;
+
+            public void Dispose()
+            {
+            }
+        }
+
+        private string FailingProvider => failingProvider;
+
+        private Exception Failure => failure;
+    }
+
+    /// <summary>
+    /// A primary that times out is exactly the case a fallback exists for. The resilience
+    /// pipeline reports it as <see cref="TimeoutRejectedException"/>; before failover named that
+    /// type, the timeout escaped <see cref="AiService.ExecuteAsync"/> and the fallback was never
+    /// tried.
+    /// </summary>
+    [Fact]
+    public async Task Execute_FailsOverWhenThePrimaryTimesOut()
+    {
+        var store = new FakeRegistryStore();
+        var fallback = Entry(Guid.NewGuid(), enabled: false, provider: "fallback-provider");
+        var primary = Entry(Guid.NewGuid(), enabled: true, fallback: fallback.Id, provider: "primary-provider");
+        store.Add(primary);
+        store.Add(fallback);
+
+        var clients = new PerProviderClients("primary-provider", await ProviderTimeout());
+
+        using var breakers = new ProviderCircuitBreakers();
+
+        var service = new AiService(
+            new ModelRegistry(store),
+            new FixedPrompts(),
+            clients,
+            new UnlimitedCostTracker(),
+            breakers,
+            NullLogger<AiService>.Instance);
+
+        var result = await service.ExecuteAsync(
+            new AiRequest(AiTaskKey.PhotoAnalysis, Guid.NewGuid(), Guid.NewGuid(), "input", 0, 100),
+            default);
+
+        Assert.Equal(fallback.ModelId, result.ModelId);
+        Assert.Equal(["primary-provider", "fallback-provider"], clients.Called);
     }
 
     // ═════════════════════ Task keys ═════════════════════

@@ -1,7 +1,6 @@
-using Libs.Ai;
 using Microsoft.Extensions.AI;
 
-namespace Api.Ai;
+namespace Libs.Ai;
 
 /// <summary>
 /// T044 — creates a chat client for a resolved registry entry.
@@ -13,8 +12,15 @@ namespace Api.Ai;
 /// one provider-agnostic client to reach a hosted router, a self-hosted vLLM instance, or a
 /// local model server without a code change.
 /// </para>
+/// <para>
+/// Lives in this library rather than in the API host so the evaluation harness constructs its
+/// clients with this same code, from the same named <see cref="HttpClient"/> registered by
+/// <see cref="AiHttpClientSetup.AddAiHttpClient"/>. An evaluated model is then reached through
+/// the same base-URL resolution, credential and resilience policy it would serve traffic
+/// through, rather than through a second client that could differ in any of them.
+/// </para>
 /// </summary>
-internal sealed class HttpChatClientFactory : IChatClientFactory
+public sealed class HttpChatClientFactory : IChatClientFactory
 {
     private readonly IHttpClientFactory httpClientFactory;
 

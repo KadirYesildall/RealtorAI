@@ -206,10 +206,9 @@ public sealed class AiEvalVerdictTests
     {
         public string TaskKey { get; } = taskKey;
 
-        public Task<IReadOnlyDictionary<string, double>> RunAsync(
-            RegistryTarget target,
-            CancellationToken cancellationToken) =>
-            Task.FromResult<IReadOnlyDictionary<string, double>>(new Dictionary<string, double>());
+        // Only registration is under test; a suite that is never run has nothing to measure.
+        public Task<SuiteRun> RunAsync(EvalModelInvoker model, CancellationToken cancellationToken) =>
+            throw new InvalidOperationException("Registration-only fake: never run.");
     }
 
     [Fact]
@@ -224,7 +223,7 @@ public sealed class AiEvalVerdictTests
     [Fact]
     public void ResultDocument_NamesTheModelTheBarsAndEachOutcome()
     {
-        var target = new RegistryTarget(Guid.NewGuid(), "compliance.judge", "hf", "org/model", null, false);
+        var target = new RegistryTarget(Guid.NewGuid(), "compliance.judge", "hf", "org/model", null, "{}", false);
         var (verdict, results) = EvalVerdict.Evaluate(
             Catalog.For("compliance.judge"),
             new Dictionary<string, double>

@@ -16,4 +16,15 @@
     <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.12" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!--
+      The evaluation harness measures a model before it is enabled, so it cannot go through
+      AiService (which dispatches only to enabled entries). It reuses AiService's own message
+      building, request options and failure classification instead, so an evaluated model is
+      called exactly as production would call it. Those helpers stay internal: no other caller
+      has any business assembling a model request outside AiService.
+    -->
+    <InternalsVisibleTo Include="AiEval" />
+  </ItemGroup>
+
 </Project>

@@ -12,7 +12,21 @@ namespace Modules.Media;
 /// Largest source image, in pixels, that will be decoded. A small compressed file can declare
 /// enormous dimensions; checking the header first stops one upload from exhausting memory.
 /// </param>
-public sealed record NormalizationOptions(int LongEdgePx, int JpegQuality, long MaxSourcePixels);
+public sealed record NormalizationOptions(int LongEdgePx, int JpegQuality, long MaxSourcePixels)
+{
+    // The configuration keys, defined once for the API host and the evaluation harness: the
+    // copy a model is evaluated on must be normalized exactly as the copy it will be sent in
+    // production, or the measurement describes a different input (VIII.4.c).
+
+    /// <summary>Configuration key of <see cref="LongEdgePx"/>.</summary>
+    public const string LongEdgePxKey = "Storage:NormalizedLongEdgePx";
+
+    /// <summary>Configuration key of <see cref="JpegQuality"/>.</summary>
+    public const string JpegQualityKey = "Storage:NormalizedJpegQuality";
+
+    /// <summary>Configuration key of <see cref="MaxSourcePixels"/>.</summary>
+    public const string MaxSourcePixelsKey = "Storage:MaxSourcePixels";
+}
 
 /// <summary>A normalized copy, ready to store and send to a vision model.</summary>
 /// <param name="SourceWidth">Width of the original as stored (before orientation is applied).</param>
@@ -159,6 +173,18 @@ public sealed class ImageNormalizer
             }
 
             image.ColorSpace = ColorSpace.sRGB;
+
+            // JPEG has no alpha channel. Left to the encoder, transparency is dropped and the
+            // colour stored under each transparent pixel shows through — usually black, so a
+            // floor plan exported from CAD or rendered from SVG (dark lines on a transparent
+            // background) becomes a solid black frame for both the stored copy and the vision
+            // model. Compositing onto white is what a viewer shows for such an image, and is part
+            // of the format conversion, not an edit: no pixel is invented.
+            if (image.HasAlpha)
+            {
+                image.BackgroundColor = MagickColors.White;
+                image.Alpha(AlphaAction.Remove);
+            }
 
             // EXIF (including GPS), XMP, IPTC, comments and embedded profiles.
             image.Strip();

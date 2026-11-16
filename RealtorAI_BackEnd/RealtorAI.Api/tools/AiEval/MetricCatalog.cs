@@ -79,6 +79,13 @@ internal sealed class MetricCatalog
     internal const string TokensPerListing = "tokens_per_listing";
     internal const string ImagesPerListing = "images_per_listing";
 
+    /// <summary>
+    /// The listing size SC-005 is stated for ("Photo analysis for 30 photos"), and so the size of
+    /// the listings the latency and per-listing consumption metrics are measured over
+    /// (<see cref="PhotoListingRunner"/>). The specification's number, like the thresholds.
+    /// </summary>
+    internal const int LatencyListingPhotoCount = 30;
+
     private readonly Dictionary<string, IReadOnlyList<EvalMetric>> byTask;
 
     /// <param name="budget">
@@ -134,13 +141,13 @@ internal sealed class MetricCatalog
             [
                 new EvalMetric(
                     FairHousingRecall,
-                    "Share of labelled Fair Housing violations the judge flags.",
+                    "Share of labelled Fair Housing violations the Fair Housing check (lexicon and judge, merged as production merges them) flags.",
                     "SC-003",
                     Comparison.AtLeast,
                     0.95),
                 new EvalMetric(
                     FairHousingFalsePositiveRate,
-                    "Share of compliant samples the judge flags anyway.",
+                    "Share of compliant samples the Fair Housing check (lexicon and judge) flags anyway.",
                     "SC-003",
                     Comparison.AtMost,
                     0.10),

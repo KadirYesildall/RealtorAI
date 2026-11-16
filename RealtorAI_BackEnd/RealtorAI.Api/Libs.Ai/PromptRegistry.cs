@@ -94,6 +94,9 @@ public interface IPromptRegistry
 /// </summary>
 public sealed class PromptRegistry : IPromptRegistry
 {
+    /// <summary>Configuration key for an explicit prompts directory.</summary>
+    public const string PathConfigurationKey = "Ai:PromptsPath";
+
     private readonly Dictionary<string, Dictionary<int, PromptDefinition>> prompts;
 
     private PromptRegistry(Dictionary<string, Dictionary<int, PromptDefinition>> prompts)
@@ -168,6 +171,65 @@ public sealed class PromptRegistry : IPromptRegistry
         }
 
         return new PromptRegistry(loaded);
+    }
+
+    /// <summary>
+    /// Finds the prompts directory.
+    ///
+    /// <para>
+    /// Probing is necessary because the directory sits beside the host project rather than
+    /// inside it (plan.md puts <c>prompts/</c> as a sibling of <c>Api/</c>, shared with the
+    /// evaluation harness), while the host's content root is the host project directory under
+    /// <c>dotnet run</c> and the output directory once published. Hard-coding either one works
+    /// in exactly one of those situations.
+    /// </para>
+    /// <para>
+    /// This was not theoretical: the first wiring resolved only
+    /// <c>{ContentRoot}/prompts</c> and the host refused to start, reporting the recorded
+    /// <c>photo.analysis v1</c> as missing. The drift check was right — from where it looked,
+    /// the file genuinely was not there.
+    /// </para>
+    /// <para>
+    /// Lives here rather than in the host so the evaluation harness resolves the same directory
+    /// from the same setting: a model evaluated against one prompt and deployed with another
+    /// would have been measured on a question production never asks.
+    /// </para>
+    /// </summary>
+    /// <param name="configuredPath">The value of <see cref="PathConfigurationKey"/>, if any.</param>
+    /// <param name="contentRoot">The host project directory, or the published output directory.</param>
+    public static string ResolveDirectory(string? configuredPath, string contentRoot)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(contentRoot);
+
+        // An explicit setting wins, so a deployment with an unusual layout needs no code change.
+        if (!string.IsNullOrEmpty(configuredPath))
+        {
+            return Path.IsPathRooted(configuredPath)
+                ? configuredPath
+                : Path.Combine(contentRoot, configuredPath);
+        }
+
+        string[] candidates =
+        [
+            // Published output, where the csproj copies them.
+            Path.Combine(contentRoot, "prompts"),
+
+            // Development: beside the host project, as the plan lays it out.
+            Path.Combine(contentRoot, "..", "prompts"),
+        ];
+
+        foreach (var candidate in candidates)
+        {
+            if (Directory.Exists(candidate))
+            {
+                return Path.GetFullPath(candidate);
+            }
+        }
+
+        // Returning the first candidate rather than throwing: an absent directory is a valid
+        // state when no prompt version has been recorded yet, and the startup verification
+        // reports it precisely when it actually matters — when a recorded version has no file.
+        return Path.GetFullPath(candidates[0]);
     }
 
     public PromptDefinition GetActive(string taskKey)

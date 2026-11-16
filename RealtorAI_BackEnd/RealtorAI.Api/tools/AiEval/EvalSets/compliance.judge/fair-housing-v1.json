@@ -1,0 +1,2470 @@
+{
+  "format": 1,
+  "id": "fair-housing",
+  "task": "compliance.judge",
+  "version": 1,
+  "description": "Listing-remark passages (1-3 sentences, California listing voice) labelled as Fair Housing violations or compliant copy, for SC-003 (recall >= 95%, false-positive rate <= 10%). Violations cover the federal protected classes (42 U.S.C. 3604(c)), California's additions in Gov. Code 12955(c), and age (Civ. Code 51.2), mixing explicit exclusions, ideal-occupant preferences, neighborhood characterisation, places of worship as selling points and coded phrasing. Compliant samples include near misses the 1995 HUD advertising memorandum treats as lawful (master bedroom, family room, wheelchair ramp, non-smoking), factual accessibility features, stated senior-housing exemptions and ordinary listing copy. No real person's name or address appears.",
+  "provenance": {
+    "source": "Authored for this set by an AI assistant (Claude) on 2026-11-16 at the product owner's request; no passage was copied from a real listing. Legal sources consulted: 42 U.S.C. 3604(c); 24 CFR 100.75; HUD memorandum 'Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act' (R. Achtenberg, Jan. 9, 1995), read from the reproduction in the Lexington-Fayette Urban County Human Rights Commission's Publisher's Guide to Fair Housing, Appendix V; Cal. Gov. Code 12955(c) and (p)(1); Cal. Civ. Code 51.2(a).",
+    "rights": "Original text written for this repository; no third-party listing content is included.",
+    "labelledBy": "AI assistant (Claude), unreviewed draft",
+    "labellingMethod": "Each passage was written to carry one intended label. A passage is a violation when it states or implies a preference, limitation or exclusion based on a protected class (42 U.S.C. 3604(c); Gov. Code 12955(c); Civ. Code 51.2 for age), including by describing the ideal occupant, characterising neighbors by a protected class, or naming a place of worship as a selling point. A passage is compliant when it describes only the property, its features (including accessibility features), services, rules of conduct, neutral landmarks, or a stated housing-for-older-persons exemption. Each item records its rationale and citation. No second labeller; no adjudication has taken place.",
+    "createdOn": "2026-11-16"
+  },
+  "review": {
+    "reviewed": false,
+    "reviewer": null,
+    "reviewedAt": null,
+    "notes": "Drafted by an AI assistant and NOT reviewed. Before marking reviewed, a person qualified in Fair Housing advertising (counsel or the MLS's compliance staff) should check every label, especially the context-dependent ones: places of worship as landmarks (fh-v religion 'landmark' items), neighborhood characterisations, 'empty nesters', the service-animal refusal and the senior-housing exemptions. Age is cited to Civ. Code 51.2(a) because Gov. Code 12955(c) does not list age."
+  },
+  "items": [
+    {
+      "id": "fh-v-001",
+      "text": "Charming three-bedroom bungalow on a tree-lined street. Seller prefers white buyers.",
+      "label": "violation",
+      "protectedClass": "race",
+      "category": "explicit",
+      "rationale": "States a buyer preference by race.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 1 (race, color, national origin)"
+    },
+    {
+      "id": "fh-v-002",
+      "text": "Located in a predominantly white neighborhood just minutes from downtown Fresno.",
+      "label": "violation",
+      "protectedClass": "race",
+      "category": "neighborhood",
+      "rationale": "Describes the neighborhood in racial terms, which the memo says creates liability.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 1 (race, color, national origin)"
+    },
+    {
+      "id": "fh-v-003",
+      "text": "Quiet cul-de-sac where most of the neighbors are Caucasian professionals.",
+      "label": "violation",
+      "protectedClass": "race",
+      "category": "neighborhood",
+      "rationale": "Characterises the neighbors by race.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 1 (race, color, national origin)"
+    },
+    {
+      "id": "fh-v-004",
+      "text": "Tucked away from the changing parts of town, this home sits in a neighborhood that has kept its original character and its original residents.",
+      "label": "violation",
+      "protectedClass": "race",
+      "category": "coded",
+      "rationale": "Coded reference to the racial make-up of residents ('changing parts of town', 'original residents') signals who is and is not welcome.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-v-005",
+      "text": "Upstairs unit with new flooring and in-unit laundry. No Black tenants will be considered.",
+      "label": "violation",
+      "protectedClass": "race",
+      "category": "explicit",
+      "rationale": "Explicit exclusion by race.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 1 (race, color, national origin)"
+    },
+    {
+      "id": "fh-v-006",
+      "text": "Perfect for a nice white family looking to settle in the valley.",
+      "label": "violation",
+      "protectedClass": "race",
+      "category": "preference",
+      "rationale": "Describes the ideal occupant in racial terms; the memo cites 'white family home' as creating liability.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 1 (race, color, national origin)"
+    },
+    {
+      "id": "fh-v-007",
+      "text": "Spacious ranch home in an all-white enclave of the county, with oversized lots and mature trees.",
+      "label": "violation",
+      "protectedClass": "race",
+      "category": "neighborhood",
+      "rationale": "Characterises the area by the race of its residents.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 1 (race, color, national origin)"
+    },
+    {
+      "id": "fh-v-008",
+      "text": "Not in one of those inner-city areas; this is the suburbs the way they used to be.",
+      "label": "violation",
+      "protectedClass": "race",
+      "category": "coded",
+      "rationale": "Contrasts the area with 'inner-city areas' as a proxy for race, implying who the neighbors are.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-v-009",
+      "text": "This block has never had a minority family, and the HOA intends to keep it that way.",
+      "label": "violation",
+      "protectedClass": "race",
+      "category": "explicit",
+      "rationale": "States an intent to exclude racial minorities.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 1 (race, color, national origin)"
+    },
+    {
+      "id": "fh-v-010",
+      "text": "Enjoy a mostly Asian neighborhood with markets and restaurants that cater to the community.",
+      "label": "violation",
+      "protectedClass": "race",
+      "category": "neighborhood",
+      "rationale": "Describes the neighbors in racial terms.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 1 (race, color, national origin)"
+    },
+    {
+      "id": "fh-v-011",
+      "text": "A great fit for buyers who would feel more comfortable among people like themselves. Three beds, two baths, quiet street.",
+      "label": "violation",
+      "protectedClass": "race",
+      "category": "coded",
+      "rationale": "Steers buyers by implied shared race or ethnicity of the neighbors.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-v-012",
+      "text": "The surrounding blocks are largely African American, so buyers may want to consider the newer tract across the freeway.",
+      "label": "violation",
+      "protectedClass": "race",
+      "category": "neighborhood",
+      "rationale": "Steers buyers away from an area because of its residents' race.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 1 (race, color, national origin)"
+    },
+    {
+      "id": "fh-v-013",
+      "text": "Fair-skinned applicants preferred for this garden-level apartment.",
+      "label": "violation",
+      "protectedClass": "color",
+      "category": "explicit",
+      "rationale": "States a preference by skin color.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 1 (race, color, national origin)"
+    },
+    {
+      "id": "fh-v-014",
+      "text": "Seller is only interested in light-complexioned buyers.",
+      "label": "violation",
+      "protectedClass": "color",
+      "category": "explicit",
+      "rationale": "Limits buyers by complexion, a preference based on color.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 1 (race, color, national origin)"
+    },
+    {
+      "id": "fh-v-015",
+      "text": "Owner asks that dark-skinned visitors not be brought to showings.",
+      "label": "violation",
+      "protectedClass": "color",
+      "category": "explicit",
+      "rationale": "Excludes people by skin color from viewing the home.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 1 (race, color, national origin)"
+    },
+    {
+      "id": "fh-v-016",
+      "text": "This home has been owned by fair-complexioned families since it was built, and the seller hopes to keep it that way.",
+      "label": "violation",
+      "protectedClass": "color",
+      "category": "preference",
+      "rationale": "Expresses a preference that the next owners share a skin color.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 1 (race, color, national origin)"
+    },
+    {
+      "id": "fh-v-017",
+      "text": "Neighbors here are all light-skinned, so the street feels uniform and consistent.",
+      "label": "violation",
+      "protectedClass": "color",
+      "category": "neighborhood",
+      "rationale": "Characterises the neighbors by skin color as a selling point.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 1 (race, color, national origin)"
+    },
+    {
+      "id": "fh-v-018",
+      "text": "Two-bedroom duplex with a garage. No dark-complected tenants, per the owner's instructions.",
+      "label": "violation",
+      "protectedClass": "color",
+      "category": "explicit",
+      "rationale": "Explicit exclusion based on color.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 1 (race, color, national origin)"
+    },
+    {
+      "id": "fh-v-019",
+      "text": "Ideal for a lighter-skinned family wanting to blend in with the block.",
+      "label": "violation",
+      "protectedClass": "color",
+      "category": "preference",
+      "rationale": "Describes the ideal occupant by skin color.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 1 (race, color, national origin)"
+    },
+    {
+      "id": "fh-v-020",
+      "text": "Agents: please pre-screen buyers by skin tone before scheduling a tour.",
+      "label": "violation",
+      "protectedClass": "color",
+      "category": "explicit",
+      "rationale": "Instructs agents to apply a color-based limitation.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(2); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 1 (race, color, national origin)"
+    },
+    {
+      "id": "fh-v-021",
+      "text": "Lovely Christian home in a Christian neighborhood; believers will feel right at home.",
+      "label": "violation",
+      "protectedClass": "religion",
+      "category": "explicit",
+      "rationale": "States a religious preference; the memo cites 'Christian home' as an explicit preference.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 2 (religion)"
+    },
+    {
+      "id": "fh-v-022",
+      "text": "Upper unit available June 1 with a shared yard. No Muslims, please.",
+      "label": "violation",
+      "protectedClass": "religion",
+      "category": "explicit",
+      "rationale": "Explicit exclusion by religion.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 2 (religion)"
+    },
+    {
+      "id": "fh-v-023",
+      "text": "Walking distance to St. Anne's Catholic Church and its parish school.",
+      "label": "violation",
+      "protectedClass": "religion",
+      "category": "landmark",
+      "rationale": "Names a place of worship as a selling point. HUD's former advertising guidelines (24 CFR 109.20(e), since removed) gave references to a parish or synagogue as indicating a religious preference, and the spec's Story 4 independent test treats 'walking distance to church' as a violation.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-v-024",
+      "text": "Just steps from the synagogue, making Shabbat walks easy.",
+      "label": "violation",
+      "protectedClass": "religion",
+      "category": "landmark",
+      "rationale": "Markets proximity to a house of worship to members of one faith.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-v-025",
+      "text": "Located in a strong Mormon community with the ward house right around the corner.",
+      "label": "violation",
+      "protectedClass": "religion",
+      "category": "neighborhood",
+      "rationale": "Characterises the neighborhood by religion.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 2 (religion)"
+    },
+    {
+      "id": "fh-v-026",
+      "text": "Four bedrooms and a big kitchen, ideal for an observant Jewish family.",
+      "label": "violation",
+      "protectedClass": "religion",
+      "category": "preference",
+      "rationale": "Describes the ideal occupant by religion.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 2 (religion)"
+    },
+    {
+      "id": "fh-v-027",
+      "text": "Perfect for a church-going family who values faith and fellowship.",
+      "label": "violation",
+      "protectedClass": "religion",
+      "category": "preference",
+      "rationale": "States a preference for religious occupants.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 2 (religion)"
+    },
+    {
+      "id": "fh-v-028",
+      "text": "Seller will give priority to offers from fellow members of the congregation.",
+      "label": "violation",
+      "protectedClass": "religion",
+      "category": "explicit",
+      "rationale": "Prefers buyers by religious affiliation.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 2 (religion)"
+    },
+    {
+      "id": "fh-v-029",
+      "text": "Surrounded by Hindu families, this home is close to the temple and the spice markets.",
+      "label": "violation",
+      "protectedClass": "religion",
+      "category": "neighborhood",
+      "rationale": "Characterises the neighbors by religion and names a temple as a draw.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 2 (religion)"
+    },
+    {
+      "id": "fh-v-030",
+      "text": "This home has always been in Christian hands, and the seller asks that it stay that way.",
+      "label": "violation",
+      "protectedClass": "religion",
+      "category": "coded",
+      "rationale": "Expresses a religious limitation on who may buy.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 2 (religion)"
+    },
+    {
+      "id": "fh-v-031",
+      "text": "Minutes to the mosque and the halal markets on the boulevard, perfect for the faithful.",
+      "label": "violation",
+      "protectedClass": "religion",
+      "category": "landmark",
+      "rationale": "Markets the home to members of one religion.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 2 (religion)"
+    },
+    {
+      "id": "fh-v-032",
+      "text": "Bright corner condo with city views. Atheists need not apply.",
+      "label": "violation",
+      "protectedClass": "religion",
+      "category": "explicit",
+      "rationale": "Excludes people for their religious belief or lack of it.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 2 (religion)"
+    },
+    {
+      "id": "fh-v-033",
+      "text": "Two blocks from the Buddhist temple, a natural fit for practicing families.",
+      "label": "violation",
+      "protectedClass": "religion",
+      "category": "landmark",
+      "rationale": "Markets proximity to a house of worship and names its adherents as the intended buyers.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 2 (religion)"
+    },
+    {
+      "id": "fh-v-034",
+      "text": "Close to Our Lady of Peace parish, the rectory, and the parish hall, a perfect home for parishioners.",
+      "label": "violation",
+      "protectedClass": "religion",
+      "category": "landmark",
+      "rationale": "Names a parish as a selling point and its members as the intended buyers.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 2 (religion)"
+    },
+    {
+      "id": "fh-v-035",
+      "text": "Studio cottage behind the main house with its own kitchen and entrance; female tenants only.",
+      "label": "violation",
+      "protectedClass": "sex",
+      "category": "explicit",
+      "rationale": "A separate dwelling unit with its own kitchen is not shared living, so a sex limitation is not covered by the roommate situation the memo discusses.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 3 (sex)"
+    },
+    {
+      "id": "fh-v-036",
+      "text": "Great for a bachelor: low-maintenance yard and a three-car garage.",
+      "label": "violation",
+      "protectedClass": "sex",
+      "category": "preference",
+      "rationale": "Describes the intended occupant by sex.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 3 (sex)"
+    },
+    {
+      "id": "fh-v-037",
+      "text": "The perfect home for a single career woman who wants a lock-and-leave lifestyle.",
+      "label": "violation",
+      "protectedClass": "sex",
+      "category": "preference",
+      "rationale": "Describes the intended occupant by sex.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 3 (sex)"
+    },
+    {
+      "id": "fh-v-038",
+      "text": "Owner prefers to rent to men; no women.",
+      "label": "violation",
+      "protectedClass": "sex",
+      "category": "explicit",
+      "rationale": "Explicit preference and exclusion by sex.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 3 (sex)"
+    },
+    {
+      "id": "fh-v-039",
+      "text": "A true gentleman's retreat, ideal for the man of the house, with a wood-paneled den.",
+      "label": "violation",
+      "protectedClass": "sex",
+      "category": "preference",
+      "rationale": "Describes the ideal occupant as male.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 3 (sex)"
+    },
+    {
+      "id": "fh-v-040",
+      "text": "Women only in this detached guest house.",
+      "label": "violation",
+      "protectedClass": "sex",
+      "category": "explicit",
+      "rationale": "Limits a separate dwelling to one sex.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 3 (sex)"
+    },
+    {
+      "id": "fh-v-041",
+      "text": "Seller would like this condo to go to a woman buyer.",
+      "label": "violation",
+      "protectedClass": "sex",
+      "category": "preference",
+      "rationale": "States a buyer preference by sex.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 3 (sex)"
+    },
+    {
+      "id": "fh-v-042",
+      "text": "Built for a guy: huge garage, home gym, and no frilly finishes.",
+      "label": "violation",
+      "protectedClass": "sex",
+      "category": "coded",
+      "rationale": "Presents the home as meant for men.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 3 (sex)"
+    },
+    {
+      "id": "fh-v-043",
+      "text": "Not suited to a woman living alone, given the location.",
+      "label": "violation",
+      "protectedClass": "sex",
+      "category": "explicit",
+      "rationale": "Discourages women from buying or renting.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 3 (sex)"
+    },
+    {
+      "id": "fh-v-044",
+      "text": "Male buyers preferred; seller feels a man will better maintain the large lot.",
+      "label": "violation",
+      "protectedClass": "sex",
+      "category": "explicit",
+      "rationale": "States a preference by sex.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 3 (sex)"
+    },
+    {
+      "id": "fh-v-045",
+      "text": "Charming 1920s hillside home with forty steps to the front door; not suitable for wheelchairs.",
+      "label": "violation",
+      "protectedClass": "disability",
+      "category": "explicit",
+      "rationale": "States that wheelchair users are not wanted rather than describing the steps; the memo treats 'no wheelchairs' as an exclusion.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 4 (handicap)"
+    },
+    {
+      "id": "fh-v-046",
+      "text": "No wheelchairs or walkers in the building, per the HOA.",
+      "label": "violation",
+      "protectedClass": "disability",
+      "category": "explicit",
+      "rationale": "Explicit exclusion of mobility-device users.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 4 (handicap)"
+    },
+    {
+      "id": "fh-v-047",
+      "text": "Ideal for active, able-bodied buyers who love the outdoors.",
+      "label": "violation",
+      "protectedClass": "disability",
+      "category": "preference",
+      "rationale": "Requires a physical ability of the occupant.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 4 (handicap)"
+    },
+    {
+      "id": "fh-v-048",
+      "text": "Owner will not rent to anyone with a mental illness.",
+      "label": "violation",
+      "protectedClass": "disability",
+      "category": "explicit",
+      "rationale": "Explicit exclusion based on a mental disability.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 4 (handicap)"
+    },
+    {
+      "id": "fh-v-049",
+      "text": "Tenants must be in good health and free of disabilities.",
+      "label": "violation",
+      "protectedClass": "disability",
+      "category": "explicit",
+      "rationale": "Limits occupancy to people without disabilities.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 4 (handicap)"
+    },
+    {
+      "id": "fh-v-050",
+      "text": "Strictly no animals in the unit, including service animals.",
+      "label": "violation",
+      "protectedClass": "disability",
+      "category": "explicit",
+      "rationale": "Announces a refusal of service animals, indicating a limitation on people with disabilities who use them.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-v-051",
+      "text": "Not a good fit for anyone deaf or blind, as the home is all about its views and acoustics.",
+      "label": "violation",
+      "protectedClass": "disability",
+      "category": "explicit",
+      "rationale": "Discourages people with sensory disabilities.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 4 (handicap)"
+    },
+    {
+      "id": "fh-v-052",
+      "text": "Buyers must be physically fit to handle the stairs.",
+      "label": "violation",
+      "protectedClass": "disability",
+      "category": "preference",
+      "rationale": "Requires physical fitness of the occupant instead of describing the stairs.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 4 (handicap)"
+    },
+    {
+      "id": "fh-v-053",
+      "text": "Perfect for healthy, active adults; no one on oxygen or using mobility aids.",
+      "label": "violation",
+      "protectedClass": "disability",
+      "category": "explicit",
+      "rationale": "Excludes people who use medical or mobility aids.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 4 (handicap)"
+    },
+    {
+      "id": "fh-v-054",
+      "text": "The seller prefers buyers without children who have special needs.",
+      "label": "violation",
+      "protectedClass": "disability",
+      "category": "preference",
+      "rationale": "States a preference against households including a person with a disability.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 4 (handicap)"
+    },
+    {
+      "id": "fh-v-055",
+      "text": "Not handicap-friendly, and the owner does not want handicapped buyers touring.",
+      "label": "violation",
+      "protectedClass": "disability",
+      "category": "explicit",
+      "rationale": "Excludes people with disabilities from viewing.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 4 (handicap)"
+    },
+    {
+      "id": "fh-v-056",
+      "text": "Best for someone sound of mind and body.",
+      "label": "violation",
+      "protectedClass": "disability",
+      "category": "coded",
+      "rationale": "Indicates a preference against people with mental or physical disabilities.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 4 (handicap)"
+    },
+    {
+      "id": "fh-v-057",
+      "text": "Perfect for young families: big backyard, swing set, and a quiet cul-de-sac.",
+      "label": "violation",
+      "protectedClass": "familial_status",
+      "category": "preference",
+      "rationale": "Describes the intended household by family status; the spec's Story 4 independent test names this phrase.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 5 (familial status)"
+    },
+    {
+      "id": "fh-v-058",
+      "text": "No children under 12, as the pool is unfenced.",
+      "label": "violation",
+      "protectedClass": "familial_status",
+      "category": "explicit",
+      "rationale": "Limits the ages of children; the memo says ads may not contain limitations on the number or ages of children.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 5 (familial status)"
+    },
+    {
+      "id": "fh-v-059",
+      "text": "Adults-only building with a peaceful, quiet atmosphere.",
+      "label": "violation",
+      "protectedClass": "familial_status",
+      "category": "explicit",
+      "rationale": "States a preference for adults.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 5 (familial status)"
+    },
+    {
+      "id": "fh-v-060",
+      "text": "Ideal for a mature couple ready to downsize.",
+      "label": "violation",
+      "protectedClass": "familial_status",
+      "category": "preference",
+      "rationale": "States a preference for an adult couple.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 5 (familial status)"
+    },
+    {
+      "id": "fh-v-061",
+      "text": "Great starter home for newlyweds, with a cozy breakfast nook.",
+      "label": "violation",
+      "protectedClass": "familial_status",
+      "category": "preference",
+      "rationale": "States a preference for couples without children.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 5 (familial status)"
+    },
+    {
+      "id": "fh-v-062",
+      "text": "Best suited to a couple without kids.",
+      "label": "violation",
+      "protectedClass": "familial_status",
+      "category": "preference",
+      "rationale": "Expresses a preference against households with children.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 5 (familial status)"
+    },
+    {
+      "id": "fh-v-063",
+      "text": "Two-bedroom apartment, maximum of one child.",
+      "label": "violation",
+      "protectedClass": "familial_status",
+      "category": "explicit",
+      "rationale": "Limits the number of children.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 5 (familial status)"
+    },
+    {
+      "id": "fh-v-064",
+      "text": "Not suitable for families with toddlers due to the open staircase.",
+      "label": "violation",
+      "protectedClass": "familial_status",
+      "category": "explicit",
+      "rationale": "Turns a feature into a limitation on households with young children.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 5 (familial status)"
+    },
+    {
+      "id": "fh-v-065",
+      "text": "Empty nesters will love this single-level layout with a low-care yard.",
+      "label": "violation",
+      "protectedClass": "familial_status",
+      "category": "preference",
+      "rationale": "Describes the intended household as one whose children have left, a preference based on familial status.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 5 (familial status)"
+    },
+    {
+      "id": "fh-v-066",
+      "text": "Perfect for singles or couples; the small yard is not meant for kids.",
+      "label": "violation",
+      "protectedClass": "familial_status",
+      "category": "explicit",
+      "rationale": "Prefers singles or couples and discourages children.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 5 (familial status)"
+    },
+    {
+      "id": "fh-v-067",
+      "text": "The quiet complex prefers tenants without children.",
+      "label": "violation",
+      "protectedClass": "familial_status",
+      "category": "explicit",
+      "rationale": "States a preference against households with children.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 5 (familial status)"
+    },
+    {
+      "id": "fh-v-068",
+      "text": "Family-friendly neighborhood with lots of kids on the street.",
+      "label": "violation",
+      "protectedClass": "familial_status",
+      "category": "neighborhood",
+      "rationale": "Characterises the neighborhood by the family status of its residents; the lexicon treats this as a context-dependent warning.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-v-069",
+      "text": "Pregnant applicants will not be considered for the upstairs unit.",
+      "label": "violation",
+      "protectedClass": "familial_status",
+      "category": "explicit",
+      "rationale": "Familial status covers pregnant persons; this is an explicit exclusion.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-v-070",
+      "text": "Great for a retired couple looking for peace and quiet away from children.",
+      "label": "violation",
+      "protectedClass": "familial_status",
+      "category": "preference",
+      "rationale": "Prefers adults and signals children are unwelcome.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 5 (familial status)"
+    },
+    {
+      "id": "fh-v-071",
+      "text": "Must speak fluent English to be considered for this rental.",
+      "label": "violation",
+      "protectedClass": "national_origin",
+      "category": "explicit",
+      "rationale": "A language requirement is a limitation based on national origin.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 1 (race, color, national origin)"
+    },
+    {
+      "id": "fh-v-072",
+      "text": "Owner will not rent to Mexican nationals.",
+      "label": "violation",
+      "protectedClass": "national_origin",
+      "category": "explicit",
+      "rationale": "Explicit exclusion by national origin; the memo cites 'no Irish' as an example.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 1 (race, color, national origin)"
+    },
+    {
+      "id": "fh-v-073",
+      "text": "Located in a quiet American neighborhood, free of immigrants.",
+      "label": "violation",
+      "protectedClass": "national_origin",
+      "category": "neighborhood",
+      "rationale": "Characterises the neighborhood by national origin and signals exclusion.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 1 (race, color, national origin)"
+    },
+    {
+      "id": "fh-v-074",
+      "text": "Seller prefers American-born buyers.",
+      "label": "violation",
+      "protectedClass": "national_origin",
+      "category": "preference",
+      "rationale": "States a buyer preference by national origin.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 1 (race, color, national origin)"
+    },
+    {
+      "id": "fh-v-075",
+      "text": "Ideal for a Chinese family, and the neighbors speak Mandarin.",
+      "label": "violation",
+      "protectedClass": "national_origin",
+      "category": "preference",
+      "rationale": "Describes the ideal occupant and the neighbors by national origin.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 1 (race, color, national origin)"
+    },
+    {
+      "id": "fh-v-076",
+      "text": "In the heart of Little Saigon, perfect for Vietnamese buyers.",
+      "label": "violation",
+      "protectedClass": "national_origin",
+      "category": "preference",
+      "rationale": "Names the ideal buyer by national origin.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 1 (race, color, national origin)"
+    },
+    {
+      "id": "fh-v-077",
+      "text": "Surrounded by Armenian families, so the right buyer will feel at home.",
+      "label": "violation",
+      "protectedClass": "national_origin",
+      "category": "neighborhood",
+      "rationale": "Characterises the neighbors by national origin to steer buyers.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 1 (race, color, national origin)"
+    },
+    {
+      "id": "fh-v-078",
+      "text": "No foreign buyers; the seller wants an American family.",
+      "label": "violation",
+      "protectedClass": "national_origin",
+      "category": "explicit",
+      "rationale": "Excludes buyers by national origin.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 1 (race, color, national origin)"
+    },
+    {
+      "id": "fh-v-079",
+      "text": "The block is predominantly Hispanic, a great fit for Latino buyers.",
+      "label": "violation",
+      "protectedClass": "national_origin",
+      "category": "neighborhood",
+      "rationale": "Characterises the area by ethnicity and steers buyers by it.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 1 (race, color, national origin)"
+    },
+    {
+      "id": "fh-v-080",
+      "text": "Not a good fit for anyone who doesn't speak English at home.",
+      "label": "violation",
+      "protectedClass": "national_origin",
+      "category": "explicit",
+      "rationale": "Language-based limitation that targets national origin.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 1 (race, color, national origin)"
+    },
+    {
+      "id": "fh-v-081",
+      "text": "Perfect for an Indian family, with the Gurdwara a short walk away.",
+      "label": "violation",
+      "protectedClass": "national_origin",
+      "category": "preference",
+      "rationale": "Names the intended occupant by national origin and markets a house of worship.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 1 (race, color, national origin)"
+    },
+    {
+      "id": "fh-v-082",
+      "text": "Neighbors are mostly Korean, so Korean-speaking buyers will feel especially welcome.",
+      "label": "violation",
+      "protectedClass": "national_origin",
+      "category": "neighborhood",
+      "rationale": "Characterises the neighbors by national origin and steers buyers.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 1 (race, color, national origin)"
+    },
+    {
+      "id": "fh-v-083",
+      "text": "Perfect for a straight couple starting out.",
+      "label": "violation",
+      "protectedClass": "sexual_orientation",
+      "category": "preference",
+      "rationale": "California protects sexual orientation; this describes the intended occupant by it.",
+      "citation": "Cal. Gov. Code 12955(c)"
+    },
+    {
+      "id": "fh-v-084",
+      "text": "Owner will not rent to gay couples.",
+      "label": "violation",
+      "protectedClass": "sexual_orientation",
+      "category": "explicit",
+      "rationale": "Explicit exclusion by sexual orientation.",
+      "citation": "Cal. Gov. Code 12955(c)"
+    },
+    {
+      "id": "fh-v-085",
+      "text": "Walk to the bars and the Pride festival; ideal for gay men.",
+      "label": "violation",
+      "protectedClass": "sexual_orientation",
+      "category": "preference",
+      "rationale": "Describes the intended occupant by sexual orientation.",
+      "citation": "Cal. Gov. Code 12955(c)"
+    },
+    {
+      "id": "fh-v-086",
+      "text": "Traditional family values neighborhood; same-sex couples may want to look elsewhere.",
+      "label": "violation",
+      "protectedClass": "sexual_orientation",
+      "category": "coded",
+      "rationale": "Discourages same-sex couples.",
+      "citation": "Cal. Gov. Code 12955(c)"
+    },
+    {
+      "id": "fh-v-087",
+      "text": "Perfect for women who love women.",
+      "label": "violation",
+      "protectedClass": "sexual_orientation",
+      "category": "preference",
+      "rationale": "States a preference by sexual orientation.",
+      "citation": "Cal. Gov. Code 12955(c)"
+    },
+    {
+      "id": "fh-v-088",
+      "text": "No LGBTQ tenants, per the owner.",
+      "label": "violation",
+      "protectedClass": "sexual_orientation",
+      "category": "explicit",
+      "rationale": "Explicit exclusion by sexual orientation and gender identity.",
+      "citation": "Cal. Gov. Code 12955(c)"
+    },
+    {
+      "id": "fh-v-089",
+      "text": "Spacious split-level home, ideal for a heterosexual family.",
+      "label": "violation",
+      "protectedClass": "sexual_orientation",
+      "category": "preference",
+      "rationale": "Describes the intended household by sexual orientation.",
+      "citation": "Cal. Gov. Code 12955(c)"
+    },
+    {
+      "id": "fh-v-090",
+      "text": "Owner would feel more comfortable with a straight buyer.",
+      "label": "violation",
+      "protectedClass": "sexual_orientation",
+      "category": "preference",
+      "rationale": "States a buyer preference by sexual orientation.",
+      "citation": "Cal. Gov. Code 12955(c)"
+    },
+    {
+      "id": "fh-v-091",
+      "text": "One-bedroom flat near transit. No transgender applicants.",
+      "label": "violation",
+      "protectedClass": "gender_identity_or_expression",
+      "category": "explicit",
+      "rationale": "California protects gender identity; this is an explicit exclusion.",
+      "citation": "Cal. Gov. Code 12955(c)"
+    },
+    {
+      "id": "fh-v-092",
+      "text": "Seller prefers buyers who dress according to traditional gender norms.",
+      "label": "violation",
+      "protectedClass": "gender_identity_or_expression",
+      "category": "preference",
+      "rationale": "A preference based on gender expression.",
+      "citation": "Cal. Gov. Code 12955(c)"
+    },
+    {
+      "id": "fh-v-093",
+      "text": "The owner asks that only cisgender women apply for the detached in-law unit.",
+      "label": "violation",
+      "protectedClass": "gender_identity_or_expression",
+      "category": "explicit",
+      "rationale": "Limits a separate unit by gender identity.",
+      "citation": "Cal. Gov. Code 12955(c)"
+    },
+    {
+      "id": "fh-v-094",
+      "text": "Not a good fit for nonbinary or gender-fluid tenants.",
+      "label": "violation",
+      "protectedClass": "gender_identity_or_expression",
+      "category": "explicit",
+      "rationale": "Discourages applicants by gender identity.",
+      "citation": "Cal. Gov. Code 12955(c)"
+    },
+    {
+      "id": "fh-v-095",
+      "text": "Applicants must present as their birth sex at the showing.",
+      "label": "violation",
+      "protectedClass": "gender_identity_or_expression",
+      "category": "explicit",
+      "rationale": "Imposes a gender-expression requirement.",
+      "citation": "Cal. Gov. Code 12955(c)"
+    },
+    {
+      "id": "fh-v-096",
+      "text": "Ideal for a traditional man and woman, not for anyone transitioning.",
+      "label": "violation",
+      "protectedClass": "gender_identity_or_expression",
+      "category": "preference",
+      "rationale": "Excludes people by gender identity.",
+      "citation": "Cal. Gov. Code 12955(c)"
+    },
+    {
+      "id": "fh-v-097",
+      "text": "The HOA expects residents to look and dress conventionally male or female.",
+      "label": "violation",
+      "protectedClass": "gender_identity_or_expression",
+      "category": "coded",
+      "rationale": "Signals a limitation based on gender expression.",
+      "citation": "Cal. Gov. Code 12955(c)"
+    },
+    {
+      "id": "fh-v-098",
+      "text": "Married couples only, no exceptions.",
+      "label": "violation",
+      "protectedClass": "marital_status",
+      "category": "explicit",
+      "rationale": "California protects marital status; this limits occupancy by it.",
+      "citation": "Cal. Gov. Code 12955(c)"
+    },
+    {
+      "id": "fh-v-099",
+      "text": "Seller prefers a husband-and-wife household.",
+      "label": "violation",
+      "protectedClass": "marital_status",
+      "category": "preference",
+      "rationale": "States a preference for married couples.",
+      "citation": "Cal. Gov. Code 12955(c)"
+    },
+    {
+      "id": "fh-v-100",
+      "text": "Not for singles; this home was designed for a married family.",
+      "label": "violation",
+      "protectedClass": "marital_status",
+      "category": "explicit",
+      "rationale": "Excludes unmarried people.",
+      "citation": "Cal. Gov. Code 12955(c)"
+    },
+    {
+      "id": "fh-v-101",
+      "text": "Unmarried couples need not apply.",
+      "label": "violation",
+      "protectedClass": "marital_status",
+      "category": "explicit",
+      "rationale": "Explicit exclusion by marital status.",
+      "citation": "Cal. Gov. Code 12955(c)"
+    },
+    {
+      "id": "fh-v-102",
+      "text": "Perfect for a single professional; no couples.",
+      "label": "violation",
+      "protectedClass": "marital_status",
+      "category": "explicit",
+      "rationale": "Limits occupancy to single people; the memo also bars stating a preference for couples or singles.",
+      "citation": "Cal. Gov. Code 12955(c); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 5 (familial status)"
+    },
+    {
+      "id": "fh-v-103",
+      "text": "Divorcees and single parents may find the HOA a poor fit.",
+      "label": "violation",
+      "protectedClass": "marital_status",
+      "category": "coded",
+      "rationale": "Discourages people by marital status.",
+      "citation": "Cal. Gov. Code 12955(c)"
+    },
+    {
+      "id": "fh-v-104",
+      "text": "Owner requires a marriage certificate from applicants who will share the bedroom.",
+      "label": "violation",
+      "protectedClass": "marital_status",
+      "category": "explicit",
+      "rationale": "Conditions tenancy on marital status.",
+      "citation": "Cal. Gov. Code 12955(c)"
+    },
+    {
+      "id": "fh-v-105",
+      "text": "Widowed or divorced buyers are not what the seller has in mind.",
+      "label": "violation",
+      "protectedClass": "marital_status",
+      "category": "preference",
+      "rationale": "Expresses a preference against people by marital status.",
+      "citation": "Cal. Gov. Code 12955(c)"
+    },
+    {
+      "id": "fh-v-106",
+      "text": "Owner will only sell to buyers of European descent.",
+      "label": "violation",
+      "protectedClass": "ancestry",
+      "category": "explicit",
+      "rationale": "California protects ancestry; this is an explicit limitation.",
+      "citation": "Cal. Gov. Code 12955(c)"
+    },
+    {
+      "id": "fh-v-107",
+      "text": "Ideal for a family of Scandinavian heritage, like the original builders.",
+      "label": "violation",
+      "protectedClass": "ancestry",
+      "category": "preference",
+      "rationale": "Describes the ideal buyer by ancestry.",
+      "citation": "Cal. Gov. Code 12955(c)"
+    },
+    {
+      "id": "fh-v-108",
+      "text": "No one of Middle Eastern descent, please.",
+      "label": "violation",
+      "protectedClass": "ancestry",
+      "category": "explicit",
+      "rationale": "Explicit exclusion by ancestry.",
+      "citation": "Cal. Gov. Code 12955(c)"
+    },
+    {
+      "id": "fh-v-109",
+      "text": "Perfect for buyers whose ancestors came over on the Mayflower.",
+      "label": "violation",
+      "protectedClass": "ancestry",
+      "category": "coded",
+      "rationale": "Coded preference for a particular ancestry.",
+      "citation": "Cal. Gov. Code 12955(c)"
+    },
+    {
+      "id": "fh-v-110",
+      "text": "The street is made up of families with Irish roots who would like to keep that heritage.",
+      "label": "violation",
+      "protectedClass": "ancestry",
+      "category": "neighborhood",
+      "rationale": "Characterises the neighbors by ancestry and signals a preference.",
+      "citation": "Cal. Gov. Code 12955(c)"
+    },
+    {
+      "id": "fh-v-111",
+      "text": "Buyers of Japanese ancestry will feel most at home on this block.",
+      "label": "violation",
+      "protectedClass": "ancestry",
+      "category": "preference",
+      "rationale": "Steers buyers by ancestry.",
+      "citation": "Cal. Gov. Code 12955(c)"
+    },
+    {
+      "id": "fh-v-112",
+      "text": "Freshly painted two-bedroom upstairs unit. No Section 8.",
+      "label": "violation",
+      "protectedClass": "source_of_income",
+      "category": "explicit",
+      "rationale": "California's source-of-income protection includes Section 8 vouchers.",
+      "citation": "Cal. Gov. Code 12955(c), (p)(1)"
+    },
+    {
+      "id": "fh-v-113",
+      "text": "Housing vouchers not accepted.",
+      "label": "violation",
+      "protectedClass": "source_of_income",
+      "category": "explicit",
+      "rationale": "Refuses housing vouchers, a protected source of income in California.",
+      "citation": "Cal. Gov. Code 12955(c), (p)(1)"
+    },
+    {
+      "id": "fh-v-114",
+      "text": "Tenant must have W-2 employment income; no government assistance.",
+      "label": "violation",
+      "protectedClass": "source_of_income",
+      "category": "explicit",
+      "rationale": "Excludes applicants paying with public assistance.",
+      "citation": "Cal. Gov. Code 12955(c), (p)(1)"
+    },
+    {
+      "id": "fh-v-115",
+      "text": "Section 8 tenants need not apply.",
+      "label": "violation",
+      "protectedClass": "source_of_income",
+      "category": "explicit",
+      "rationale": "Explicit exclusion of voucher holders.",
+      "citation": "Cal. Gov. Code 12955(c), (p)(1)"
+    },
+    {
+      "id": "fh-v-116",
+      "text": "No HUD-VASH or other subsidized applicants.",
+      "label": "violation",
+      "protectedClass": "source_of_income",
+      "category": "explicit",
+      "rationale": "The statute names HUD-VASH vouchers as a source of income; this excludes them.",
+      "citation": "Cal. Gov. Code 12955(c), (p)(1)"
+    },
+    {
+      "id": "fh-v-117",
+      "text": "Applicants must earn three times the rent from a job; SSI and disability benefits are not counted.",
+      "label": "violation",
+      "protectedClass": "source_of_income",
+      "category": "explicit",
+      "rationale": "Refuses lawful public-assistance income as a source of income.",
+      "citation": "Cal. Gov. Code 12955(c), (p)(1)"
+    },
+    {
+      "id": "fh-v-118",
+      "text": "Owner prefers tenants who pay without rental assistance programs.",
+      "label": "violation",
+      "protectedClass": "source_of_income",
+      "category": "preference",
+      "rationale": "States a preference against tenants using housing subsidies.",
+      "citation": "Cal. Gov. Code 12955(c), (p)(1)"
+    },
+    {
+      "id": "fh-v-119",
+      "text": "Cozy studio near campus. Not a voucher property.",
+      "label": "violation",
+      "protectedClass": "source_of_income",
+      "category": "explicit",
+      "rationale": "Announces a refusal of voucher holders.",
+      "citation": "Cal. Gov. Code 12955(c), (p)(1)"
+    },
+    {
+      "id": "fh-v-120",
+      "text": "Close to the base, but no military tenants.",
+      "label": "violation",
+      "protectedClass": "military_or_veteran_status",
+      "category": "explicit",
+      "rationale": "California protects military and veteran status.",
+      "citation": "Cal. Gov. Code 12955(c)"
+    },
+    {
+      "id": "fh-v-121",
+      "text": "Seller prefers civilians over service members.",
+      "label": "violation",
+      "protectedClass": "military_or_veteran_status",
+      "category": "preference",
+      "rationale": "States a preference by military status.",
+      "citation": "Cal. Gov. Code 12955(c)"
+    },
+    {
+      "id": "fh-v-122",
+      "text": "Not a good fit for active-duty families who may deploy or transfer.",
+      "label": "violation",
+      "protectedClass": "military_or_veteran_status",
+      "category": "explicit",
+      "rationale": "Discourages applicants by military status.",
+      "citation": "Cal. Gov. Code 12955(c)"
+    },
+    {
+      "id": "fh-v-123",
+      "text": "No veterans; the owner has had problems in the past.",
+      "label": "violation",
+      "protectedClass": "military_or_veteran_status",
+      "category": "explicit",
+      "rationale": "Explicit exclusion by veteran status.",
+      "citation": "Cal. Gov. Code 12955(c)"
+    },
+    {
+      "id": "fh-v-124",
+      "text": "Service members and reservists need not apply.",
+      "label": "violation",
+      "protectedClass": "military_or_veteran_status",
+      "category": "explicit",
+      "rationale": "Explicit exclusion by military status.",
+      "citation": "Cal. Gov. Code 12955(c)"
+    },
+    {
+      "id": "fh-v-125",
+      "text": "Ideal for a civilian household; military families move too often for this owner.",
+      "label": "violation",
+      "protectedClass": "military_or_veteran_status",
+      "category": "preference",
+      "rationale": "Prefers civilians and discourages military households.",
+      "citation": "Cal. Gov. Code 12955(c)"
+    },
+    {
+      "id": "fh-v-126",
+      "text": "Applicants must disclose any family history of hereditary illness.",
+      "label": "violation",
+      "protectedClass": "genetic_information",
+      "category": "explicit",
+      "rationale": "California protects genetic information, which includes family medical history.",
+      "citation": "Cal. Gov. Code 12955(c)"
+    },
+    {
+      "id": "fh-v-127",
+      "text": "Owner prefers buyers with no genetic predisposition to disease, given the remote location.",
+      "label": "violation",
+      "protectedClass": "genetic_information",
+      "category": "preference",
+      "rationale": "States a preference based on genetic information.",
+      "citation": "Cal. Gov. Code 12955(c)"
+    },
+    {
+      "id": "fh-v-128",
+      "text": "Tenants will be asked for genetic test results before signing the lease.",
+      "label": "violation",
+      "protectedClass": "genetic_information",
+      "category": "explicit",
+      "rationale": "Conditions tenancy on genetic test results.",
+      "citation": "Cal. Gov. Code 12955(c)"
+    },
+    {
+      "id": "fh-v-129",
+      "text": "Not suited to anyone carrying a gene for an inherited condition.",
+      "label": "violation",
+      "protectedClass": "genetic_information",
+      "category": "explicit",
+      "rationale": "Excludes people based on genetic information.",
+      "citation": "Cal. Gov. Code 12955(c)"
+    },
+    {
+      "id": "fh-v-130",
+      "text": "Seller will favor buyers who can show clean genetic screening.",
+      "label": "violation",
+      "protectedClass": "genetic_information",
+      "category": "preference",
+      "rationale": "Prefers buyers based on genetic test results.",
+      "citation": "Cal. Gov. Code 12955(c)"
+    },
+    {
+      "id": "fh-v-131",
+      "text": "Sleek downtown loft, perfect for young professionals.",
+      "label": "violation",
+      "protectedClass": "age",
+      "category": "preference",
+      "rationale": "Describes the intended occupant by age; California prohibits age discrimination in the sale or rental of housing outside lawful senior housing.",
+      "citation": "Cal. Civ. Code 51.2(a)"
+    },
+    {
+      "id": "fh-v-132",
+      "text": "No one under 30, please; the building is very quiet.",
+      "label": "violation",
+      "protectedClass": "age",
+      "category": "explicit",
+      "rationale": "Explicit age limitation.",
+      "citation": "Cal. Civ. Code 51.2(a)"
+    },
+    {
+      "id": "fh-v-133",
+      "text": "Ideal for millennials who want to be near the nightlife.",
+      "label": "violation",
+      "protectedClass": "age",
+      "category": "preference",
+      "rationale": "Describes the intended occupant by age.",
+      "citation": "Cal. Civ. Code 51.2(a)"
+    },
+    {
+      "id": "fh-v-134",
+      "text": "Seller prefers younger buyers who can keep up with the large yard.",
+      "label": "violation",
+      "protectedClass": "age",
+      "category": "preference",
+      "rationale": "States a buyer preference by age.",
+      "citation": "Cal. Civ. Code 51.2(a)"
+    },
+    {
+      "id": "fh-v-135",
+      "text": "Not for seniors; the hillside lot and stairs are a lot to handle.",
+      "label": "violation",
+      "protectedClass": "age",
+      "category": "explicit",
+      "rationale": "Excludes older people instead of describing the lot and stairs.",
+      "citation": "Cal. Civ. Code 51.2(a)"
+    },
+    {
+      "id": "fh-v-136",
+      "text": "The owner wants tenants between 25 and 40.",
+      "label": "violation",
+      "protectedClass": "age",
+      "category": "explicit",
+      "rationale": "Limits tenants by age.",
+      "citation": "Cal. Civ. Code 51.2(a)"
+    },
+    {
+      "id": "fh-v-137",
+      "text": "Ideal for retirees looking to slow down, in a community without age restrictions.",
+      "label": "violation",
+      "protectedClass": "age",
+      "category": "preference",
+      "rationale": "Prefers older occupants in housing that is expressly not senior housing; the memo also bars stating a preference for adults.",
+      "citation": "Cal. Civ. Code 51.2(a); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 5 (familial status)"
+    },
+    {
+      "id": "fh-c-001",
+      "text": "Spacious master bedroom with a walk-in closet and a spa-like en suite bath.",
+      "label": "compliant",
+      "protectedClass": "sex",
+      "category": "near_miss",
+      "rationale": "The memo says 'master bedroom' violates neither the sex nor the race provisions, and walk-in closets describe the property.",
+      "citation": "HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 3 (sex); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 4 (handicap)"
+    },
+    {
+      "id": "fh-c-002",
+      "text": "Open-concept kitchen flows into a sunny family room with a gas fireplace.",
+      "label": "compliant",
+      "protectedClass": "familial_status",
+      "category": "near_miss",
+      "rationale": "'Family room' describes a room; the memo lists it as not facially discriminatory.",
+      "citation": "HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 5 (familial status)"
+    },
+    {
+      "id": "fh-c-003",
+      "text": "Detached mother-in-law suite with its own kitchenette and entrance.",
+      "label": "compliant",
+      "protectedClass": "sex",
+      "category": "near_miss",
+      "rationale": "The memo says 'mother-in-law suite' is a physical description that does not violate the Act.",
+      "citation": "HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 3 (sex)"
+    },
+    {
+      "id": "fh-c-004",
+      "text": "Bachelor apartment over the garage with a separate entrance and a kitchenette.",
+      "label": "compliant",
+      "protectedClass": "sex",
+      "category": "near_miss",
+      "rationale": "The memo says 'bachelor apartment' is a common physical description of a unit.",
+      "citation": "HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 3 (sex)"
+    },
+    {
+      "id": "fh-c-005",
+      "text": "Great view of the bay from the living room and both bedrooms.",
+      "label": "compliant",
+      "protectedClass": "disability",
+      "category": "near_miss",
+      "rationale": "The memo gives 'great view' as a property description that does not violate the Act.",
+      "citation": "HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 4 (handicap)"
+    },
+    {
+      "id": "fh-c-006",
+      "text": "Classic fourth-floor walk-up with high ceilings and original moldings.",
+      "label": "compliant",
+      "protectedClass": "disability",
+      "category": "near_miss",
+      "rationale": "The memo gives 'fourth-floor walk-up' as a lawful property description.",
+      "citation": "HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 4 (handicap)"
+    },
+    {
+      "id": "fh-c-007",
+      "text": "Community amenities include jogging trails, a lap pool, and a fitness center.",
+      "label": "compliant",
+      "protectedClass": "disability",
+      "category": "near_miss",
+      "rationale": "The memo gives 'jogging trails' as a description of facilities that does not violate the Act.",
+      "citation": "HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 4 (handicap)"
+    },
+    {
+      "id": "fh-c-008",
+      "text": "Walk to the bus stop, the farmers market, and the library.",
+      "label": "compliant",
+      "protectedClass": "disability",
+      "category": "near_miss",
+      "rationale": "The memo gives 'walk to bus-stop' as a neighborhood description that does not violate the Act.",
+      "citation": "HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 4 (handicap)"
+    },
+    {
+      "id": "fh-c-009",
+      "text": "This is a non-smoking building, including balconies and patios.",
+      "label": "compliant",
+      "protectedClass": "disability",
+      "category": "near_miss",
+      "rationale": "The memo says describing required conduct ('non-smoking') does not violate the Act.",
+      "citation": "HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 4 (handicap)"
+    },
+    {
+      "id": "fh-c-010",
+      "text": "A wheelchair ramp leads to the front door, and the hallways are 42 inches wide.",
+      "label": "compliant",
+      "protectedClass": "disability",
+      "category": "near_miss",
+      "rationale": "The memo says descriptions of accessibility features, such as a wheelchair ramp, are lawful.",
+      "citation": "HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 4 (handicap)"
+    },
+    {
+      "id": "fh-c-011",
+      "text": "The apartment complex has a chapel, a library, and a community garden.",
+      "label": "compliant",
+      "protectedClass": "religion",
+      "category": "near_miss",
+      "rationale": "The memo gives 'apartment complex with chapel' as a property description that states no preference.",
+      "citation": "HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 2 (religion)"
+    },
+    {
+      "id": "fh-c-012",
+      "text": "Kosher meals are available through the building's dining service.",
+      "label": "compliant",
+      "protectedClass": "religion",
+      "category": "near_miss",
+      "rationale": "The memo gives 'kosher meals available' as a description of services that states no preference.",
+      "citation": "HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 2 (religion)"
+    },
+    {
+      "id": "fh-c-013",
+      "text": "Happy Easter from our team! Join us for an open house Sunday from 1 to 4.",
+      "label": "compliant",
+      "protectedClass": "religion",
+      "category": "near_miss",
+      "rationale": "The memo says phrases such as 'Happy Easter' do not constitute a violation.",
+      "citation": "HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 2 (religion)"
+    },
+    {
+      "id": "fh-c-014",
+      "text": "Merry Christmas! The seller will consider a quick close before the holidays.",
+      "label": "compliant",
+      "protectedClass": "religion",
+      "category": "near_miss",
+      "rationale": "The memo says phrases such as 'Merry Christmas' do not constitute a violation.",
+      "citation": "HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 2 (religion)"
+    },
+    {
+      "id": "fh-c-015",
+      "text": "A rare find in a desirable neighborhood, with a deep lot and a detached studio.",
+      "label": "compliant",
+      "protectedClass": "race",
+      "category": "near_miss",
+      "rationale": "The memo says complaints over 'rare find' or 'desirable neighborhood' should not be filed; they are facially neutral.",
+      "citation": "HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 1 (race, color, national origin)"
+    },
+    {
+      "id": "fh-c-016",
+      "text": "Cozy two-bedroom cottage on a quiet street, with a garden and a front porch.",
+      "label": "compliant",
+      "protectedClass": "familial_status",
+      "category": "near_miss",
+      "rationale": "The memo gives 'two bedroom', 'cozy' and 'quiet streets' as non-discriminatory descriptions.",
+      "citation": "HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 5 (familial status)"
+    },
+    {
+      "id": "fh-c-017",
+      "text": "No bicycles are allowed in the lobby; secure bike storage is in the garage.",
+      "label": "compliant",
+      "protectedClass": "familial_status",
+      "category": "near_miss",
+      "rationale": "The memo gives 'no bicycles allowed' as a lawful description of services and facilities.",
+      "citation": "HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 5 (familial status)"
+    },
+    {
+      "id": "fh-c-018",
+      "text": "Generous walk-in closets in every bedroom, plus a cedar-lined linen closet.",
+      "label": "compliant",
+      "protectedClass": "disability",
+      "category": "near_miss",
+      "rationale": "The memo gives 'walk-in closets' as a property description.",
+      "citation": "HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 4 (handicap)"
+    },
+    {
+      "id": "fh-c-019",
+      "text": "This is a sober-living residence; residents agree to remain alcohol- and drug-free.",
+      "label": "compliant",
+      "protectedClass": "disability",
+      "category": "near_miss",
+      "rationale": "The memo says describing required conduct ('sober') does not violate the Act.",
+      "citation": "HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 4 (handicap)"
+    },
+    {
+      "id": "fh-c-020",
+      "text": "Original master suite plus a second master on the main floor.",
+      "label": "compliant",
+      "protectedClass": "race",
+      "category": "near_miss",
+      "rationale": "The memo says 'master bedroom' violates neither the sex nor the race provisions.",
+      "citation": "HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 1 (race, color, national origin); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 3 (sex)"
+    },
+    {
+      "id": "fh-c-021",
+      "text": "Single-level home with a zero-step entry, 36-inch doorways, and a roll-in shower.",
+      "label": "compliant",
+      "protectedClass": "disability",
+      "category": "near_miss",
+      "rationale": "Describes accessibility features factually; the memo says such descriptions are lawful.",
+      "citation": "HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 4 (handicap)"
+    },
+    {
+      "id": "fh-c-022",
+      "text": "Grab bars in both bathrooms, lever door handles, and a stair lift to the lower level.",
+      "label": "compliant",
+      "protectedClass": "disability",
+      "category": "near_miss",
+      "rationale": "Factual description of accessibility features.",
+      "citation": "HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 4 (handicap)"
+    },
+    {
+      "id": "fh-c-023",
+      "text": "Elevator access from the garage to every floor, with an accessible parking space assigned to the unit.",
+      "label": "compliant",
+      "protectedClass": "disability",
+      "category": "near_miss",
+      "rationale": "Factual description of accessibility features and parking.",
+      "citation": "HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 4 (handicap)"
+    },
+    {
+      "id": "fh-c-024",
+      "text": "The unit is on the third floor and the building has no elevator.",
+      "label": "compliant",
+      "protectedClass": "disability",
+      "category": "near_miss",
+      "rationale": "Describes the building's physical access, like the memo's 'fourth-floor walk-up', without saying who may live there.",
+      "citation": "HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 4 (handicap)"
+    },
+    {
+      "id": "fh-c-025",
+      "text": "The home has a split-level layout with stairs between every level.",
+      "label": "compliant",
+      "protectedClass": "disability",
+      "category": "near_miss",
+      "rationale": "Describes a physical feature without excluding anyone.",
+      "citation": "HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 4 (handicap)"
+    },
+    {
+      "id": "fh-c-026",
+      "text": "Lowered kitchen counters and a side-opening oven were added in the 2022 remodel.",
+      "label": "compliant",
+      "protectedClass": "disability",
+      "category": "near_miss",
+      "rationale": "Factual description of accessibility features.",
+      "citation": "HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 4 (handicap)"
+    },
+    {
+      "id": "fh-c-027",
+      "text": "Smooth, level walkways connect the parking lot, mailroom, and pool area.",
+      "label": "compliant",
+      "protectedClass": "disability",
+      "category": "near_miss",
+      "rationale": "Factual description of accessible routes.",
+      "citation": "HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 4 (handicap)"
+    },
+    {
+      "id": "fh-c-028",
+      "text": "Visual doorbell and strobe smoke alarms are installed throughout.",
+      "label": "compliant",
+      "protectedClass": "disability",
+      "category": "near_miss",
+      "rationale": "Factual description of accessibility features for residents who are deaf or hard of hearing.",
+      "citation": "HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 4 (handicap)"
+    },
+    {
+      "id": "fh-c-029",
+      "text": "Crisp white shaker cabinets, black quartz counters, and brushed brass hardware.",
+      "label": "compliant",
+      "protectedClass": "color",
+      "category": "near_miss",
+      "rationale": "Colour words describe finishes, not people.",
+      "citation": "24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 1 (race, color, national origin)"
+    },
+    {
+      "id": "fh-c-030",
+      "text": "The white picket fence and the brown shingle exterior were refreshed this spring.",
+      "label": "compliant",
+      "protectedClass": "color",
+      "category": "near_miss",
+      "rationale": "Colour words describe the exterior, not people.",
+      "citation": "24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 1 (race, color, national origin)"
+    },
+    {
+      "id": "fh-c-031",
+      "text": "Spanish-style home with a red tile roof, arched doorways, and a courtyard fountain.",
+      "label": "compliant",
+      "protectedClass": "national_origin",
+      "category": "near_miss",
+      "rationale": "An architectural style, not a statement about who should live there.",
+      "citation": "24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 1 (race, color, national origin)"
+    },
+    {
+      "id": "fh-c-032",
+      "text": "French doors open from the dining room onto a flagstone patio.",
+      "label": "compliant",
+      "protectedClass": "national_origin",
+      "category": "near_miss",
+      "rationale": "A door type, not a reference to national origin.",
+      "citation": "24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 1 (race, color, national origin)"
+    },
+    {
+      "id": "fh-c-033",
+      "text": "Mediterranean villa with Italian porcelain floors and a Moroccan-tiled powder room.",
+      "label": "compliant",
+      "protectedClass": "national_origin",
+      "category": "near_miss",
+      "rationale": "Describes materials and style, not the occupant.",
+      "citation": "24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 1 (race, color, national origin)"
+    },
+    {
+      "id": "fh-c-034",
+      "text": "A Chinese elm shades the backyard, and the side yard has a mature English laurel hedge.",
+      "label": "compliant",
+      "protectedClass": "national_origin",
+      "category": "near_miss",
+      "rationale": "Plant names, not references to people.",
+      "citation": "24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 1 (race, color, national origin)"
+    },
+    {
+      "id": "fh-c-035",
+      "text": "The kitchen has a Dutch door and a farmhouse sink.",
+      "label": "compliant",
+      "protectedClass": "national_origin",
+      "category": "near_miss",
+      "rationale": "A door type, not a reference to national origin.",
+      "citation": "24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 1 (race, color, national origin)"
+    },
+    {
+      "id": "fh-c-036",
+      "text": "Classic California Craftsman with a Japanese-inspired garden and koi pond.",
+      "label": "compliant",
+      "protectedClass": "national_origin",
+      "category": "near_miss",
+      "rationale": "Describes the garden's design, not the occupant.",
+      "citation": "24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 1 (race, color, national origin)"
+    },
+    {
+      "id": "fh-c-037",
+      "text": "A straight shot to the freeway and twenty minutes to the airport.",
+      "label": "compliant",
+      "protectedClass": "sexual_orientation",
+      "category": "near_miss",
+      "rationale": "'Straight' describes the route.",
+      "citation": "Cal. Gov. Code 12955(c)"
+    },
+    {
+      "id": "fh-c-038",
+      "text": "Single-story ranch on a quarter-acre lot with RV parking.",
+      "label": "compliant",
+      "protectedClass": "marital_status",
+      "category": "near_miss",
+      "rationale": "'Single-story' describes the building.",
+      "citation": "Cal. Gov. Code 12955(c)"
+    },
+    {
+      "id": "fh-c-039",
+      "text": "Detached single-family residence with a two-car garage.",
+      "label": "compliant",
+      "protectedClass": "marital_status",
+      "category": "near_miss",
+      "rationale": "'Single-family residence' is a property type, not a statement about marital status.",
+      "citation": "Cal. Gov. Code 12955(c)"
+    },
+    {
+      "id": "fh-c-040",
+      "text": "Mature oak trees and established landscaping frame the front yard.",
+      "label": "compliant",
+      "protectedClass": "age",
+      "category": "near_miss",
+      "rationale": "'Mature' describes trees.",
+      "citation": "Cal. Civ. Code 51.2(a)"
+    },
+    {
+      "id": "fh-c-041",
+      "text": "Older home with original hardwood floors and a recently updated electrical panel.",
+      "label": "compliant",
+      "protectedClass": "age",
+      "category": "near_miss",
+      "rationale": "'Older' describes the house.",
+      "citation": "Cal. Civ. Code 51.2(a)"
+    },
+    {
+      "id": "fh-c-042",
+      "text": "The young orchard of citrus and avocado trees will start producing next season.",
+      "label": "compliant",
+      "protectedClass": "age",
+      "category": "near_miss",
+      "rationale": "'Young' describes the orchard.",
+      "citation": "Cal. Civ. Code 51.2(a)"
+    },
+    {
+      "id": "fh-c-043",
+      "text": "Owned by the same family for three generations and lovingly maintained.",
+      "label": "compliant",
+      "protectedClass": "familial_status",
+      "category": "near_miss",
+      "rationale": "Describes the home's history, not who should buy it.",
+      "citation": "HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 5 (familial status)"
+    },
+    {
+      "id": "fh-c-044",
+      "text": "Bonus room off the primary suite could serve as a nursery, office, or gym.",
+      "label": "compliant",
+      "protectedClass": "familial_status",
+      "category": "near_miss",
+      "rationale": "Describes possible uses of a room without stating who should live there.",
+      "citation": "HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 5 (familial status)"
+    },
+    {
+      "id": "fh-c-045",
+      "text": "The community has a playground, a dog park, and a picnic area.",
+      "label": "compliant",
+      "protectedClass": "familial_status",
+      "category": "near_miss",
+      "rationale": "Describes facilities; the memo treats descriptions of facilities as not facially discriminatory.",
+      "citation": "HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 5 (familial status)"
+    },
+    {
+      "id": "fh-c-046",
+      "text": "Close to parks, shopping, and public schools.",
+      "label": "compliant",
+      "protectedClass": "familial_status",
+      "category": "near_miss",
+      "rationale": "Neutral description of nearby amenities.",
+      "citation": "HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 5 (familial status)"
+    },
+    {
+      "id": "fh-c-047",
+      "text": "Two primary suites make this layout flexible for many living arrangements.",
+      "label": "compliant",
+      "protectedClass": "familial_status",
+      "category": "near_miss",
+      "rationale": "Describes the layout without naming an ideal household.",
+      "citation": "HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 5 (familial status)"
+    },
+    {
+      "id": "fh-c-048",
+      "text": "Ten minutes to the base gate and the commuter rail station.",
+      "label": "compliant",
+      "protectedClass": "military_or_veteran_status",
+      "category": "near_miss",
+      "rationale": "Names a landmark for commute distance, without stating a preference for or against service members.",
+      "citation": "Cal. Gov. Code 12955(c)"
+    },
+    {
+      "id": "fh-c-049",
+      "text": "This home is eligible for VA, FHA, and conventional financing.",
+      "label": "compliant",
+      "protectedClass": "military_or_veteran_status",
+      "category": "near_miss",
+      "rationale": "States financing options open to all buyers.",
+      "citation": "Cal. Gov. Code 12955(c)"
+    },
+    {
+      "id": "fh-c-050",
+      "text": "Owner accepts all lawful sources of income, including Section 8 vouchers.",
+      "label": "compliant",
+      "protectedClass": "source_of_income",
+      "category": "near_miss",
+      "rationale": "Mentions Section 8 to welcome voucher holders, which the statute protects.",
+      "citation": "Cal. Gov. Code 12955(c), (p)(1)"
+    },
+    {
+      "id": "fh-c-051",
+      "text": "Rent includes water, trash, and gardening; first month and deposit due at signing.",
+      "label": "compliant",
+      "protectedClass": "source_of_income",
+      "category": "near_miss",
+      "rationale": "Describes rental terms without limiting the source of income.",
+      "citation": "Cal. Gov. Code 12955(c), (p)(1)"
+    },
+    {
+      "id": "fh-c-052",
+      "text": "Vaulted cathedral ceilings in the great room and a skylit staircase.",
+      "label": "compliant",
+      "protectedClass": "religion",
+      "category": "near_miss",
+      "rationale": "'Cathedral ceilings' is an architectural term.",
+      "citation": "24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 2 (religion)"
+    },
+    {
+      "id": "fh-c-053",
+      "text": "The original 1912 church building was converted into four modern lofts.",
+      "label": "compliant",
+      "protectedClass": "religion",
+      "category": "near_miss",
+      "rationale": "Describes the building's history, not a preference for any faith.",
+      "citation": "24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 2 (religion)"
+    },
+    {
+      "id": "fh-c-054",
+      "text": "Dual walk-in closets and dual vanities in the primary bath.",
+      "label": "compliant",
+      "protectedClass": "sex",
+      "category": "near_miss",
+      "rationale": "Describes fixtures without reference to the sex of the occupants.",
+      "citation": "HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 3 (sex)"
+    },
+    {
+      "id": "fh-c-055",
+      "text": "Downstairs bachelor unit with a kitchenette, ideal as a home office or a guest studio.",
+      "label": "compliant",
+      "protectedClass": "sex",
+      "category": "near_miss",
+      "rationale": "'Bachelor' names a type of unit, which the memo says is a common physical description of housing and not a preference by sex.",
+      "citation": "HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 3 (sex)"
+    },
+    {
+      "id": "fh-c-056",
+      "text": "Equal Housing Opportunity. The seller welcomes all qualified buyers.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "near_miss",
+      "rationale": "States that the home is open to all qualified buyers; it expresses no preference or limitation.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-057",
+      "text": "Walking distance to the downtown plaza, the public library, and the light-rail station.",
+      "label": "compliant",
+      "protectedClass": "religion",
+      "category": "near_miss",
+      "rationale": "Names neutral, secular landmarks.",
+      "citation": "24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 4 (handicap)"
+    },
+    {
+      "id": "fh-c-058",
+      "text": "A recent inspection report, termite clearance, and a home warranty are included.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes disclosures about the property, not about people.",
+      "citation": "Cal. Gov. Code 12955(c)"
+    },
+    {
+      "id": "fh-c-059",
+      "text": "Quiet interior unit away from street noise, with triple-pane windows.",
+      "label": "compliant",
+      "protectedClass": "disability",
+      "category": "near_miss",
+      "rationale": "Describes the property's condition and features.",
+      "citation": "HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 4 (handicap)"
+    },
+    {
+      "id": "fh-c-060",
+      "text": "Historic mission-style architecture with smooth stucco walls and a bell-tower accent.",
+      "label": "compliant",
+      "protectedClass": "religion",
+      "category": "near_miss",
+      "rationale": "An architectural style, not a religious preference.",
+      "citation": "24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 2 (religion)"
+    },
+    {
+      "id": "fh-c-061",
+      "text": "House rules: quiet hours after 10 p.m. and no smoking in common areas.",
+      "label": "compliant",
+      "protectedClass": "disability",
+      "category": "near_miss",
+      "rationale": "Describes required conduct, which the memo says does not violate the Act.",
+      "citation": "HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 4 (handicap)"
+    },
+    {
+      "id": "fh-c-062",
+      "text": "Near the community center, which offers classes for all ages.",
+      "label": "compliant",
+      "protectedClass": "age",
+      "category": "near_miss",
+      "rationale": "Describes a nearby facility open to everyone.",
+      "citation": "Cal. Civ. Code 51.2(a)"
+    },
+    {
+      "id": "fh-c-063",
+      "text": "The den could be a guest room, a playroom, or a home gym.",
+      "label": "compliant",
+      "protectedClass": "familial_status",
+      "category": "near_miss",
+      "rationale": "Describes possible uses of a room without naming an ideal household.",
+      "citation": "HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 5 (familial status)"
+    },
+    {
+      "id": "fh-c-064",
+      "text": "A main-floor bedroom and full bath suit guests or anyone who prefers to avoid stairs.",
+      "label": "compliant",
+      "protectedClass": "disability",
+      "category": "near_miss",
+      "rationale": "Describes a feature and who it is convenient for without excluding anyone.",
+      "citation": "HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 4 (handicap)"
+    },
+    {
+      "id": "fh-c-065",
+      "text": "The building is close to a hospital, a pharmacy, and a medical office park.",
+      "label": "compliant",
+      "protectedClass": "disability",
+      "category": "near_miss",
+      "rationale": "Names neutral nearby services.",
+      "citation": "HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 4 (handicap)"
+    },
+    {
+      "id": "fh-c-066",
+      "text": "Fenced pool with a self-latching gate that meets current safety code.",
+      "label": "compliant",
+      "protectedClass": "familial_status",
+      "category": "near_miss",
+      "rationale": "Describes a safety feature without limiting who may live there.",
+      "citation": "HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 5 (familial status)"
+    },
+    {
+      "id": "fh-c-067",
+      "text": "In-law unit with a separate entrance, perfect for guests or rental income.",
+      "label": "compliant",
+      "protectedClass": "familial_status",
+      "category": "near_miss",
+      "rationale": "Describes uses of a unit; 'in-law' is a physical description like the memo's 'mother-in-law suite'.",
+      "citation": "HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 3 (sex); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 5 (familial status)"
+    },
+    {
+      "id": "fh-c-068",
+      "text": "Black-bottom pool with a white travertine deck and a gray stone waterfall.",
+      "label": "compliant",
+      "protectedClass": "color",
+      "category": "near_miss",
+      "rationale": "Colour words describe the pool and deck.",
+      "citation": "24 CFR 100.75(c)(1); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 1 (race, color, national origin)"
+    },
+    {
+      "id": "fh-c-069",
+      "text": "A gentle slope leads from the street to the front door, with handrails on both sides.",
+      "label": "compliant",
+      "protectedClass": "disability",
+      "category": "near_miss",
+      "rationale": "Factual description of the approach and its handrails.",
+      "citation": "HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 4 (handicap)"
+    },
+    {
+      "id": "fh-c-070",
+      "text": "Ideal for entertaining, with a wet bar and a butler's pantry.",
+      "label": "compliant",
+      "protectedClass": "familial_status",
+      "category": "near_miss",
+      "rationale": "'Ideal for' names an activity, not a kind of household.",
+      "citation": "HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 5 (familial status)"
+    },
+    {
+      "id": "fh-c-071",
+      "text": "Perfect for anyone who loves to cook: double ovens, a pot filler, and a six-foot island.",
+      "label": "compliant",
+      "protectedClass": "familial_status",
+      "category": "near_miss",
+      "rationale": "'Perfect for' names an interest open to anyone, not a protected characteristic.",
+      "citation": "HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 5 (familial status)"
+    },
+    {
+      "id": "fh-c-072",
+      "text": "Great for gardeners, with raised beds, a greenhouse, and a potting shed.",
+      "label": "compliant",
+      "protectedClass": "familial_status",
+      "category": "near_miss",
+      "rationale": "Names an activity, not a kind of household.",
+      "citation": "HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 5 (familial status)"
+    },
+    {
+      "id": "fh-c-073",
+      "text": "Room for everyone: five bedrooms, a bonus room, and a large flat yard.",
+      "label": "compliant",
+      "protectedClass": "familial_status",
+      "category": "near_miss",
+      "rationale": "Describes size without naming an ideal household.",
+      "citation": "HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 5 (familial status)"
+    },
+    {
+      "id": "fh-c-074",
+      "text": "Lever handles, a curbless shower, and a fold-down bench seat were added in the primary bath.",
+      "label": "compliant",
+      "protectedClass": "disability",
+      "category": "near_miss",
+      "rationale": "Factual description of accessibility features.",
+      "citation": "HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), part 4 (handicap)"
+    },
+    {
+      "id": "fh-c-075",
+      "text": "This 55-and-older community operates as housing for older persons under federal law, and at least one resident of each home must be 55 or older.",
+      "label": "compliant",
+      "protectedClass": "familial_status",
+      "category": "lawful_exemption",
+      "rationale": "Housing for older persons that meets the statutory exemption may say so; the memo notes publishers may rely on an ad indicating such housing.",
+      "citation": "42 U.S.C. 3607(b)(2); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), on advertisements indicating housing for older persons"
+    },
+    {
+      "id": "fh-c-076",
+      "text": "Senior housing: this HUD-assisted building is reserved for residents 62 and older under the housing-for-older-persons exemption.",
+      "label": "compliant",
+      "protectedClass": "age",
+      "category": "lawful_exemption",
+      "rationale": "Housing for older persons under the 62-and-older exemption may state the age requirement.",
+      "citation": "42 U.S.C. 3607(b)(2); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), on advertisements indicating housing for older persons"
+    },
+    {
+      "id": "fh-c-077",
+      "text": "Gated 55+ community qualifying as housing for older persons, with a clubhouse, pool, and golf course.",
+      "label": "compliant",
+      "protectedClass": "familial_status",
+      "category": "lawful_exemption",
+      "rationale": "States the qualifying exemption rather than a bare preference.",
+      "citation": "42 U.S.C. 3607(b)(2); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), on advertisements indicating housing for older persons"
+    },
+    {
+      "id": "fh-c-078",
+      "text": "Age-restricted senior community: at least one occupant must be 55 or older, as permitted for qualifying housing for older persons.",
+      "label": "compliant",
+      "protectedClass": "age",
+      "category": "lawful_exemption",
+      "rationale": "Describes a lawful age restriction for qualifying senior housing.",
+      "citation": "42 U.S.C. 3607(b)(2); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), on advertisements indicating housing for older persons"
+    },
+    {
+      "id": "fh-c-079",
+      "text": "This is a senior community for residents 55 and older that meets the federal exemption for housing for older persons; HOA approval required for all occupants.",
+      "label": "compliant",
+      "protectedClass": "familial_status",
+      "category": "lawful_exemption",
+      "rationale": "States the exemption that permits the age requirement.",
+      "citation": "42 U.S.C. 3607(b)(2); HUD memorandum, Guidance Regarding Advertisements Under Section 804(c) of the Fair Housing Act (R. Achtenberg, Jan. 9, 1995), on advertisements indicating housing for older persons"
+    },
+    {
+      "id": "fh-c-080",
+      "text": "Light-filled three-bedroom home with an updated kitchen, quartz counters, and stainless appliances.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-081",
+      "text": "Remodeled two-bath condo with in-unit laundry and one assigned parking space.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-082",
+      "text": "Corner lot with drought-tolerant landscaping, owned solar, and an EV charger in the garage.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-083",
+      "text": "Hardwood floors throughout, recessed lighting, and dual-pane windows installed in 2021.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-084",
+      "text": "Private backyard with a covered patio, built-in barbecue, and mature fruit trees.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-085",
+      "text": "Top-floor unit with vaulted ceilings, a skylight, and a balcony overlooking the courtyard.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-086",
+      "text": "Turnkey townhome with a two-car attached garage and low HOA dues.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-087",
+      "text": "Updated plumbing and electrical, a new roof in 2023, and a tankless water heater.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-088",
+      "text": "Chef's kitchen with a six-burner range, a walk-in pantry, and an oversized island.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-089",
+      "text": "Downtown loft with exposed brick, polished concrete floors, and fourteen-foot ceilings.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-090",
+      "text": "Spacious four-bedroom home on a quarter-acre lot with a detached workshop.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-091",
+      "text": "Ocean breezes and filtered water views from the upstairs deck.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-092",
+      "text": "Move-in ready with fresh interior paint, new carpet, and updated light fixtures.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-093",
+      "text": "Gated complex with a pool, spa, and fitness center; water and trash included in HOA dues.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-094",
+      "text": "Detached ADU with its own address, kitchen, and laundry, ideal as a rental or studio.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-095",
+      "text": "Primary suite with a soaking tub, a walk-in shower, and dual sinks.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-096",
+      "text": "Quiet interior location within the complex, close to the guest parking area.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-097",
+      "text": "Newly landscaped front yard with a drip irrigation system and smart controller.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-098",
+      "text": "Open floor plan with sliding glass doors to a wraparound deck.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-099",
+      "text": "Close to shopping, dining, and the freeway, with easy access to the regional park.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-100",
+      "text": "Large laundry room with a utility sink and extra storage cabinets.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-101",
+      "text": "Three-car tandem garage with epoxy floors and overhead storage racks.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-102",
+      "text": "Original 1950s mid-century details, including a brick fireplace and clerestory windows.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-103",
+      "text": "Bright end unit with windows on three sides and a private patio.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-104",
+      "text": "Vineyard views from the great room and a wine cellar off the dining area.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-105",
+      "text": "Fully fenced yard with a gate to the greenbelt and walking paths.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-106",
+      "text": "Central air, a whole-house fan, and a new furnace keep the home comfortable year-round.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-107",
+      "text": "Home office with built-in shelving and a separate entrance.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-108",
+      "text": "Short drive to the beach, the harbor, and the marina.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-109",
+      "text": "Seller is offering a credit toward closing costs with an acceptable offer.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-110",
+      "text": "Seismic retrofit completed in 2020, with permits on file.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-111",
+      "text": "Bonus loft upstairs overlooks the living room and makes a great media space.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-112",
+      "text": "Wood-burning fireplace, beamed ceilings, and wide-plank oak floors.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-113",
+      "text": "Gourmet outdoor kitchen, fire pit, and string lights for evening entertaining.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-114",
+      "text": "The HOA covers exterior maintenance, earthquake insurance, and the community pool.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-115",
+      "text": "Lot is zoned for a second unit; buyer to verify with the city.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-116",
+      "text": "Hillside setting with canyon views and a terraced garden.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-117",
+      "text": "Upgraded insulation and a cool roof help keep energy bills low.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-118",
+      "text": "Updated hall bath with a subway-tile shower and a floating vanity.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-119",
+      "text": "Walk-in pantry, a coffee bar, and a built-in desk in the kitchen.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-120",
+      "text": "Two parking spaces in a secure underground garage, plus a storage locker.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-121",
+      "text": "Expansive deck with a hot tub and views of the foothills.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-122",
+      "text": "Freshly refinished hardwoods and new baseboards in every bedroom.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-123",
+      "text": "Pet-friendly building with a dog run and a grooming station.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-124",
+      "text": "Huge side yard with room for a pool, RV, or garden.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-125",
+      "text": "This property is being sold as-is; inspection reports are available on request.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-126",
+      "text": "Lease includes a refrigerator, washer, and dryer; tenant pays electricity and gas.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-127",
+      "text": "Bright kitchen nook with a bay window overlooking the garden.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-128",
+      "text": "Plantation shutters, crown molding, and a formal dining room.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-129",
+      "text": "Low-maintenance artificial turf in back and a paver driveway in front.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-130",
+      "text": "Gated entry, keyless locks, and a monitored alarm system.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-131",
+      "text": "Brand-new tankless water heater and a whole-home water softener.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-132",
+      "text": "Dual-zone climate control and ceiling fans in every room.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-133",
+      "text": "Three blocks to the commuter rail station and the historic downtown.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-134",
+      "text": "Primary bedroom on the main level, with three more bedrooms upstairs.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    },
+    {
+      "id": "fh-c-135",
+      "text": "Sunny breakfast room with a built-in banquette and garden views.",
+      "label": "compliant",
+      "protectedClass": null,
+      "category": "ordinary",
+      "rationale": "Describes the property, its features, terms or location only; nothing states or implies who should or should not live there.",
+      "citation": "42 U.S.C. 3604(c); 24 CFR 100.75(c)(1)"
+    }
+  ]
+}

@@ -1319,6 +1319,90 @@ a later story does not have to rediscover them.
 - **Not a Hangfire job** (plan.md): `RealtorAI_BackEnd/ops/retention-purge/` is a console job run
   by the operations platform. `RetentionPurgeTests` drives it against the local stack.
 
+## R39. Evaluation sets for T156–T158: what they are, who made them, and what still gates a verdict (2026-11-16)
+
+T156 and T157 give the harness its first two suites, `PhotoEval` (photo.analysis) and
+`ComplianceEval` (compliance.judge), both registered in `EvalSuites.Registered`; T158 measures the
+call-level metrics on the same calls. `listing.content` and `photo.embedding` still have no suite.
+
+- **The review gate.** Both sets were drafted by AI and are committed with
+  `"review": { "reviewed": false }`. An `EvalSet` can only be obtained by loading a committed
+  manifest (private constructor, no `with` copy), a `SuiteRun` cannot be built without its sets,
+  and `EvalVerdict.Evaluate` returns **Incomplete** when any set is unreviewed — even if a metric
+  missed its bar — so neither `--write` nor `RegistryResultWriter.WriteAsync` records anything. The
+  gate sits in the verdict, not in the suite contract, because an interface cannot force a suite to
+  call a check. A reviewed manifest must name a reviewer, a `reviewedAt` not in the future and
+  `itemsSha256`, the SHA-256 of the items in canonical compact JSON as signed off; unknown properties
+  are rejected. A set whose items no longer match that hash loads but counts as unreviewed, so an
+  edit after sign-off yields **Incomplete** rather than riding on the earlier review. Signing off is a
+  reviewed code change; any change to an item is a new set version needing its own review
+  (quickstart §6).
+- **Photo set (`rooms-v1`, 131 items).** Openly licensed photos from Wikimedia Commons, Flickr and
+  StockSnap (found through Openverse), collected and labelled by AI research agents. 94 labels are
+  `clear`, 37 `ambiguous` (another room type is defensible; the item's notes say which). Licenses:
+  CC BY 2.0/2.5/3.0/4.0 (77), CC0 1.0 (30), public domain (24). The public-domain items carry
+  Commons status tags (PD-self, PD-user, PD-USGov-\*, PD-Highsmith, PD-old-70-expired,
+  PD-anon-expired, PD-1923, PD-Australia, PD-Canada, HABS) rather than the literal PDM 1.0 mark; they
+  were kept because dropping them would leave 2 floor plans and 6 exterior fronts, and the reviewer
+  is asked to confirm the choice, since several are jurisdiction-dependent. `PhotoEval.IsAllowedLicense`
+  enforces the allowed set. **The images are not committed**: each item names its source page, file
+  URL, license and SHA-256, `aieval --fetch-eval-sets` downloads and verifies them into a cache
+  outside the repository, and `ATTRIBUTION.md` gives TASL attribution for all 131. Labels are checked
+  against the active prompt schema's `roomType` enum before any call. **Weakness:** 7 of the 10
+  `primary_bedroom` labels are ambiguous, resting on the uploader calling the room "master".
+- **Scoring (SC-002).** An answer is accepted when its `roomType` equals the label. Ambiguous items
+  are scored against their one label, which can only lower the rate; clear and ambiguous rates are
+  printed separately. An answer invalid on both attempts is not accepted.
+- **Fair Housing set (`fair-housing-v1`, 272 items).** Written for this repository by an AI
+  assistant; no passage is copied from a real listing and no real person's name or address
+  appears. 137 violations across all 15 configured protected classes (explicit 66, preference 42,
+  neighborhood 14, coded 10, landmark 5) and 135 compliant samples (near miss 73, ordinary 57,
+  lawful exemption 5 — 55+/62+ housing with the exemption stated). Every item cites its authority,
+  checked against the sources: 42 U.S.C. 3604(c); 24 CFR 100.75(a), (c)(1), (c)(2); the 1995 HUD
+  advertising memorandum (Achtenberg), parts 1–5; Cal. Gov. Code 12955(c) and (p)(1); Cal. Civ. Code
+  51.2(a). Age cites 51.2(a) because 12955(c) does not list it. Medical condition is deliberately
+  not covered: it is a FEHA employment class, absent from 12955(c) and from the judge prompt.
+- **SC-003 reading.** SC-003 measures "the Fair Housing check", which FR-017 and Story 4 scenario 2
+  define as a deterministic lexicon **and** a context-sensitive classifier. So each sample goes
+  through production's own pieces in production's order (`LexiconMatcher.FairHousing.Match`, then
+  `JudgeChecker.BuildInput` through `EvalModelInvoker`, then `JudgeChecker.ReadFindings`, then
+  `FindingMerger.Merge`); `JudgeChecker` was refactored so the eval reuses that code rather than
+  copying it. A sample is **flagged** when the merged result has any Fair Housing finding of either
+  severity (warnings are open findings an agent must acknowledge, FR-023). Recall = flagged
+  violations / violations; false-positive rate = flagged compliant / compliant. The verdict is
+  recorded against the judge's registry row, the only part that changes without a code change. The
+  lexicon alone flags 27 of 137 violations and 0 of 135 compliant samples, so recall depends almost
+  entirely on the judge.
+- **Latency sampling (SC-005).** Production analyses a listing's photos one at a time, so the runner
+  groups photos into listings of 30 (`MetricCatalog.LatencyListingPhotoCount`) and times each whole
+  listing, including FR-015's retry. p90 is nearest-rank. One pass over 131 photos gives only 4
+  listings, whose p90 is simply the slowest, so `PhotoEval` runs ⌈30·10/131⌉ = 3 passes: 393
+  analyses, 13 complete listings, p90 = the 12th slowest. `MinimumLatencyListings = 10` is the
+  smallest sample whose nearest-rank p90 is not the maximum; it decides how many passes run and is
+  never compared with a measurement, so it is not an acceptance threshold. Each pass orders photos
+  by SHA-256 of `"pass:id"` — deterministic, mixing room types within a listing, different per
+  pass — and every photo is analysed exactly three times, so accuracy weights are unchanged. Known
+  weaknesses: 13 is a small tail sample; listings reuse photos and run back to back in one session;
+  provider-side prefix caching could speed later passes.
+- **Call-level metrics (T158).** Schema validity = calls valid on the first attempt / calls
+  attempted (a pass on retry counts as invalid). Tokens are summed across both attempts; images are
+  counted once per attempt. If any call fails at the provider, every metric of the run is withheld
+  with a printed reason, and tokens are withheld when usage was not reported — a withheld metric
+  cannot pass. Evaluation calls bypass the circuit breaker, budget check and response cache, and
+  never fail over to another model.
+- **Open items.**
+  1. Neither set is reviewed. `rooms-v1` needs someone who can judge listing photos;
+     `fair-housing-v1` needs counsel or CRMLS compliance staff (and a check of Civ. Code 51.3 against
+     the senior-housing items).
+  2. The JSON-schema validity threshold is still unset (R27), so no chat model can pass.
+  3. No real model has been called by either suite; every run so far used fakes. No real accuracy
+     or latency has been measured, so T156 and T157's assertions remain open.
+  4. `listing.content` has no suite, so its schema-validity and tokens-per-listing metrics cannot be
+     measured, and `photo.embedding` has no acceptance metric (R27); this run does not settle the
+     provisional 0.97 near-duplicate threshold.
+  5. `eval_result` does not yet record the evaluation set, its content hash, or the prompt version
+     a verdict came from — the harness prints them, but storing them needs a v2 result format.
+
 ## Open items carried to Slice B (recorded, not resolved)
 
 - **CRMLS API surface**: whether RESO Web API Add/Edit is exposed to vendors or only a proprietary

@@ -24,11 +24,44 @@
 
   <ItemGroup>
     <PackageReference Include="Npgsql" Version="10.0.3" />
+
+    <!--
+      The harness reads the API host's own appsettings files and environment, so a model is
+      evaluated with the base URL, credential, prompts and normalization the host would use.
+      Same package line (10.0.12) as the host's other Microsoft.Extensions dependencies.
+    -->
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.12" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.12" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.12" />
   </ItemGroup>
 
   <ItemGroup>
     <!-- The same writer the API uses, so a harness record hashes exactly like any other. -->
     <ProjectReference Include="..\..\Modules.Audit\Modules.Audit.csproj" />
+
+    <!--
+      Prompt registry, schema validator, chat-client construction and request building: the
+      production code paths, reused so an evaluated model is called as production calls it.
+    -->
+    <ProjectReference Include="..\..\Libs.Ai\Libs.Ai.csproj" />
+
+    <!-- The production ImageNormalizer: evaluation photos leave as normalized copies (VIII.4.c). -->
+    <ProjectReference Include="..\..\Modules.Media\Modules.Media.csproj" />
+
+    <!--
+      The production Fair Housing check: the lexicon, the judge's request and answer reading, and
+      the merge of the two layers. SC-003 measures that check, so the harness runs it rather than
+      a copy of it (ComplianceEval).
+    -->
+    <ProjectReference Include="..\..\Libs.Compliance\Libs.Compliance.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      Labelled evaluation sets (manifests and the files they reference) travel with the build
+      output, where EvalSet.LoadShipped finds them. Committed, reviewed data — see EvalSet.
+    -->
+    <None Include="EvalSets\**\*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

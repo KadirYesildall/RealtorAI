@@ -407,7 +407,100 @@ dotnet run --project RealtorAI_BackEnd/RealtorAI.Api/tools/AiEval -- `
     --registry-id <uuid> --write --actor <platform-admin-profile-uuid>
 ```
 
-Exit codes: `0` passed, `1` failed, `2` incomplete (nothing recorded), `64` usage, `70` not recorded.
+Exit codes: `0` passed, `1` failed, `2` incomplete (nothing recorded), `64` usage, `70` not recorded,
+`78` configuration or evaluation-set error (nothing measured).
+
+A suite calls the model under evaluation with the API host's own configuration: `Api/appsettings.json`,
+then `appsettings.{ASPNETCORE_ENVIRONMENT}.json`, then environment variables — so set
+`$env:ASPNETCORE_ENVIRONMENT = "Development"` locally, and the token variable named by
+`Ai:HuggingFace:ApiKeyEnvVar` (`HF_TOKEN`). `--api-dir` overrides where the host's settings are read
+from. Evaluation sets live under `tools/AiEval/EvalSets/<task>/`; a set whose manifest is not marked
+reviewed yields **Incomplete** with that reason, never a recorded verdict.
+
+The photo set (`photo.analysis/rooms-v1.json`, T156) names its 131 openly licensed photos by source,
+license and SHA-256 instead of committing them (attribution in `ATTRIBUTION.md` beside it). Fetch
+them once before evaluating a vision model:
+
+```powershell
+# Downloads and SHA-256-verifies every photo; safe to re-run (verified files are skipped)
+dotnet run --project RealtorAI_BackEnd/RealtorAI.Api/tools/AiEval -- --fetch-eval-sets
+```
+
+The cache is `$env:REALTORAI_EVAL_CACHE` when set, otherwise
+`%LOCALAPPDATA%\RealtorAI\AiEval\eval-set-cache`, outside the repository (a cache inside it must be
+named `.eval-cache/`, which is gitignored). `--cache <dir>` applies to the fetch only, so set the
+variable to evaluate from another location. Exit `0` means every file is verified, `2` means some
+could not be fetched or did not match their hash; mismatched bytes are never written. If any photo
+is missing or mismatched, the photo suite calls no model and reports **Incomplete**.
+
+Shipped suites and their sets (`--task all` prints `suite: present` or `suite: none` per task):
+
+| Task | Suite | Evaluation set | Labelled by | Reviewed |
+|---|---|---|---|---|
+| photo.analysis | `PhotoEval` (T156) | `photo.analysis/rooms-v1.json` — 131 photos, 12 room types, fetched | AI research agents | **no** |
+| compliance.judge | `ComplianceEval` (T157) | `compliance.judge/fair-housing-v1.json` — 137 violations, 135 compliant, committed | AI assistant | **no** |
+| listing.content | *(none)* | — | — | — |
+| photo.embedding | *(none)* | — | — | — |
+
+The compliance suite measures the whole Fair Housing check — lexicon then judge, merged as
+`ComplianceService` merges them — because SC-003 is stated for the check (FR-017), not for the
+judge alone; the verdict is still recorded against the judge's registry row (research R39).
+
+**Reviewing a set (sign-off).** A set's manifest carries a `review` block, and only a person flips
+it. Both shipped sets were drafted by AI and are unreviewed, so every run on them is **Incomplete**
+until that happens:
+
+| Set | Who may review | What they must check before signing off |
+|---|---|---|
+| `rooms-v1` | Someone who can judge listing photos (the product owner or a listing agent) | Every photo after `--fetch-eval-sets`, confirming or changing its label — most of all the `ambiguous` items and `primary_bedroom` vs `bedroom`; whether ambiguous items stay scored, are relabelled or removed; each license against its source page, including that the Commons public-domain tags (not the literal PDM 1.0 mark) are acceptable |
+| `fair-housing-v1` | Counsel or CRMLS compliance staff — someone qualified in Fair Housing advertising | Every label and its citation, most of all places of worship as landmarks, neighborhood characterisations, "empty nesters", the service-animal refusal, and the senior-housing exemptions (Civ. Code 51.3 may add to the federal exemption) |
+
+Signing off is a reviewed code change, never a local edit: in one pull request, set
+`"reviewed": true`, `"reviewer"` (name and role), `"reviewedAt"` (ISO 8601, not in the future — the
+loader rejects it otherwise), `"itemsSha256"` (the `items sha256` the harness prints for the set on
+any run, dry or not — the hash of the items exactly as reviewed) and `"notes"` (what was checked and
+any decision taken), and change the
+`ShippedSet_IsUnreviewed` test in `tests/unit/AiEvalPhotoTests.cs` or `AiEvalComplianceTests.cs`
+to assert the recorded review. Any change to an item — a relabel, a removal, a replaced photo — is a
+new version of the set (`rooms-v2.json`, `fair-housing-v2.json`) that needs its own review, not an
+edit under a review already given. The loader enforces this: if the items no longer hash to
+`review.itemsSha256`, the set is treated as unreviewed and the run is **Incomplete** with the two
+hashes in the reason. Reformatting the file (indentation, line endings, string escapes) does not
+change the hash; any change to a value, a key, or the order of items or their properties does.
+
+**Before a verdict can be recorded**, all of these must hold; otherwise the run is **Incomplete**
+and writes nothing:
+
+| Requirement | Where it comes from | Status |
+|---|---|---|
+| Provider credentials: `ASPNETCORE_ENVIRONMENT` and the token variable named by `Ai:HuggingFace:ApiKeyEnvVar` (`HF_TOKEN`) | the API host's configuration (above) | set per machine |
+| The photo set fetched and verified (photo.analysis only) | `--fetch-eval-sets` | done once per cache |
+| The task's evaluation set reviewed | the procedure above | **not done** for either set |
+| A JSON-schema validity threshold | a product-owner decision recorded in research R27 | **not set** — no chat model can pass |
+| A registry entry with a commercial license recorded | the admin API (VIII.4) | per model |
+
+```powershell
+# 1. Fetch the photo set (photo.analysis only; skip if already verified)
+dotnet run --project RealtorAI_BackEnd/RealtorAI.Api/tools/AiEval -- --fetch-eval-sets
+
+# 2. Provider configuration for the suites' model calls, and the database the registry row is read from
+$env:ASPNETCORE_ENVIRONMENT = "Development"
+$env:HF_TOKEN = "<token>"
+$env:REALTORAI_EVAL_POSTGRES = "Host=127.0.0.1;Port=54322;Database=postgres;Username=postgres;Password=postgres"
+
+# 3. Dry run: measures and prints the verdict, records nothing
+dotnet run --project RealtorAI_BackEnd/RealtorAI.Api/tools/AiEval -- --registry-id <uuid>
+
+# 4. Record the verdict (only a pass or a measured failure is written)
+dotnet run --project RealtorAI_BackEnd/RealtorAI.Api/tools/AiEval -- `
+    --registry-id <uuid> --write --actor <platform-admin-profile-uuid>
+```
+
+A dry run on an unreviewed set still calls the model and prints every measurement, the per-room or
+per-layer breakdown and the misses, so a reviewer can see what the model gets wrong before signing
+off — but its verdict is **Incomplete** whatever the numbers say. The latency metric is measured
+over 13 listings of 30 photos (three shuffled passes over the 131-photo set; research R39), so a
+photo run makes 393 model calls.
 
 | Metric | Threshold | Source | Tasks |
 |---|---|---|---|

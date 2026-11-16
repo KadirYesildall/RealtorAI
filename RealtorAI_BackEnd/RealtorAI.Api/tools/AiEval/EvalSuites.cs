@@ -1,21 +1,32 @@
 namespace AiEval;
 
 /// <summary>The registry row under evaluation — the exact model a verdict will be recorded against.</summary>
+/// <param name="Parameters">
+/// The row's provider call parameters (a JSON object), sent with every evaluation call exactly as
+/// production sends them. Part of the identity because they change the model's behaviour: the
+/// compliance judge's temperature 0 (FR-024) lives here.
+/// </param>
 internal sealed record RegistryTarget(
     Guid Id,
     string TaskKey,
     string Provider,
     string ModelId,
     string? Endpoint,
+    string Parameters,
     bool Enabled);
 
 /// <summary>
-/// Measures one task's metrics for one model against a labelled evaluation set.
+/// Measures one task's metrics for one model against labelled evaluation sets.
 ///
 /// <para>
 /// A suite reports raw measurements only. It does not decide whether they pass: that belongs to
 /// <see cref="EvalVerdict"/> and the thresholds in <see cref="MetricCatalog"/>, so no suite can
 /// lower a bar by how it reports.
+/// </para>
+/// <para>
+/// <b>A suite never sees a chat client.</b> It is handed an <see cref="EvalModelInvoker"/>
+/// already bound to the registry row under evaluation, so the only model it can call is the one
+/// the verdict will be recorded against, and only as production would call it.
 /// </para>
 /// </summary>
 internal interface IEvalSuite
@@ -23,21 +34,83 @@ internal interface IEvalSuite
     /// <summary>The registry task this suite evaluates.</summary>
     string TaskKey { get; }
 
-    /// <summary>Runs the evaluation set against <paramref name="target"/>.</summary>
-    /// <returns>Metric key to measured value. Keys must exist in the task's catalog.</returns>
-    Task<IReadOnlyDictionary<string, double>> RunAsync(
-        RegistryTarget target,
-        CancellationToken cancellationToken);
+    /// <summary>Runs the suite's evaluation sets against <paramref name="model"/>'s target.</summary>
+    /// <returns>
+    /// The measurements, together with the evaluation sets they were taken on. Metric keys must
+    /// exist in the task's catalog.
+    /// </returns>
+    Task<SuiteRun> RunAsync(EvalModelInvoker model, CancellationToken cancellationToken);
+}
+
+/// <summary>
+/// What one suite run measured, and on which evaluation sets.
+///
+/// <para>
+/// <b>Measurements cannot leave a suite without the sets they were taken on.</b> The constructor
+/// requires at least one <see cref="EvalSet"/>, and an <see cref="EvalSet"/> can only be obtained
+/// by loading a committed manifest — so whether those sets were reviewed is a fact read from the
+/// repository, never something a suite asserts. <see cref="EvalVerdict"/> reads it from here.
+/// </para>
+/// </summary>
+internal sealed class SuiteRun
+{
+    /// <param name="evalSets">Every evaluation set any measurement was taken on.</param>
+    /// <param name="measurements">Metric key to measured value.</param>
+    /// <param name="unmeasured">
+    /// Why a metric the suite was meant to report has no value — for example, that the provider
+    /// failed some calls (see <see cref="CallMetrics"/>). Printed by the harness, so an
+    /// unmeasured metric is never left unexplained.
+    /// </param>
+    internal SuiteRun(
+        IReadOnlyList<EvalSet> evalSets,
+        IReadOnlyDictionary<string, double> measurements,
+        IReadOnlyList<string>? unmeasured = null)
+    {
+        ArgumentNullException.ThrowIfNull(evalSets);
+        ArgumentNullException.ThrowIfNull(measurements);
+
+        if (evalSets.Count == 0)
+        {
+            throw new ArgumentException(
+                "A suite run must name the evaluation sets its measurements were taken on. A "
+                + "measurement with no set behind it cannot be checked, and a verdict resting on "
+                + "it could not be either.",
+                nameof(evalSets));
+        }
+
+        if (evalSets.Any(set => set is null))
+        {
+            throw new ArgumentException("An evaluation set in the list is null.", nameof(evalSets));
+        }
+
+        EvalSets = [.. evalSets];
+        Measurements = new Dictionary<string, double>(measurements, StringComparer.Ordinal);
+        Unmeasured = [.. unmeasured ?? []];
+    }
+
+    internal IReadOnlyList<EvalSet> EvalSets { get; }
+
+    internal IReadOnlyDictionary<string, double> Measurements { get; }
+
+    internal IReadOnlyList<string> Unmeasured { get; }
 }
 
 /// <summary>
 /// The suites the harness can run, keyed by task.
 ///
 /// <para>
-/// Suites arrive with their labelled evaluation sets: photo analysis (T156), Fair Housing
-/// judging (T157), and latency/cost/schema-validity measurement (T158). A task with no suite
-/// here produces no measurements, so <see cref="EvalVerdict"/> reports it incomplete and the
-/// harness records nothing — the absence of a suite can never become a pass.
+/// Two suites ship, each with its labelled evaluation set: photo analysis (<see cref="PhotoEval"/>,
+/// T156) and Fair Housing judging (<see cref="ComplianceEval"/>, T157). Both report the call-level
+/// metrics — schema validity, latency and per-listing consumption (T158) — through
+/// <see cref="EvalModelInvoker"/> and <see cref="CallMetrics"/> rather than as a suite of their
+/// own, because those metrics describe the same calls the accuracy metrics are measured on.
+/// </para>
+/// <para>
+/// <c>listing.content</c> and <c>photo.embedding</c> have no suite yet. A task with no suite here
+/// produces no measurements, so <see cref="EvalVerdict"/> reports it incomplete and the harness
+/// records nothing — the absence of a suite can never become a pass. Registering a suite does not
+/// make it passable either: until its set's manifest is marked reviewed, every run is
+/// incomplete (see <see cref="EvalSet"/>).
 /// </para>
 /// </summary>
 internal static class EvalSuites
@@ -62,5 +135,6 @@ internal static class EvalSuites
     }
 
     /// <summary>The suites shipped with the harness.</summary>
-    internal static IReadOnlyDictionary<string, IEvalSuite> Registered { get; } = Build([]);
+    internal static IReadOnlyDictionary<string, IEvalSuite> Registered { get; } =
+        Build([new PhotoEval(), new ComplianceEval()]);
 }

@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
 using Polly;
 using Polly.Registry;
+using Polly.Timeout;
 
 namespace Libs.Ai;
 
@@ -19,6 +20,40 @@ namespace Libs.Ai;
 public sealed record AiTransportOptions(string DefaultBaseUrl, string ApiKeyEnvironmentVariable)
 {
     public const string HttpClientName = "ai-provider";
+
+    /// <summary>Configuration key of <see cref="DefaultBaseUrl"/>.</summary>
+    public const string DefaultBaseUrlKey = "Ai:HuggingFace:RouterBaseUrl";
+
+    /// <summary>Configuration key naming the environment variable that holds the token.</summary>
+    public const string ApiKeyEnvironmentVariableKey = "Ai:HuggingFace:ApiKeyEnvVar";
+
+    /// <summary>The variable read when <see cref="ApiKeyEnvironmentVariableKey"/> is not set.</summary>
+    public const string DefaultApiKeyEnvironmentVariable = "HF_TOKEN";
+
+    /// <summary>
+    /// Builds the options from the two configured values, as the API host and the evaluation
+    /// harness both read them.
+    ///
+    /// <para>
+    /// One definition of the keys and the default because the harness must reach a model with
+    /// the same base URL and the same credential the host would use. Two copies of the key names
+    /// could drift, and a harness that silently resolved a different credential would measure a
+    /// model through an account production never uses.
+    /// </para>
+    /// </summary>
+    /// <param name="defaultBaseUrl">The value of <see cref="DefaultBaseUrlKey"/>.</param>
+    /// <param name="apiKeyEnvironmentVariable">The value of <see cref="ApiKeyEnvironmentVariableKey"/>.</param>
+    /// <exception cref="InvalidOperationException">No default base URL is configured.</exception>
+    public static AiTransportOptions FromConfiguration(string? defaultBaseUrl, string? apiKeyEnvironmentVariable) =>
+        new(
+            string.IsNullOrWhiteSpace(defaultBaseUrl)
+                ? throw new InvalidOperationException(
+                    $"{DefaultBaseUrlKey} is not configured. It is the default base URL for "
+                    + "providers whose registry entry declares no endpoint of its own.")
+                : defaultBaseUrl,
+            string.IsNullOrWhiteSpace(apiKeyEnvironmentVariable)
+                ? DefaultApiKeyEnvironmentVariable
+                : apiKeyEnvironmentVariable);
 }
 
 /// <summary>
@@ -134,10 +169,16 @@ public static class AiHttpClientSetup
     /// budget (FR-055). 401 and 403 are not either — a missing or wrong credential is a
     /// configuration problem, and retrying it looks like a brute-force attempt to the provider.
     /// </para>
+    /// <para>
+    /// A per-attempt timeout is: that strategy sits inside the retry precisely so one hung
+    /// attempt can be abandoned and another made, within <see cref="TotalTimeout"/>. It throws
+    /// <see cref="TimeoutRejectedException"/>, which is not a <see cref="TimeoutException"/>, so
+    /// it has to be named.
+    /// </para>
     /// </summary>
     internal static bool IsTransient(HttpResponseMessage? response, Exception? exception)
     {
-        if (exception is HttpRequestException or TaskCanceledException or TimeoutException)
+        if (exception is HttpRequestException or TaskCanceledException or TimeoutException or TimeoutRejectedException)
         {
             return true;
         }
@@ -190,10 +231,13 @@ public sealed class ProviderCircuitBreakers : IDisposable
                 MinimumThroughput = 8,
                 BreakDuration = TimeSpan.FromSeconds(30),
 
+                // TimeoutRejectedException is what the HTTP pipeline's timeouts throw; a
+                // provider that keeps timing out is as unavailable as one refusing connections.
                 ShouldHandle = args => ValueTask.FromResult(
                     args.Outcome.Exception is HttpRequestException
                         or TaskCanceledException
-                        or TimeoutException),
+                        or TimeoutException
+                        or TimeoutRejectedException),
             }));
     }
 

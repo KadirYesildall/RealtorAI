@@ -36,7 +36,7 @@ internal sealed class RegistryResultWriter
 
         await using var command = new NpgsqlCommand(
             """
-            select id, task_key, provider, model_id, endpoint, enabled
+            select id, task_key, provider, model_id, endpoint, parameters::text, enabled
             from public.ai_model_registry
             where id = $1
             """,
@@ -56,7 +56,8 @@ internal sealed class RegistryResultWriter
             reader.GetString(2),
             reader.GetString(3),
             reader.IsDBNull(4) ? null : reader.GetString(4),
-            reader.GetBoolean(5));
+            reader.GetString(5),
+            reader.GetBoolean(6));
     }
 
     /// <summary>
@@ -64,9 +65,11 @@ internal sealed class RegistryResultWriter
     /// </summary>
     /// <remarks>
     /// <para>
-    /// <b>Guarded against a model swap mid-run.</b> The update matches on the provider, model id
-    /// and endpoint that were evaluated. If an administrator changed the row while the suite was
-    /// running, nothing is written: the verdict describes a model the row no longer names.
+    /// <b>Guarded against a model swap mid-run.</b> The update matches on the provider, model id,
+    /// endpoint and call parameters that were evaluated. If an administrator changed the row while
+    /// the suite was running, nothing is written: the verdict describes a model the row no longer
+    /// names. Parameters count because they are sent with every call — a judge measured at
+    /// temperature 0 says nothing about the same model at its provider's default.
     /// </para>
     /// <para>
     /// <b>A failure disables.</b> The registry's check constraint forbids an enabled row whose
@@ -119,6 +122,7 @@ internal sealed class RegistryResultWriter
               and provider = $5
               and model_id = $6
               and endpoint is not distinct from $7
+              and parameters = $8::jsonb
             """,
             connection,
             transaction))
@@ -130,6 +134,7 @@ internal sealed class RegistryResultWriter
             update.Parameters.Add(new NpgsqlParameter { Value = target.Provider });
             update.Parameters.Add(new NpgsqlParameter { Value = target.ModelId });
             update.Parameters.Add(new NpgsqlParameter { Value = (object?)target.Endpoint ?? DBNull.Value });
+            update.Parameters.Add(new NpgsqlParameter { Value = target.Parameters });
 
             if (await update.ExecuteNonQueryAsync(cancellationToken) != 1)
             {

@@ -63,7 +63,7 @@ public sealed class EvalHarnessWriterTests : IAsyncLifetime
             evalStatus,
             enabled);
 
-        return new RegistryTarget(id, "photo.embedding", "eval-provider", "eval-test/" + id, null, enabled);
+        return new RegistryTarget(id, "photo.embedding", "eval-provider", "eval-test/" + id, null, "{}", enabled);
     }
 
     private static RegistryResultWriter Writer() => new(SupabaseDatabase.ConnectionString);

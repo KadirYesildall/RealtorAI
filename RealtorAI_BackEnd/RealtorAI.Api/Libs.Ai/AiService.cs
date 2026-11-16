@@ -3,6 +3,7 @@ using System.Text.Json.Nodes;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Polly.CircuitBreaker;
+using Polly.Timeout;
 
 namespace Libs.Ai;
 
@@ -264,6 +265,16 @@ public sealed partial class AiService : IAiService
         }
     }
 
+    /// <summary>
+    /// The request options every model call is sent with: a JSON response, at the entry's
+    /// recorded temperature. One definition, shared with the evaluation harness, so a model is
+    /// evaluated under exactly the options it would serve traffic under — a judge evaluated at
+    /// the provider's default temperature and deployed at 0 would have been measured as a
+    /// different model.
+    /// </summary>
+    internal static ChatOptions ChatOptionsFor(ModelRegistryEntry entry) =>
+        new() { ResponseFormat = ChatResponseFormat.Json, Temperature = Temperature(entry) };
+
     private async Task<AiResult> DispatchAsync(
         AiRequest request,
         ModelRegistryEntry entry,
@@ -291,7 +302,7 @@ public sealed partial class AiService : IAiService
                     var response = await breaker.ExecuteAsync(
                         async innerToken => await client.GetResponseAsync(
                             messages,
-                            new ChatOptions { ResponseFormat = ChatResponseFormat.Json, Temperature = Temperature(entry) },
+                            ChatOptionsFor(entry),
                             innerToken),
                         token);
 
@@ -353,8 +364,9 @@ public sealed partial class AiService : IAiService
     /// instructions and the data are never concatenated into one string. That separation is
     /// what keeps agent-supplied notes from being read as instructions. Images travel in the
     /// same user message as the text that describes them.
+    /// Internal rather than private so the evaluation harness sends the identical messages.
     /// </summary>
-    private static List<ChatMessage> BuildMessages(
+    internal static List<ChatMessage> BuildMessages(
         PromptDefinition prompt,
         string input,
         IReadOnlyList<AiImage>? images,
@@ -395,10 +407,22 @@ public sealed partial class AiService : IAiService
     /// A budget failure must not fail over either: the ceiling is per listing, not per
     /// provider.
     /// </para>
+    /// <para>
+    /// The evaluation harness uses the same classification to tell a provider failure (no
+    /// answer to measure) from a schema failure (an answer that measured badly).
+    /// </para>
+    /// <para>
+    /// <see cref="TimeoutRejectedException"/> is listed on its own because it is not a
+    /// <see cref="TimeoutException"/>: Polly derives it from <c>ExecutionRejectedException</c>.
+    /// It is what the HTTP resilience pipeline's timeouts throw (see
+    /// <see cref="AiHttpClientSetup"/>), so without it a slow provider would escape failover
+    /// entirely — the very case a fallback exists for.
+    /// </para>
     /// </summary>
-    private static bool IsFailoverWorthy(Exception exception) =>
+    internal static bool IsFailoverWorthy(Exception exception) =>
         exception is HttpRequestException
             or BrokenCircuitException
+            or TimeoutRejectedException
             or TimeoutException
             or TaskCanceledException;
 
